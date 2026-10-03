@@ -141,6 +141,8 @@ export function useLiveMarket(): MarketView {
     // browser has watched since it connected.
     priceHistoryIsClientObserved: true,
     verifiedCapacity: pending(NO_BENCHMARK),
+    news: pending(NO_RUNTIME),
+    activity: pending(NO_RUNTIME),
     status,
     error,
     ping,

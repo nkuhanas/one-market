@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { PriceChart } from './charts/price-chart';
+import { ActivityTape } from './components/activity-tape';
 import { Channel } from './components/channel';
+import { ChaosBanner } from './components/chaos-banner';
 import { EpochMeter } from './components/epoch-meter';
+import { previewOverrides } from './dev/preview';
 import {
   live,
   mapPending,
@@ -21,11 +24,18 @@ export function App() {
     priceHistory,
     priceHistoryIsClientObserved,
     verifiedCapacity,
+    news: liveNews,
+    activity: liveActivity,
     status,
     error,
     ping,
     reconnect,
   } = useLiveMarket();
+  // Dev-only state preview; Vite drops this branch from production builds.
+  const preview = import.meta.env.DEV ? previewOverrides() : undefined;
+  const news = preview?.news ?? liveNews;
+  const activity = preview?.activity ?? liveActivity;
+  const shock = news.state === 'live' ? news.value : undefined;
   const [pingMessage, setPingMessage] = useState('');
   const [pinging, setPinging] = useState(false);
 
@@ -43,7 +53,7 @@ export function App() {
   }
 
   return (
-    <div className="terminal">
+    <div className={`terminal ${shock ? 'terminal-chaos' : ''}`}>
       <header className="masthead">
         <a className="wordmark" href="/">
           One Market
@@ -58,6 +68,8 @@ export function App() {
           {status}
         </span>
       </header>
+
+      {shock && <ChaosBanner news={shock} />}
 
       <section className="readout" aria-label="Live market state">
         <div className="readout-clock">
@@ -131,13 +143,7 @@ export function App() {
         />
       </section>
 
-      <section className="tape" aria-label="Market activity">
-        <h2>Activity</h2>
-        <p className="tape-empty">
-          Fills, drawdown wipeouts, and news land here once the auction runs.
-          Nothing is on the tape yet.
-        </p>
-      </section>
+      <ActivityTape activity={activity} />
 
       <footer className="footer">
         <div>
