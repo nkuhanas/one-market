@@ -14,7 +14,7 @@ The local v0.2 compatibility gate uses:
 | Rust toolchain      | `1.93.0 (254b59607 2026-01-19)`                                           |
 | Node / Playwright   | `24.21.0` / `1.63.0`                                                      |
 
-The measured release-WASM SHA-256 is
+The original baseline release-WASM SHA-256 is
 `863462dde83f39137100f91d946623a4f133643ac9975a78779f9d1349762ecd`.
 The generated private Rust binding-tree BLAKE3 is
 `de7cb2785c277e503ad145e6decd260acebf9cbf07496b895f4b27f4e78c506d`
@@ -22,6 +22,16 @@ The generated private Rust binding-tree BLAKE3 is
 artifact, along with the Cargo.lock BLAKE3 and observed host metadata. The public
 TypeScript bindings and private Rust bindings are generated from this same WASM;
 `scripts/check` independently regenerates both and requires exact file equality.
+
+The fixed-width actor-row experiment at `perf/fixed-row-v1` (`b36517e`) uses the
+same pinned toolchain/runtime, with release-WASM SHA-256
+`2b3b53fd6f709de7236c600d970805cf35dd80f8c75fd2cb29085048a55dcbcb` and private Rust
+binding-tree BLAKE3 `2d7be75e51ee7f78ed4a2bbc8939fcaccd4b80c92d6b8a621c79a90349f0318b`.
+Both exact measured modules are preserved under `artifacts/builds/`. Actor status
+and optional-tick storage changed privately; observer/human APIs and workload
+configuration did not. Existing baseline worlds require a deliberate migration
+or a separate named world, never automatic data deletion. See the
+[capacity worklog](capacity-worklog.md) for measurements and qualification status.
 
 Maincloud runtime/build: unavailable; no selected development database or
 credentials were provided, and no managed service has been accessed.

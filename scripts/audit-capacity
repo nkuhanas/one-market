@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+# No database mutations; hashes/gates/CSV parity are recomputed from saved data.
+# Run after all measured runs finish, never compile during qualification.
+directory="${1:?repository-relative six-run archive directory required}"
+[[ -d "$directory" ]] || { printf 'Archive directory does not exist\n' >&2; exit 1; }
+for profile in normal chaos; do
+  database="$(compose run --rm --no-deps web node --input-type=module -e '
+    import fs from "node:fs";
+    const a=JSON.parse(fs.readFileSync(process.argv[1]));
+    if(a.environment !== "LOCAL" || a.mode !== "QUALIFY") throw Error("local qualification required");
+    console.log(a.database);
+  ' "$directory/$profile/$profile-1.json")"
+  [[ "$database" == one-market-* ]] || { printf 'Unexpected database name\n' >&2; exit 1; }
+  for table in benchmark_result validated_run run_record news_event; do
+    compose run --rm --no-deps tools spacetime --root-dir /state sql \
+      --server http://db:3000 --no-config --format json "$database" \
+      "SELECT * FROM $table" > "$directory/$profile/readback-$table.json"
+  done
+done
+compose run --rm --no-deps -e CAPACITY_ARTIFACT_DIR="$directory" \
+  -e CAPACITY_WASM="${MODULE_WASM:-artifacts/builds/fixed-row.wasm}" \
+  tools cargo test --locked --release -p one-market-benchmark \
+    qualification_archive_matches_raw_evidence -- --ignored --nocapture 2>&1 \
+  | tee "$directory/archive-audit.txt"

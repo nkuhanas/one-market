@@ -131,8 +131,34 @@ actor updates with zero skipped slots. NORMAL P99 was 24,523 µs and CHAOS was
 26,976 µs; both maintained offered/viewer load, healthy connections, and cash/share
 conservation. Evidence is in `20261003T220208Z-3130808/337500-normal` and
 `20261003T220413Z-3140786/337500-chaos`. This brackets the longer-probe boundary
-between 337,500 and 350,000 on this host; 337,500 is the final qualification
-candidate, not yet a qualified result.
+between 337,500 and 350,000 on this host; 337,500 was selected as the first full
+qualification candidate.
+
+The full candidate archive is `artifacts/baseline/20261003T220900Z-3162127/`.
+All three NORMAL runs passed (P99 24,295 / 23,552 / 22,990 µs, zero skips and
+60,750,000 measured actor updates each). The first CHAOS confirmation failed:
+one slot was skipped at intended slot 545, with start lateness 82,608 µs.
+This happened during warm-up, before the fixed CHAOS event at slot 1,200, and
+cannot be attributed to shock-induced trading. The preceding three slots had
+roughly 1.4–1.7 ms lateness. P99 was still 24,007 µs and load/conservation passed,
+but the zero-skip gate correctly rejected the run. The cause of this isolated
+tail event is not established by start timestamps alone. CHAOS repeat two passed
+(22,599 µs P99); repeat three failed with one skipped slot at slot 3,926
+(54,435 µs lateness, 23,664 µs P99). Both maintained load and passed conservation.
+All six confirmations are retained. The server published a NORMAL result at
+337,500 but no CHAOS result, as verified by readback. The separate archive audit
+validated the NORMAL files/readbacks and correctly rejected the combined archive
+at CHAOS `NOT_QUALIFIED`. A combined NORMAL+CHAOS qualification now requires a
+lower candidate; the next 12,500-actor step is 325,000. The successful NORMAL-only
+result must not be relabeled as a pass for both profiles.
+
+The 325,000-actor 30+90s probes both passed with zero skipped slots and
+29,250,000 measured actor updates each. NORMAL P99 was 14,807 µs and CHAOS P99
+was 15,712 µs. Offered/viewer load, confirmed-read connection health, and the
+conservation audit passed in both. Initialization took 1,505 / 1,424 ms.
+Evidence is in `20261003T223636Z-3297714/325000-normal` and
+`20261003T223841Z-3307679/325000-chaos`. The next full six-run candidate is
+325,000; these two exploratory passes alone do not qualify it.
 
 An additional original-build 500k probe using the newly regenerated isolated
 decoder reproduced failure: P99 90,744 µs, 217 skips, 282,490 updates/second.
@@ -179,5 +205,6 @@ provenance. The original exploration harness binary also remains in the Docker
 target volume; the script can rebuild a compatible decoder/harness from source.
 The immutable tag also permits rebuilding the original source in a
 separate worktree. Full 3× NORMAL + 3× CHAOS qualification remains required after
-a materially improved knee and final-candidate bracketing; no new capacity has
-yet been qualified.
+a materially improved knee and final-candidate bracketing. So far, 337,500 is
+qualified for NORMAL only; the highest population qualified for both profiles
+remains the preserved 200-actor baseline while the lower candidate is tested.

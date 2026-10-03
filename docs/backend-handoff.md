@@ -3,7 +3,10 @@
 The backend implements the v0.2 market and a modest, measured local baseline.
 `apps/web`, Vercel configuration, and `SPEC.md` are unchanged. The latest main
 specification is the input contract, not a file rewritten to fit implementation.
-The branch is `feat/v02-backend`; changes are local and have not been pushed.
+This page records the original baseline preserved at `baseline/v02-local-200`
+(`f507b23`). Subsequent work is on `perf/local-capacity`; see the
+[capacity worklog](capacity-worklog.md) for optimization, later evidence, and
+the private-schema upgrade instructions. Changes remain local and unpushed.
 
 ## Ready for development
 

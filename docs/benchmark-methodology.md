@@ -1,7 +1,8 @@
 # Benchmark methodology
 
-This baseline measures schedule adherence and committed actor updates, not
-maximum capacity or host execution duration. All money and orders are synthetic.
+Qualification measures schedule adherence and committed actor updates, not
+a universal capacity ceiling or host execution duration. The original 200-actor
+baseline was not a capacity search. All money and orders are synthetic.
 Workload constants live in `config/v02.json`; hashing and frozen phases are
 documented in [implementation decisions](implementation-decisions.md).
 
@@ -115,7 +116,44 @@ remote trial, synchronize clocks and record their uncertainty. The current
 remote generator aligns from the server origin using the client wall clock, so
 unbounded skew would invalidate timeline comparison. CPU allocation/model and
 kernel are recorded; energy, exclusive-core isolation and validated host
-execution duration are unavailable and are not claimed.
+P99 execution duration are unavailable and are not claimed. The capacity
+investigation additionally retains aggregate host transaction metrics, sampled
+host-backed phase timers, and native CPU profiles. These diagnostic measurements
+are distinct from the start-lateness qualification gate.
+
+## Exploration, comparison, and artifact audit
+
+`./scripts/explore` runs explicitly non-qualifying local probes. Defaults are
+5 seconds warm-up and 20 seconds measurement, with the same ten viewers and
+five offered human orders/second. `WARMUP_SECONDS`, `MEASUREMENT_SECONDS`, and
+`REPEATS` control probes only; production qualification remains 30+180 seconds
+and three fresh confirmations. Short-run success is `EXPLORE_PASS`, never a
+public qualified result. Preserve failed probes as well as passes.
+
+For CHAOS, use a long enough probe to reach the unchanged shock at slot 1,200;
+the investigation uses `WARMUP_SECONDS=30 MEASUREMENT_SECONDS=90`. Never move
+the shock earlier to make a short run look representative. Probe throughput
+counts confirmed committed receipts in a fixed server-invocation timestamp
+window and divides by actual window seconds, not by completed ticks. This is
+not an exact commit-completion timestamp measurement. Receipt CSVs, explicit
+window lengths, reasons, initialization duration, and module/workload hashes
+are retained under `artifacts/exploration/`.
+
+`MODULE_WASM=artifacts/builds/baseline-v02.wasm ./scripts/explore` selects the
+preserved original binary. The script regenerates an isolated private Rust
+decoder for the selected schema; normal production bindings remain untouched.
+`PROFILE_TICKS=1` selects a separate diagnostic release build which rejects
+qualification. `scripts/profile-native` optionally uses Linux host `perf` and
+timestamps a capture within offered load, excluding setup and post-run audits.
+See [capacity worklog](capacity-worklog.md) for results, limitations, and commands.
+
+After all six full runs stop, execute `./scripts/audit-capacity <archive-folder>`.
+It reads back the public results and retained server validation/run/news rows,
+then checks artifact and summary hashes, exact configuration bytes, raw receipt
+coverage/deadline/debt gates, actual offered load, CSV parity and wall-window
+rates. The check is separate from live collection and cannot qualify a failed
+or exploratory archive. It does not mutate the database. Run it only after
+measurement because it compiles its read-only test verifier.
 
 ## Maincloud: explicit, bounded, separate
 

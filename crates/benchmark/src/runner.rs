@@ -18,6 +18,9 @@ use std::{
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
+#[cfg(test)]
+mod archive_tests;
+
 pub struct Options {
     pub uri: String,
     pub database: String,
