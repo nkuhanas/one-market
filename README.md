@@ -35,6 +35,14 @@ population is not a capacity claim. Qualification uses separate fresh databases;
 see [benchmark methodology](docs/benchmark-methodology.md) and the
 [backend handoff](docs/backend-handoff.md) for measured evidence and limitations.
 
+On the capacity-optimization branch, private actor rows use a fixed-width schema.
+Existing baseline worlds are deliberately not migrated or deleted. To opt into
+a separate local world, set `SPACETIMEDB_DATABASE=one-market-v02-fixed-local`
+in your ignored `.env` (or export it) before the development commands. Public
+observer/human contracts are unchanged. See the ongoing
+[capacity worklog](docs/capacity-worklog.md) for exploratory results; these are
+not qualified capacity headlines.
+
 ## Development
 
 | Command                       | Purpose                                                                           |

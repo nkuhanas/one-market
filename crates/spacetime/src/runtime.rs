@@ -42,6 +42,10 @@ pub fn start_run(
     qualification: bool,
 ) -> Result<()> {
     admin(ctx)?;
+    #[cfg(feature = "profile-ticks")]
+    if qualification {
+        return Err("diagnostic profiling builds cannot qualify capacity".into());
+    }
     let mut r = runtime(ctx)?;
     if r.phase != "READY" || r.enabled || market(ctx)?.logical_tick != 0 || r.run_id != 0 {
         return Err("start requires a fresh initialized world".into());
@@ -221,6 +225,9 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
     }
     let mut m = market(ctx)?;
     let tick = m.logical_tick;
+    // Host-backed timers only in a separate diagnostic release build. Rotate
+    // through buckets, sampling one tick per epoch; never log per actor.
+    let profiling = cfg!(feature = "profile-ticks") && tick % 20 == (tick / 20) % 20;
     let mut run = ctx
         .db
         .run_record()
@@ -267,9 +274,15 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         },
     };
     let bucket = (tick % 20) as u8;
+    let timer = profiling
+        .then(|| spacetimedb::log_stopwatch::LogStopwatch::new("profile/indexed-select-sort"));
     // The only actor query in a measured tick is this indexed due-bucket query.
     let mut actors: Vec<_> = ctx.db.actor_state().bucket().filter(bucket).collect();
     actors.sort_unstable_by_key(|a| a.actor_id);
+    drop(timer);
+    let timer = profiling.then(|| {
+        spacetimedb::log_stopwatch::LogStopwatch::new("profile/coverage-policy-lifecycle")
+    });
     let manifest = ctx
         .db
         .bucket_manifest()
@@ -285,11 +298,11 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
     let mut activity: Option<(String, String, String, String, u64, i64, u64)> = None;
     for (i, a) in actors.iter_mut().enumerate() {
         let expected_previous = tick.checked_sub(20);
-        if a.last_step_tick != expected_previous {
+        if a.last_step_tick.get() != expected_previous {
             return Err("missing or duplicate actor update".into());
         }
         digest = extend_digest(&digest, a.actor_id);
-        let was_active = a.status == "ACTIVE";
+        let was_active = a.status == ActorStatus::Active;
         let (grant, transition) = lifecycle::prepare(a, m.price_cents, tick, &c)?;
         grants = grants
             .checked_add(u128::from(grant))
@@ -297,8 +310,8 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         if transition == Some("RECAPITALIZED") {
             grant_count = add(grant_count, 1)?;
         }
-        if (a.status == "ACTIVE") != was_active {
-            m.active_actor_count = if a.status == "ACTIVE" {
+        if (a.status == ActorStatus::Active) != was_active {
+            m.active_actor_count = if a.status == ActorStatus::Active {
                 add(m.active_actor_count, 1)?
             } else {
                 m.active_actor_count
@@ -323,9 +336,9 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
                 ));
             }
         }
-        let intent = if a.status == "EXITING" && a.shares > 0 {
+        let intent = if a.status == ActorStatus::Exiting && a.shares > 0 {
             Some((false, a.shares, c.min_price_cents))
-        } else if a.status == "ACTIVE" && transition != Some("RECAPITALIZED") {
+        } else if a.status == ActorStatus::Active && transition != Some("RECAPITALIZED") {
             evaluations = add(evaluations, 1)?;
             policy::decide(
                 Weights {
@@ -365,6 +378,9 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
     if manifest.actor_count != actors.len() as u64 || manifest.membership_digest != digest {
         return Err("actor coverage mismatch".into());
     }
+    drop(timer);
+    let timer =
+        profiling.then(|| spacetimedb::log_stopwatch::LogStopwatch::new("profile/human-gather"));
     let humans: Vec<_> = ctx.db.pending_human_order().iter().collect(); // globally bounded on acceptance
     let human_offset = orders.len();
     for h in &humans {
@@ -379,7 +395,12 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
             limit: h.limit_price_cents,
         });
     }
+    drop(timer);
+    let timer = profiling.then(|| spacetimedb::log_stopwatch::LogStopwatch::new("profile/auction"));
     let clearing = auction::clear(&orders, m.price_cents, mix(r.seed ^ tick))?;
+    drop(timer);
+    let timer = profiling
+        .then(|| spacetimedb::log_stopwatch::LogStopwatch::new("profile/actor-settle-final-write"));
     let mut filled_orders = 0;
     for (i, a) in actors.iter_mut().enumerate() {
         if let Some(oi) = actor_orders[i] {
@@ -414,6 +435,9 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         // Exactly one final actor row write, including PASS/EXITING/COOLDOWN.
         ctx.db.actor_state().actor_id().update(a.clone());
     }
+    drop(timer);
+    let timer =
+        profiling.then(|| spacetimedb::log_stopwatch::LogStopwatch::new("profile/human-settle"));
     for (i, pending) in humans.iter().enumerate() {
         let filled = clearing.fills[human_offset + i];
         let mut h = ctx
@@ -482,6 +506,10 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
     }
     #[cfg(feature = "test-support")]
     crate::test_support::check_fault(ctx)?;
+    drop(timer);
+    let _timer = profiling.then(|| {
+        spacetimedb::log_stopwatch::LogStopwatch::new("profile/feeds-receipts-scheduling")
+    });
 
     let mut accounting = ctx
         .db

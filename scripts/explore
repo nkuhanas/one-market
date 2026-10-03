@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+population="${POPULATION:-1000}"
+profile="${PROFILE:-NORMAL}"
+case "$profile" in NORMAL|CHAOS) ;; *) printf 'PROFILE must be NORMAL or CHAOS\n' >&2; exit 1;; esac
+compose up -d --wait db
+# A preserved module may be selected for before/after comparisons. It is never
+# overwritten, and its actual SHA-256 is included in every artifact.
+module="${MODULE_WASM:-target/wasm32-unknown-unknown/release/one_market_spacetime.wasm}"
+if [[ "${PROFILE_TICKS:-0}" == 1 ]]; then
+  if [[ -n "${MODULE_WASM:-}" ]]; then printf 'Choose MODULE_WASM or PROFILE_TICKS, not both\n' >&2; exit 1; fi
+  compose run --rm --no-deps tools cargo build --locked --release -p one-market-spacetime \
+    --features profile-ticks --target wasm32-unknown-unknown --target-dir target/profile-ticks
+  module=target/profile-ticks/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+elif [[ -z "${MODULE_WASM:-}" ]]; then
+  "$REPO_ROOT/scripts/generate-bindings"
+fi
+harness="${HARNESS_BIN:-target/release/one-market-benchmark}"
+if [[ -z "${HARNESS_BIN:-}" ]]; then
+  if [[ -n "${MODULE_WASM:-}" ]]; then
+    # Old private schemas require their own generated decoder. Keep current
+    # production bindings untouched and use the same harness source and gates.
+    compose run --rm --no-deps tools spacetime --root-dir /state generate \
+      --bin-path "$module" --lang rust --include-private \
+      --out-dir crates/benchmark/src/probe_bindings --no-config --yes
+    compose run --rm --no-deps tools cargo build --locked --release -p one-market-benchmark \
+      --features probe-bindings --target-dir target/probe-harness
+    harness=target/probe-harness/release/one-market-benchmark
+  else
+    compose run --rm --no-deps tools cargo build --locked --release -p one-market-benchmark
+  fi
+fi
+module_hash="$(compose run --rm --no-deps tools sha256sum "$module" | cut -d ' ' -f 1)"
+stamp="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+database="one-market-explore-${population}-${profile,,}-${stamp,,}"
+compose run --rm --no-deps tools spacetime --root-dir /state publish \
+  --server http://db:3000 --bin-path "$module" --no-config --delete-data=never \
+  --yes=remote,migrate,skip-login "$database"
+output="artifacts/exploration/$stamp/${population}-${profile,,}"
+result=0
+compose run --rm --no-deps tools "$harness" \
+  --uri http://db:3000 --database "$database" --token-file /state/config/cli.toml \
+  --build-hash "$module_hash" --population "$population" --profile "$profile" \
+  --environment LOCAL --mode explore --warmup-seconds "${WARMUP_SECONDS:-5}" \
+  --measurement-seconds "${MEASUREMENT_SECONDS:-20}" --repeats "${REPEATS:-1}" \
+  --output "$output" || result=$?
+if [[ "${PROFILE_TICKS:-0}" == 1 ]]; then
+  "$REPO_ROOT/scripts/collect-profile" "$database" "$output"
+fi
+exit "$result"

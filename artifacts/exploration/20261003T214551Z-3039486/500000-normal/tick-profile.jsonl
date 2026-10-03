@@ -1,0 +1,198 @@
+{"level":"Info","ts":1791063952123350,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `actor_sample`"}
+{"level":"Info","ts":1791063952123452,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `actor_state`"}
+{"level":"Info","ts":1791063952123535,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `admin_allowlist`"}
+{"level":"Info","ts":1791063952123576,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `benchmark_reader`"}
+{"level":"Info","ts":1791063952123601,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `benchmark_result`"}
+{"level":"Info","ts":1791063952123669,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `bucket_manifest`"}
+{"level":"Info","ts":1791063952123710,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `connection_state`"}
+{"level":"Info","ts":1791063952123736,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `detailed_benchmark_receipts`"}
+{"level":"Info","ts":1791063952123781,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `grant_accounting`"}
+{"level":"Info","ts":1791063952123812,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `human_order_receipt`"}
+{"level":"Info","ts":1791063952123848,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `human_trader`"}
+{"level":"Info","ts":1791063952123879,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `market_state`"}
+{"level":"Info","ts":1791063952123959,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `news_event`"}
+{"level":"Info","ts":1791063952124008,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `order_watermark`"}
+{"level":"Info","ts":1791063952124030,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `pending_human_order`"}
+{"level":"Info","ts":1791063952124059,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `price_point`"}
+{"level":"Info","ts":1791063952124081,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `public_activity`"}
+{"level":"Info","ts":1791063952124111,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `run_record`"}
+{"level":"Info","ts":1791063952124151,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `runtime_config`"}
+{"level":"Info","ts":1791063952124191,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `tick_schedule`"}
+{"level":"Info","ts":1791063952124239,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table `validated_run`"}
+{"level":"Info","ts":1791063952124284,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table for view `benchmark_latest_receipt`"}
+{"level":"Info","ts":1791063952124364,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table for view `benchmark_runs`"}
+{"level":"Info","ts":1791063952124438,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table for view `my_pending_order`"}
+{"level":"Info","ts":1791063952124497,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table for view `my_recent_fills`"}
+{"level":"Info","ts":1791063952124537,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Creating table for view `my_trader`"}
+{"level":"Info","ts":1791063952125099,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Invoking `init` reducer"}
+{"level":"Info","ts":1791063952125827,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"__spacetimedb__","message":"Database initialized"}
+{"level":"Info","ts":1791063955641813,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 10.744276ms"}
+{"level":"Info","ts":1791063955651169,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.341982ms"}
+{"level":"Info","ts":1791063955651183,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 4.819µs"}
+{"level":"Info","ts":1791063955652589,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.403547ms"}
+{"level":"Info","ts":1791063955666092,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 13.493469ms"}
+{"level":"Info","ts":1791063955666141,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 39.153µs"}
+{"level":"Info","ts":1791063955666203,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 60.564µs"}
+{"level":"Error","ts":1791063955780135,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063956380089,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063956780160,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063957068440,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 10.910208ms"}
+{"level":"Info","ts":1791063957077750,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.294484ms"}
+{"level":"Info","ts":1791063957077767,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 6.403µs"}
+{"level":"Info","ts":1791063957079200,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.429926ms"}
+{"level":"Info","ts":1791063957093650,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 14.439294ms"}
+{"level":"Info","ts":1791063957093698,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 39.234µs"}
+{"level":"Info","ts":1791063957093769,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 68.247µs"}
+{"level":"Error","ts":1791063957580063,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063958380103,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063958521252,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 10.499025ms"}
+{"level":"Info","ts":1791063958530578,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.2924ms"}
+{"level":"Info","ts":1791063958530592,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 5.571µs"}
+{"level":"Info","ts":1791063958532023,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.427921ms"}
+{"level":"Info","ts":1791063958544992,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 12.958503ms"}
+{"level":"Info","ts":1791063958545001,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 301ns"}
+{"level":"Info","ts":1791063958545083,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 79.629µs"}
+{"level":"Error","ts":1791063958980036,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063959580140,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063959926186,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 11.070879ms"}
+{"level":"Info","ts":1791063959935823,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.6077ms"}
+{"level":"Info","ts":1791063959935840,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 6.061µs"}
+{"level":"Info","ts":1791063959937293,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.449592ms"}
+{"level":"Info","ts":1791063959951666,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 14.359986ms"}
+{"level":"Info","ts":1791063959951676,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 280ns"}
+{"level":"Info","ts":1791063959951763,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 85.441µs"}
+{"level":"Error","ts":1791063960180075,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063960780180,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063961356213,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 11.294839ms"}
+{"level":"Info","ts":1791063961365605,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.377328ms"}
+{"level":"Info","ts":1791063961365621,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 5.421µs"}
+{"level":"Info","ts":1791063961367118,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.493824ms"}
+{"level":"Info","ts":1791063961381604,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 14.476414ms"}
+{"level":"Info","ts":1791063961381614,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 321ns"}
+{"level":"Info","ts":1791063961381713,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 96.352µs"}
+{"level":"Error","ts":1791063961380118,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063961980135,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063962380115,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063962774245,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 10.970832ms"}
+{"level":"Info","ts":1791063962783965,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.70221ms"}
+{"level":"Info","ts":1791063962783983,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 7.313µs"}
+{"level":"Info","ts":1791063962785479,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.491802ms"}
+{"level":"Info","ts":1791063962801232,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 15.740527ms"}
+{"level":"Info","ts":1791063962801246,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 451ns"}
+{"level":"Info","ts":1791063962801371,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 122.3µs"}
+{"level":"Error","ts":1791063962780082,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063963180111,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063963580159,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063963980144,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063964207250,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 10.84747ms"}
+{"level":"Info","ts":1791063964216576,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.309351ms"}
+{"level":"Info","ts":1791063964216595,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 7.624µs"}
+{"level":"Info","ts":1791063964218053,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.454091ms"}
+{"level":"Info","ts":1791063964232542,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 14.477256ms"}
+{"level":"Info","ts":1791063964232552,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 391ns"}
+{"level":"Info","ts":1791063964232644,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 89.647µs"}
+{"level":"Error","ts":1791063964580158,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063964980129,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063965580147,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063965626752,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 10.707788ms"}
+{"level":"Info","ts":1791063965636077,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.310072ms"}
+{"level":"Info","ts":1791063965636088,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 4.248µs"}
+{"level":"Info","ts":1791063965637534,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.442699ms"}
+{"level":"Info","ts":1791063965652080,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 14.534754ms"}
+{"level":"Info","ts":1791063965652090,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 291ns"}
+{"level":"Info","ts":1791063965652171,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 79.149µs"}
+{"level":"Error","ts":1791063966380101,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063967130031,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 11.304468ms"}
+{"level":"Info","ts":1791063967139535,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.486614ms"}
+{"level":"Info","ts":1791063967139553,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 6.321µs"}
+{"level":"Info","ts":1791063967141036,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.479007ms"}
+{"level":"Info","ts":1791063967156077,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 15.02834ms"}
+{"level":"Info","ts":1791063967156090,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 321ns"}
+{"level":"Info","ts":1791063967156188,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 95.821µs"}
+{"level":"Error","ts":1791063967380093,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063967780077,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063968380180,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063968597355,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 10.944602ms"}
+{"level":"Info","ts":1791063968606733,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.363062ms"}
+{"level":"Info","ts":1791063968606750,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 6.232µs"}
+{"level":"Info","ts":1791063968608233,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.479218ms"}
+{"level":"Info","ts":1791063968622974,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 14.73497ms"}
+{"level":"Info","ts":1791063968622983,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 291ns"}
+{"level":"Info","ts":1791063968623061,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 75.882µs"}
+{"level":"Error","ts":1791063968980112,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063969380093,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063969780220,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063970060146,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 10.997883ms"}
+{"level":"Info","ts":1791063970069475,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.315093ms"}
+{"level":"Info","ts":1791063970069489,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 5.23µs"}
+{"level":"Info","ts":1791063970070958,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.465561ms"}
+{"level":"Info","ts":1791063970085261,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 14.29276ms"}
+{"level":"Info","ts":1791063970085307,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 36.95µs"}
+{"level":"Info","ts":1791063970085386,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 77.024µs"}
+{"level":"Error","ts":1791063970380155,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063970980158,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063971380066,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063971483472,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 10.624482ms"}
+{"level":"Info","ts":1791063971493183,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.695557ms"}
+{"level":"Info","ts":1791063971493198,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 4.949µs"}
+{"level":"Info","ts":1791063971494683,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.48054ms"}
+{"level":"Info","ts":1791063971509089,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 14.393779ms"}
+{"level":"Info","ts":1791063971509100,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 290ns"}
+{"level":"Info","ts":1791063971509171,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 68.669µs"}
+{"level":"Error","ts":1791063971980094,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063972380122,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063972908360,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 10.558146ms"}
+{"level":"Info","ts":1791063972917725,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.350098ms"}
+{"level":"Info","ts":1791063972917739,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 4.219µs"}
+{"level":"Info","ts":1791063972919192,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.450664ms"}
+{"level":"Info","ts":1791063972933502,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 14.29928ms"}
+{"level":"Info","ts":1791063972933511,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 340ns"}
+{"level":"Info","ts":1791063972933591,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 77.957µs"}
+{"level":"Error","ts":1791063973180108,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063973980124,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063974331960,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 10.769223ms"}
+{"level":"Info","ts":1791063974341430,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.446579ms"}
+{"level":"Info","ts":1791063974341443,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 4.92µs"}
+{"level":"Info","ts":1791063974342903,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.456847ms"}
+{"level":"Info","ts":1791063974358293,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 15.377877ms"}
+{"level":"Info","ts":1791063974358304,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 300ns"}
+{"level":"Info","ts":1791063974358385,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 77.997µs"}
+{"level":"Error","ts":1791063974380138,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063974980109,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063975580112,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063975752429,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 11.002751ms"}
+{"level":"Info","ts":1791063975761771,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.327657ms"}
+{"level":"Info","ts":1791063975761786,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 6.452µs"}
+{"level":"Info","ts":1791063975763217,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.427581ms"}
+{"level":"Info","ts":1791063975778368,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 15.141002ms"}
+{"level":"Info","ts":1791063975778378,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 321ns"}
+{"level":"Info","ts":1791063975778455,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 75.822µs"}
+{"level":"Error","ts":1791063976180078,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063977196363,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 11.371654ms"}
+{"level":"Info","ts":1791063977206146,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.755019ms"}
+{"level":"Info","ts":1791063977206166,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 8.466µs"}
+{"level":"Info","ts":1791063977207695,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.525535ms"}
+{"level":"Info","ts":1791063977223224,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 15.51799ms"}
+{"level":"Info","ts":1791063977223233,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 310ns"}
+{"level":"Info","ts":1791063977223316,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 80.02µs"}
+{"level":"Error","ts":1791063977180201,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063977780123,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063978380126,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063978777416,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 11.138697ms"}
+{"level":"Info","ts":1791063978787133,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.699945ms"}
+{"level":"Info","ts":1791063978787148,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 5.22µs"}
+{"level":"Info","ts":1791063978788637,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.485079ms"}
+{"level":"Info","ts":1791063978803618,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 14.971123ms"}
+{"level":"Info","ts":1791063978803628,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 361ns"}
+{"level":"Info","ts":1791063978803713,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 83.146µs"}
+{"level":"Error","ts":1791063978780139,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063979180110,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Error","ts":1791063979580104,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}
+{"level":"Info","ts":1791063980262872,"function":"simulation_tick","message":"Timing span \"profile/indexed-select-sort\": 10.830318ms"}
+{"level":"Info","ts":1791063980272662,"function":"simulation_tick","message":"Timing span \"profile/coverage-policy-lifecycle\": 9.771389ms"}
+{"level":"Info","ts":1791063980272680,"function":"simulation_tick","message":"Timing span \"profile/human-gather\": 7.965µs"}
+{"level":"Info","ts":1791063980274208,"function":"simulation_tick","message":"Timing span \"profile/auction\": 1.52329ms"}
+{"level":"Info","ts":1791063980289107,"function":"simulation_tick","message":"Timing span \"profile/actor-settle-final-write\": 14.888027ms"}
+{"level":"Info","ts":1791063980289156,"function":"simulation_tick","message":"Timing span \"profile/human-settle\": 39.775µs"}
+{"level":"Info","ts":1791063980289222,"function":"simulation_tick","message":"Timing span \"profile/feeds-receipts-scheduling\": 64.091µs"}
+{"level":"Error","ts":1791063980380095,"target":"__spacetimedb__","filename":"__spacetimedb__","function":"place_order","message":"order rate limit"}

@@ -8,4 +8,5 @@ Cargo.lock
 playwright-report/
 test-results/
 tests/private-bindings/
+crates/benchmark/src/probe_bindings/
 artifacts/

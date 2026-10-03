@@ -1,4 +1,4 @@
-use spacetimedb::{table, ConnectionId, Identity, ScheduleAt, Timestamp};
+use spacetimedb::{table, ConnectionId, Identity, ScheduleAt, SpacetimeType, Timestamp};
 
 #[table(accessor = market_state, public)]
 #[derive(Clone)]
@@ -80,6 +80,47 @@ pub struct TickSchedule {
     pub intended_slot: u64,
 }
 
+/// Private storage encoding only; public samples retain their string status.
+#[derive(SpacetimeType, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ActorStatus {
+    Active,
+    Exiting,
+    Cooldown,
+}
+
+impl ActorStatus {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Active => "ACTIVE",
+            Self::Exiting => "EXITING",
+            Self::Cooldown => "COOLDOWN",
+        }
+    }
+}
+
+/// Lossless, fixed-width Option<u64>: unlike a sentinel, preserves Some(MAX).
+/// Constant BSATN length enables the database's static row serialization path.
+#[derive(SpacetimeType, Clone, Copy, Debug, PartialEq, Eq)]
+pub struct OptionalTick {
+    pub value: u64,
+    pub present: bool,
+}
+
+impl From<Option<u64>> for OptionalTick {
+    fn from(value: Option<u64>) -> Self {
+        Self {
+            value: value.unwrap_or(0),
+            present: value.is_some(),
+        }
+    }
+}
+
+impl OptionalTick {
+    pub fn get(self) -> Option<u64> {
+        self.present.then_some(self.value)
+    }
+}
+
 #[table(accessor = actor_state)]
 #[derive(Clone)]
 pub struct ActorState {
@@ -99,9 +140,9 @@ pub struct ActorState {
     pub news_weight: i32,
     pub risk_tolerance_bps: u64,
     pub conviction_threshold_bps: u64,
-    pub last_step_tick: Option<u64>,
-    pub status: String,
-    pub cooldown_started_tick: Option<u64>,
+    pub last_step_tick: OptionalTick,
+    pub status: ActorStatus,
+    pub cooldown_started_tick: OptionalTick,
     pub lifetime_pnl_cents: i64,
     pub wipeout_count: u64,
     pub filled_order_count: u64,

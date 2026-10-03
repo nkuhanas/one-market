@@ -1,0 +1,137 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 5K of event 'cpu/cycles/P'
+# Event count (approx.): 104518900891
+#
+# Overhead|Shared Object|Symbol|IPC   [IPC Coverage]
+ 5.50%|libc.so.6|[.] 0x000000000016d80f|-      -            
+ 4.48%|spacetimedb-standalone|[.] spacetimedb_table::bflatn_from::serialize_product::<spacetimedb_sats::algebraic_value::ser::ValueSerializer>|-      -            
+ 3.86%|spacetimedb-standalone|[.] ZSTD_compressBlock_doubleFast|-      -            
+ 3.85%|spacetimedb-standalone|[.] <spacetimedb_datastore::locking_tx_datastore::committed_state::CommittedState>::merge|-      -            
+ 3.04%|spacetimedb-standalone|[.] <spacetimedb::host::instance_env::ChunkedWriter>::collect_iter::<spacetimedb_table::table::RowRef, spacetimedb_datastore::locking_tx_datastore::mut_tx::ScanMutTx<spacetimedb_table::table::IndexScanPointIter>>|-      -            
+ 2.44%|spacetimedb-standalone|[.] HUF_buildCTable_wksp|-      -            
+ 2.35%|spacetimedb-standalone|[.] spacetimedb_table::bflatn_from::serialize_value::<spacetimedb_sats::algebraic_value::ser::ValueSerializer>|-      -            
+ 2.35%|spacetimedb-standalone|[.] <spacetimedb_table::table_index::unique_btree_index::UniqueBTreeIndex<u64> as spacetimedb_table::table_index::index::Index>::insert|-      -            
+ 2.15%|spacetimedb-standalone|[.] <spacetimedb_table::bflatn_to::BflatnSerializedRowBuffer>::write_value|-      -            
+ 2.15%|spacetimedb-standalone|[.] <spacetimedb_sats::algebraic_value::AlgebraicValue as spacetimedb_sats::ser::Serialize>::serialize::<spacetimedb_sats::bsatn::ser::Serializer<alloc::vec::Vec<u8>>>|-      -            
+ 2.09%|spacetimedb-standalone|[.] <spacetimedb_table::table_index::TableIndex>::delete|-      -            
+ 1.96%|libc.so.6|[.] 0x0000000000163961|-      -            
+ 1.92%|spacetimedb-standalone|[.] <spacetimedb_table::table_index::unique_btree_index::UniqueBTreeIndex<u64>>::seek_point::<u64>|-      -            
+ 1.89%|spacetimedb-standalone|[.] <spacetimedb_table::table_index::TableIndex>::check_and_insert|-      -            
+ 1.79%|spacetimedb-standalone|[.] core::ptr::drop_glue::<spacetimedb_sats::algebraic_value::AlgebraicValue>|-      -            
+ 1.51%|spacetimedb-standalone|[.] <wasmtime::runtime::vm::instance::Instance>::memory_copy|-      -            
+ 1.38%|spacetimedb-standalone|[.] <spacetimedb_table::table_index::unique_btree_index::UniqueBTreeIndex<u64>>::delete::<u64>|-      -            
+ 1.15%|spacetimedb-standalone|[.] <spacetimedb_sats::algebraic_value::ser::SerializeProductValue as spacetimedb_sats::ser::SerializeSeqProduct>::end|-      -            
+ 1.07%|spacetimedb-standalone|[.] <spacetimedb::host::instance_env::InstanceEnv>::update|-      -            
+ 1.06%|spacetimedb-standalone|[.] ZSTD_encodeSequences_bmi2|-      -            
+ 1.04%|libc.so.6|[.] pthread_mutex_trylock|-      -            
+ 0.97%|spacetimedb-standalone|[.] wasmtime::runtime::vm::traphandlers::catch_unwind_and_record_trap::<core::result::Result<(), wasmtime_environ::trap_encoding::Trap>, <wasmtime::runtime::vm::instance::Instance>::enter_host_from_wasm<core::result::Result<(), wasmtime_environ::trap_encoding::Trap>, wasmtime::runtime::vm::libcalls::raw::memory_copy::{closure#0}>::{closure#0}>|-      -            
+ 0.89%|spacetimedb-standalone|[.] <alloc::collections::btree::map::entry::VacantEntry<(usize, spacetimedb_table::indexes::PageIndex), alloc::collections::btree::set_val::SetValZST>>::insert_entry|-      -            
+ 0.84%|libc.so.6|[.] 0x000000000008dca4|-      -            
+ 0.81%|spacetimedb-standalone|[.] FSE_buildCTable_wksp|-      -            
+ 0.78%|[kernel.kallsyms]|[k] asm_sysvec_apic_timer_interrupt|-      -            
+ 0.72%|libc.so.6|[.] 0x000000000016d8a7|-      -            
+ 0.68%|spacetimedb-standalone|[.] <spacetimedb_datastore::locking_tx_datastore::mut_tx::MutTxId>::update|-      -            
+ 0.64%|spacetimedb-standalone|[.] <spacetimedb_table::pages::Pages>::with_updating_non_full_pages::<spacetimedb_table::table::BlobNumBytes, <spacetimedb_table::pages::Pages>::delete_row<spacetimedb_table::row_type_visitor::VarLenVisitorProgram>::{closure#0}>|-      -            
+ 0.62%|spacetimedb-standalone|[.] <spacetimedb_datastore::locking_tx_datastore::mut_tx::MutTxId>::views_for_refresh::{closure#2}|-      -            
+ 0.62%|spacetimedb-standalone|[.] spacetimedb_table::bflatn_to::write_row_to_pages::<spacetimedb_table::row_type_visitor::VarLenVisitorProgram>|-      -            
+ 0.61%|spacetimedb-standalone|[.] <spacetimedb_table::table::Table>::insert|-      -            
+ 0.61%|libc.so.6|[.] 0x000000000016d803|-      -            
+ 0.61%|spacetimedb-standalone|[.] _rjem_sdallocx|-      -            
+ 0.60%|spacetimedb-standalone|[.] HIST_countFast_wksp|-      -            
+ 0.59%|spacetimedb-standalone|[.] <hashbrown::map::HashMap<spacetimedb_table::indexes::RowPointer, (), core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>>::insert|-      -            
+ 0.56%|spacetimedb-standalone|[.] crc32c::hw_x86_64::crc_u64_append|-      -            
+ 0.54%|spacetimedb-standalone|[.] wasmtime::runtime::vm::libcalls::raw::memory_copy|-      -            
+ 0.51%|[JIT] tid 3021648|[.] 0x00007f00b605631a|-      -            
+ 0.49%|spacetimedb-standalone|[.] <spacetimedb_commitlog::payload::txdata::Txdata<spacetimedb_sats::product_value::ProductValue> as spacetimedb_commitlog::payload::Encode>::encode_record::<alloc::vec::Vec<u8>>|-      -            
+ 0.48%|spacetimedb-standalone|[.] <alloc::collections::btree::node::Handle<alloc::collections::btree::node::NodeRef<alloc::collections::btree::node::marker::Mut, i64, spacetimedb_table::indexes::RowPointer, alloc::collections::btree::node::marker::LeafOrInternal>, alloc::collections::btree::node::marker::KV>>::remove_kv_tracking::<<alloc::collections::btree::map::entry::OccupiedEntry<i64, spacetimedb_table::indexes::RowPointer>>::remove_kv::{closure#0}, alloc::alloc::Global>|-      -            
+ 0.46%|spacetimedb-standalone|[.] <spacetimedb_table::table_index::same_key_entry::SameKeyEntry>::delete|-      -            
+ 0.46%|spacetimedb-standalone|[.] <spacetimedb_table::page::Page>::alloc_fixed_len|-      -            
+ 0.46%|spacetimedb-standalone|[.] <alloc::collections::btree::node::Handle<alloc::collections::btree::node::NodeRef<alloc::collections::btree::node::marker::Mut, i64, spacetimedb_table::indexes::RowPointer, alloc::collections::btree::node::marker::Leaf>, alloc::collections::btree::node::marker::KV>>::remove_leaf_kv::<<alloc::collections::btree::map::entry::OccupiedEntry<i64, spacetimedb_table::indexes::RowPointer>>::remove_kv::{closure#0}, alloc::alloc::Global>|-      -            
+ 0.43%|spacetimedb-standalone|[.] <spacetimedb_table::bflatn_to::BflatnSerializedRowBuffer>::write_product|-      -            
+ 0.41%|spacetimedb-standalone|[.] <alloc::collections::btree::map::BTreeMap<decorum::proxy::ConstrainedFloat<f64, decorum::constraint::UnitConstraint<f64>>, spacetimedb_table::indexes::RowPointer> as core::ops::drop::Drop>::drop|-      -            
+ 0.40%|spacetimedb-standalone|[.] HIST_count_wksp|-      -            
+ 0.38%|spacetimedb-standalone|[.] crc32c::hw_x86_64::crc_u64_parallel3|-      -            
+ 0.36%|libc.so.6|[.] 0x000000000016d800|-      -            
+ 0.35%|spacetimedb-standalone|[.] <spacetimedb_table::pages::Pages>::find_page_with_space_for_row|-      -            
+ 0.35%|spacetimedb-standalone|[.] HIST_count_simple|-      -            
+ 0.35%|spacetimedb-standalone|[.] _rjem_je_tcache_bin_flush_small|-      -            
+ 0.33%|spacetimedb-standalone|[.] <wasmtime::runtime::store::StoreInner<spacetimedb::host::wasmtime::wasm_instance_env::WasmInstanceEnv> as wasmtime::runtime::vm::VMStore>::store_opaque|-      -            
+ 0.33%|libc.so.6|[.] 0x000000000016db75|-      -            
+ 0.33%|spacetimedb-standalone|[.] <alloc::collections::btree::map::entry::VacantEntry<u64, spacetimedb_table::indexes::RowPointer>>::insert_entry|-      -            
+ 0.33%|spacetimedb-standalone|[.] <spacetimedb_table::table::Table>::insert_physically_bsatn|-      -            
+ 0.33%|spacetimedb-standalone|[.] HUF_compress1X_usingCTable_internal_bmi2|-      -            
+ 0.31%|spacetimedb-standalone|[.] <alloc::collections::btree::node::Handle<alloc::collections::btree::node::NodeRef<alloc::collections::btree::node::marker::Mut, i64, spacetimedb_table::indexes::RowPointer, alloc::collections::btree::node::marker::Leaf>, alloc::collections::btree::node::marker::Edge>>::insert_recursing::<alloc::alloc::Global, <alloc::collections::btree::map::entry::VacantEntry<i64, spacetimedb_table::indexes::RowPointer>>::insert_entry::{closure#0}>|-      -            
+ 0.30%|[JIT] tid 3021648|[.] 0x00007f00b5f9c181|-      -            
+ 0.30%|[kernel.kallsyms]|[k] kernel_init_pages|-      -            
+ 0.28%|spacetimedb-standalone|[.] FSE_normalizeCount|-      -            
+ 0.26%|spacetimedb-standalone|[.] <alloc::collections::btree::node::Handle<alloc::collections::btree::node::NodeRef<alloc::collections::btree::node::marker::Mut, (usize, spacetimedb_table::indexes::PageIndex), alloc::collections::btree::set_val::SetValZST, alloc::collections::btree::node::marker::Leaf>, alloc::collections::btree::node::marker::KV>>::remove_leaf_kv::<<alloc::collections::btree::map::entry::OccupiedEntry<(usize, spacetimedb_table::indexes::PageIndex), alloc::collections::btree::set_val::SetValZST>>::remove_kv::{closure#0}, alloc::alloc::Global>|-      -            
+ 0.26%|spacetimedb-standalone|[.] <hashbrown::raw::RawTable<(spacetimedb_table::indexes::RowPointer, ())>>::reserve_rehash::<hashbrown::map::make_hasher<spacetimedb_table::indexes::RowPointer, (), core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>::{closure#0}>|-      -            
+ 0.25%|spacetimedb-standalone|[.] <alloc::collections::btree::node::Handle<alloc::collections::btree::node::NodeRef<alloc::collections::btree::node::marker::Mut, (usize, spacetimedb_table::indexes::PageIndex), alloc::collections::btree::set_val::SetValZST, alloc::collections::btree::node::marker::Leaf>, alloc::collections::btree::node::marker::Edge>>::insert_recursing::<alloc::alloc::Global, <alloc::collections::btree::map::entry::VacantEntry<(usize, spacetimedb_table::indexes::PageIndex), alloc::collections::btree::set_val::SetValZST>>::insert_entry::{closure#0}>|-      -            
+ 0.23%|spacetimedb-standalone|[.] _rjem_malloc|-      -            
+ 0.23%|libc.so.6|[.] 0x000000000016d88b|-      -            
+ 0.23%|spacetimedb-standalone|[.] <spacetimedb_table::bflatn_to::BflatnSerializedRowBuffer>::write_i64|-      -            
+ 0.23%|[kernel.kallsyms]|[k] __raw_callee_save___pv_queued_spin_unlock|-      -            
+ 0.23%|spacetimedb-standalone|[.] <alloc::collections::btree::map::entry::OccupiedEntry<(usize, spacetimedb_table::indexes::PageIndex), alloc::collections::btree::set_val::SetValZST>>::remove_kv|-      -            
+ 0.23%|spacetimedb-standalone|[.] spacetimedb_table::eq::eq_row_in_page|-      -            
+ 0.23%|spacetimedb-standalone|[.] ZSTD_seqToCodes|-      -            
+ 0.21%|spacetimedb-standalone|[.] <alloc::sync::Arc<[spacetimedb_sats::product_value::ProductValue]>>::drop_slow|-      -            
+ 0.21%|[kernel.kallsyms]|[k] copy_folio_from_iter_atomic|-      -            
+ 0.20%|spacetimedb-standalone|[.] <spacetimedb_table::table_index::TableIndex>::key_from_row|-      -            
+ 0.20%|spacetimedb-standalone|[.] <spacetimedb_datastore::locking_tx_datastore::mut_tx::MutTxId>::views_for_refresh|-      -            
+ 0.20%|[JIT] tid 3021648|[.] 0x00007f00b5f88c79|-      -            
+ 0.20%|[kernel.kallsyms]|[k] _copy_to_iter|-      -            
+ 0.18%|spacetimedb-standalone|[.] _rjem_je_edata_heap_remove|-      -            
+ 0.18%|spacetimedb-standalone|[.] <spacetimedb_table::table::Table>::check_unique_constraints::<core::iter::adapters::filter::Filter<alloc::collections::btree::map::Iter<spacetimedb_primitives::ids::IndexId, spacetimedb_table::table_index::TableIndex>, <spacetimedb_datastore::locking_tx_datastore::mut_tx::MutTxId>::update::{closure#3}::{closure#0}>, <spacetimedb_datastore::locking_tx_datastore::mut_tx::MutTxId>::update::{closure#3}, <spacetimedb_datastore::locking_tx_datastore::mut_tx::MutTxId>::update::{closure#2}>|-      -            
+ 0.18%|spacetimedb-standalone|[.] FSE_compress_usingCTable_generic|-      -            
+ 0.18%|spacetimedb-standalone|[.] FSE_writeNCount_generic|-      -            
+ 0.17%|spacetimedb-standalone|[.] _rjem_je_eset_remove|-      -            
+ 0.15%|libc.so.6|[.] 0x000000000016d824|-      -            
+ 0.15%|spacetimedb-standalone|[.] _rjem_je_malloc_default|-      -            
+ 0.15%|[JIT] tid 3021648|[.] 0x00007f00b60383fe|-      -            
+ 0.15%|[JIT] tid 3021648|[.] 0x00007f00b60aad99|-      -            
+ 0.15%|[JIT] tid 3021648|[.] 0x00007f00b604b830|-      -            
+ 0.15%|[JIT] tid 3021648|[.] 0x00007f00b5f7c9ae|-      -            
+ 0.15%|[JIT] tid 3021648|[.] 0x00007f00b5f9523e|-      -            
+ 0.15%|[JIT] tid 3021648|[.] 0x00007f00b5fa1db4|-      -            
+ 0.15%|spacetimedb-standalone|[.] <spacetimedb_table::pages::Pages>::with_page_to_insert_row::<core::result::Result<spacetimedb_table::indexes::PageOffset, spacetimedb_table::bflatn_to::Error>, <spacetimedb_table::table::Table>::insert_physically_bsatn::{closure#0}>|-      -            
+ 0.15%|libc.so.6|[.] 0x000000000016d8bb|-      -            
+ 0.13%|libc.so.6|[.] 0x0000000000085845|-      -            
+ 0.13%|spacetimedb-standalone|[.] _rjem_je_eset_fit|-      -            
+ 0.13%|libc.so.6|[.] 0x000000000016d8e0|-      -            
+ 0.13%|spacetimedb-standalone|[.] _rjem_je_sdallocx_default|-      -            
+ 0.13%|spacetimedb-standalone|[.] <alloc::collections::btree::map::entry::Entry<u8, spacetimedb_table::table_index::same_key_entry::SameKeyEntry>>::or_default|-      -            
+ 0.13%|[JIT] tid 3021648|[.] 0x00007f00b603c6c5|-      -            
+ 0.13%|[JIT] tid 3021648|[.] 0x00007f00b5fd5b58|-      -            
+ 0.13%|[kernel.kallsyms]|[k] block_invalidate_folio|-      -            
+ 0.13%|[JIT] tid 3021648|[.] 0x00007f00b5fdb597|-      -            
+ 0.13%|spacetimedb-standalone|[.] <spacetimedb_datastore::locking_tx_datastore::tx_state::TxState>::get_table_and_blob_store_or_create_from|-      -            
+ 0.13%|[JIT] tid 3021648|[.] 0x00007f00b5fd3cd1|-      -            
+ 0.13%|[kernel.kallsyms]|[k] xas_load|-      -            
+ 0.13%|[JIT] tid 3021648|[.] 0x00007f00b5f7ca72|-      -            
+ 0.12%|[kernel.kallsyms]|[k] asm_sysvec_call_function|-      -            
+ 0.11%|[kernel.kallsyms]|[k] down_write|-      -            
+ 0.11%|[kernel.kallsyms]|[k] _raw_spin_lock_irqsave|-      -            
+ 0.11%|[JIT] tid 3021648|[.] 0x00007f00b5f7ca8d|-      -            
+ 0.10%|spacetimedb-standalone|[.] <alloc::collections::btree::node::BalancingContext<(usize, spacetimedb_table::indexes::PageIndex), alloc::collections::btree::set_val::SetValZST>>::merge_tracking_child_edge::<alloc::alloc::Global>|-      -            
+ 0.10%|libc.so.6|[.] 0x000000000016d90d|-      -            
+ 0.10%|libc.so.6|[.] 0x000000000016d8c9|-      -            
+ 0.10%|spacetimedb-standalone|[.] core::iter::adapters::flatten::and_then_or_clear::<core::iter::adapters::chain::Chain<core::iter::adapters::flatten::FlatMap<core::iter::adapters::filter_map::FilterMap<core::iter::adapters::flatten::Flatten<core::option::IntoIter<&hashbrown::set::HashSet<spacetimedb_primitives::ids::ColId, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>>>, <spacetimedb::subscription::module_subscription_manager::SearchArguments>::queries_for_row::{closure#0}>, core::iter::adapters::flatten::Flatten<core::option::IntoIter<&hashbrown::set::HashSet<spacetimedb::subscription::execution_unit::QueryHash, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>>>, <spacetimedb::subscription::module_subscription_manager::SearchArguments>::queries_for_row::{closure#1}>, core::iter::adapters::flatten::Flatten<core::iter::adapters::filter_map::FilterMap<alloc::collections::btree::map::Range<spacetimedb_subscription::JoinEdge, hashbrown::map::HashMap<spacetimedb_sats::algebraic_value::AlgebraicValue, hashbrown::set::HashSet<spacetimedb::subscription::execution_unit::QueryHash, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>>, <spacetimedb::subscription::module_subscription_manager::JoinEdges>::queries_for_row<&<spacetimedb::subscription::module_subscription_manager::SubscriptionManager>::eval_updates_sequential_inner_v2::{closure#1}::{closure#0}>::{closure#0}>>>, &spacetimedb::subscription::execution_unit::QueryHash, <core::iter::adapters::chain::Chain<core::iter::adapters::flatten::FlatMap<core::iter::adapters::filter_map::FilterMap<core::iter::adapters::flatten::Flatten<core::option::IntoIter<&hashbrown::set::HashSet<spacetimedb_primitives::ids::ColId, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>>>, <spacetimedb::subscription::module_subscription_manager::SearchArguments>::queries_for_row::{closure#0}>, core::iter::adapters::flatten::Flatten<core::option::IntoIter<&hashbrown::set::HashSet<spacetimedb::subscription::execution_unit::QueryHash, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>>>, <spacetimedb::subscription::module_subscription_manager::SearchArguments>::queries_for_row::{closure#1}>, core::iter::adapters::flatten::Flatten<core::iter::adapters::filter_map::FilterMap<alloc::collections::btree::map::Range<spacetimedb_subscription::JoinEdge, hashbrown::map::HashMap<spacetimedb_sats::algebraic_value::AlgebraicValue, hashbrown::set::HashSet<spacetimedb::subscription::execution_unit::QueryHash, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>>, <spacetimedb::subscription::module_subscription_manager::JoinEdges>::queries_for_row<&<spacetimedb::subscription::module_subscription_manager::SubscriptionManager>::eval_updates_sequential_inner_v2::{closure#1}::{closure#0}>::{closure#0}>>> as core::iter::traits::iterator::Iterator>::next>|-      -            
+ 0.10%|[JIT] tid 3021648|[.] 0x00007f00b604b7ff|-      -            
+ 0.10%|[JIT] tid 3021648|[.] 0x00007f00b6038402|-      -            
+ 0.10%|spacetimedb-standalone|[.] core::iter::adapters::flatten::and_then_or_clear::<core::iter::adapters::chain::Chain<core::iter::adapters::flatten::FlatMap<core::iter::adapters::filter_map::FilterMap<core::iter::adapters::flatten::Flatten<core::option::IntoIter<&hashbrown::set::HashSet<spacetimedb_primitives::ids::ColId, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>>>, <spacetimedb::subscription::module_subscription_manager::SearchArguments>::queries_for_row::{closure#0}>, core::iter::adapters::flatten::Flatten<core::option::IntoIter<&hashbrown::set::HashSet<spacetimedb::subscription::execution_unit::QueryHash, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>>>, <spacetimedb::subscription::module_subscription_manager::SearchArguments>::queries_for_row::{closure#1}>, core::iter::adapters::flatten::Flatten<core::iter::adapters::filter_map::FilterMap<alloc::collections::btree::map::Range<spacetimedb_subscription::JoinEdge, hashbrown::map::HashMap<spacetimedb_sats::algebraic_value::AlgebraicValue, hashbrown::set::HashSet<spacetimedb::subscription::execution_unit::QueryHash, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>>, <spacetimedb::subscription::module_subscription_manager::JoinEdges>::queries_for_row<&<spacetimedb::subscription::module_subscription_manager::SubscriptionManager>::eval_updates_sequential_inner::{closure#1}::{closure#0}>::{closure#0}>>>, &spacetimedb::subscription::execution_unit::QueryHash, <core::iter::adapters::chain::Chain<core::iter::adapters::flatten::FlatMap<core::iter::adapters::filter_map::FilterMap<core::iter::adapters::flatten::Flatten<core::option::IntoIter<&hashbrown::set::HashSet<spacetimedb_primitives::ids::ColId, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>>>, <spacetimedb::subscription::module_subscription_manager::SearchArguments>::queries_for_row::{closure#0}>, core::iter::adapters::flatten::Flatten<core::option::IntoIter<&hashbrown::set::HashSet<spacetimedb::subscription::execution_unit::QueryHash, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>>>, <spacetimedb::subscription::module_subscription_manager::SearchArguments>::queries_for_row::{closure#1}>, core::iter::adapters::flatten::Flatten<core::iter::adapters::filter_map::FilterMap<alloc::collections::btree::map::Range<spacetimedb_subscription::JoinEdge, hashbrown::map::HashMap<spacetimedb_sats::algebraic_value::AlgebraicValue, hashbrown::set::HashSet<spacetimedb::subscription::execution_unit::QueryHash, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>, core::hash::BuildHasherDefault<ahash::fallback_hash::AHasher>>>, <spacetimedb::subscription::module_subscription_manager::JoinEdges>::queries_for_row<&<spacetimedb::subscription::module_subscription_manager::SubscriptionManager>::eval_updates_sequential_inner::{closure#1}::{closure#0}>::{closure#0}>>> as core::iter::traits::iterator::Iterator>::next>|-      -            
+ 0.10%|spacetimedb-standalone|[.] <spacetimedb_table::table_index::btree_index::BTreeIndex<u8>>::delete::<u8>|-      -            
+ 0.10%|[JIT] tid 3021648|[.] 0x00007f00b5f7ca5e|-      -            
+ 0.10%|[JIT] tid 3021648|[.] 0x00007f00b6038306|-      -            
+ 0.10%|[JIT] tid 3021648|[.] 0x00007f00b5f9516e|-      -            
+ 0.10%|libc.so.6|[.] 0x000000000016d874|-      -            
+ 0.10%|[JIT] tid 3021648|[.] 0x00007f00b5f9f826|-      -            
+ 0.10%|[JIT] tid 3021648|[.] 0x00007f00b5fd3d27|-      -            
+
+
+#
+# (Tip: Add -I to perf record to sample register values, which will be visible in perf report sample context.)
+#

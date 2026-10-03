@@ -8,7 +8,7 @@ compose run --rm --no-deps web npm run lint
 compose run --rm --no-deps web npm run typecheck
 compose run --rm --no-deps web npm run build
 compose run --rm --no-deps tools cargo fmt --all -- --check
-compose run --rm --no-deps tools cargo test --locked -p one-market-core -p one-market-spacetime
+compose run --rm --no-deps tools cargo test --locked -p one-market-core -p one-market-spacetime -p one-market-benchmark
 compose run --rm --no-deps tools cargo clippy --locked -p one-market-spacetime -p one-market-core --target wasm32-unknown-unknown -- -D warnings
 compose run --rm --no-deps tools cargo clippy --locked -p one-market-benchmark -- -D warnings
 compose run --rm --no-deps tools spacetime --root-dir /state build --module-path crates/spacetime

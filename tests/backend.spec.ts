@@ -321,7 +321,10 @@ test.describe
     await expect.poll(() => [...alice.db.myPendingOrder.iter()].length).toBe(1);
     const tickBefore = row().logicalTick;
     const actorBefore = [...owner.db.actorState.iter()]
-      .map((a) => `${a.actorId}:${a.cashCents}:${a.shares}:${a.lastStepTick}`)
+      .map(
+        (a) =>
+          `${a.actorId}:${a.cashCents}:${a.shares}:${a.lastStepTick.present}:${a.lastStepTick.value}`,
+      )
       .sort();
     const receiptCount = [...owner.db.detailedBenchmarkReceipts.iter()].length;
     await owner.reducers.testSetFault({ failAfterWrites: true });
@@ -329,7 +332,10 @@ test.describe
     expect(row().logicalTick).toBe(tickBefore);
     expect(
       [...owner.db.actorState.iter()]
-        .map((a) => `${a.actorId}:${a.cashCents}:${a.shares}:${a.lastStepTick}`)
+        .map(
+          (a) =>
+            `${a.actorId}:${a.cashCents}:${a.shares}:${a.lastStepTick.present}:${a.lastStepTick.value}`,
+        )
         .sort(),
     ).toEqual(actorBefore);
     expect([...owner.db.detailedBenchmarkReceipts.iter()]).toHaveLength(
@@ -400,16 +406,16 @@ test.describe
     for (const actor of due)
       expect(
         owner.db.actorState.actorId.find(actor.actorId)!.lastStepTick,
-      ).toBe(tick);
-    expect(owner.db.actorState.actorId.find(due[0].actorId)!.status).toBe(
-      'ACTIVE',
+      ).toEqual({ value: tick, present: true });
+    expect(owner.db.actorState.actorId.find(due[0].actorId)!.status.tag).toBe(
+      'Active',
     );
-    expect(owner.db.actorState.actorId.find(due[1].actorId)!.status).toBe(
-      'EXITING',
+    expect(owner.db.actorState.actorId.find(due[1].actorId)!.status.tag).toBe(
+      'Exiting',
     );
     expect(owner.db.actorState.actorId.find(due[1].actorId)!.shares).toBe(5n);
-    expect(owner.db.actorState.actorId.find(due[2].actorId)!.status).toBe(
-      'COOLDOWN',
+    expect(owner.db.actorState.actorId.find(due[2].actorId)!.status.tag).toBe(
+      'Cooldown',
     );
     const grantsBefore =
       owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents;
@@ -418,8 +424,8 @@ test.describe
       await owner.reducers.benchmarkStep({});
       await expect.poll(() => row().logicalTick).toBe(before + 1n);
     }
-    expect(owner.db.actorState.actorId.find(due[2].actorId)!.status).toBe(
-      'ACTIVE',
+    expect(owner.db.actorState.actorId.find(due[2].actorId)!.status.tag).toBe(
+      'Active',
     );
     expect(owner.db.actorState.actorId.find(due[2].actorId)!.cashCents).toBe(
       10000000n,

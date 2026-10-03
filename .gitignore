@@ -14,3 +14,4 @@ test-results/
 .codex/
 .agents/
 tests/private-bindings/
+crates/benchmark/src/probe_bindings/

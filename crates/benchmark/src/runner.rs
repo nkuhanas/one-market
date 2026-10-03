@@ -27,6 +27,7 @@ pub struct Options {
     pub profile: String,
     pub environment: String,
     pub output: PathBuf,
+    pub exploration: Option<crate::explore::Window>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -44,6 +45,9 @@ pub struct Offer {
 #[derive(Serialize, Deserialize)]
 pub struct Artifact {
     pub format_version: u32,
+    pub mode: String,
+    pub initialization_us: u64,
+    pub exploratory_metrics: Option<crate::explore::Metrics>,
     pub database: String,
     pub environment: String,
     pub profile: String,
@@ -81,6 +85,13 @@ pub fn clock_us() -> i64 {
 fn metadata() -> Result<BTreeMap<String, String>> {
     let mut map = BTreeMap::new();
     map.insert("rust_client_sdk".into(), "2.10.1".into());
+    let executable = std::env::current_exe().map_err(|e| e.to_string())?;
+    map.insert(
+        "harness_binary_blake3".into(),
+        blake3::hash(&fs::read(executable).map_err(|e| e.to_string())?)
+            .to_hex()
+            .to_string(),
+    );
     map.insert(
         "local_runtime_base_digest".into(),
         "sha256:5231fa24bc8eaa28b2a3c6a4725f1d31e6a868e2e9b311c8efa1ddc314466014".into(),
@@ -104,7 +115,12 @@ fn metadata() -> Result<BTreeMap<String, String>> {
                 .to_string(),
         );
     }
-    let mut bindings: Vec<_> = fs::read_dir("crates/benchmark/src/bindings")
+    let bindings_path = if cfg!(feature = "probe-bindings") {
+        "crates/benchmark/src/probe_bindings"
+    } else {
+        "crates/benchmark/src/bindings"
+    };
+    let mut bindings: Vec<_> = fs::read_dir(bindings_path)
         .map_err(|e| e.to_string())?
         .collect::<std::result::Result<Vec<_>, _>>()
         .map_err(|e| e.to_string())?;
@@ -200,8 +216,66 @@ fn save(path: &std::path::Path, artifact: &Artifact) -> Result<String> {
     Ok(hash)
 }
 
+fn host_metrics(options: &Options, repeat: u64, phase: &str) -> Result<()> {
+    // Only outside exploratory measurement. These are host instrumentation,
+    // never ctx.timestamp-based execution estimates. Preserve raw HELP labels.
+    fn get(url: String) -> Result<Vec<u8>> {
+        let output = std::process::Command::new("curl")
+            .args([
+                "--fail",
+                "--silent",
+                "--show-error",
+                "--max-time",
+                "10",
+                &url,
+            ])
+            .output()
+            .map_err(|e| e.to_string())?;
+        if !output.status.success() {
+            return Err("host metrics HTTP request failed".into());
+        }
+        Ok(output.stdout)
+    }
+    let info: serde_json::Value = serde_json::from_slice(&get(format!(
+        "{}/v1/database/{}",
+        options.uri, options.database
+    ))?)
+    .map_err(|e| e.to_string())?;
+    let identity = info["database_identity"]["__identity__"]
+        .as_str()
+        .ok_or("database identity unavailable")?
+        .trim_start_matches("0x");
+    let metrics = String::from_utf8(get(format!("{}/v1/metrics", options.uri))?)
+        .map_err(|e| e.to_string())?;
+    let filtered = metrics
+        .lines()
+        .filter(|line| {
+            line.starts_with('#')
+                || line.contains(identity)
+                || line.starts_with("jemalloc_")
+                || line.starts_with("page_pool_")
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    fs::write(
+        options.output.join(format!("host-{repeat}-{phase}.prom")),
+        filtered,
+    )
+    .map_err(|e| e.to_string())
+}
+
 pub fn run(options: Options) -> Result<bool> {
     let c = config();
+    let warmup_seconds = options
+        .exploration
+        .map_or(c.warmup_seconds, |w| w.warmup_seconds);
+    let measurement_seconds = options
+        .exploration
+        .map_or(c.measurement_seconds, |w| w.measurement_seconds);
+    let repeats = options
+        .exploration
+        .map_or(c.confirmation_runs, |w| w.repeats);
+    let qualification = options.exploration.is_none();
     let build_metadata = metadata()?;
     if options.population == 0 || options.population > c.population_max {
         return Err("invalid population".into());
@@ -233,7 +307,7 @@ pub fn run(options: Options) -> Result<bool> {
     let mut run_ids = vec![];
     let mut artifact_hashes = vec![];
     let mut all_passed = true;
-    for repeat in 1..=c.confirmation_runs {
+    for repeat in 1..=repeats {
         if repeat > 1 {
             invoke!(owner, reset_market_then("RESET WORLD".into()))?;
             loop {
@@ -250,6 +324,7 @@ pub fn run(options: Options) -> Result<bool> {
                 }
             }
         }
+        let setup_started = Instant::now();
         invoke!(owner, set_actor_population_then(options.population, c.seed))?;
         loop {
             invoke!(owner, initialize_batch_then(c.setup_batch_max))?;
@@ -264,6 +339,7 @@ pub fn run(options: Options) -> Result<bool> {
                 break;
             }
         }
+        let initialization_us = setup_started.elapsed().as_micros() as u64;
         let mut viewers = vec![];
         for _ in 0..c.viewers {
             viewers.push(Client::connect(
@@ -283,6 +359,11 @@ pub fn run(options: Options) -> Result<bool> {
                 .collect(),
         )?;
         invoke!(human, enter_market_then())?;
+        if !qualification {
+            if let Err(e) = host_metrics(&options, repeat, "before") {
+                eprintln!("Metrics unavailable: {e}");
+            }
+        }
         let arrivals = Arc::new(Mutex::new(vec![]));
         let arrivals_callback = arrivals.clone();
         let expected_id = owner
@@ -307,7 +388,11 @@ pub fn run(options: Options) -> Result<bool> {
             });
         invoke!(
             owner,
-            start_run_then(options.profile.clone(), options.build_hash.clone(), true)
+            start_run_then(
+                options.profile.clone(),
+                options.build_hash.clone(),
+                qualification
+            )
         )?;
         client::wait_until(
             || {
@@ -338,9 +423,9 @@ pub fn run(options: Options) -> Result<bool> {
                 .ok_or("clock offset out of range")?
         };
         let offers = Arc::new(Mutex::new(Vec::<Offer>::new()));
-        let duration = c.warmup_seconds + c.measurement_seconds;
+        let duration = warmup_seconds + measurement_seconds;
         let count = duration * c.offered_orders_per_second;
-        println!("{} repeat {repeat}/{}: {} actors, {}s warmup + {}s measurement, 10 viewers, 5 offered orders/s; run {}",options.profile,c.confirmation_runs,options.population,c.warmup_seconds,c.measurement_seconds,expected_id);
+        println!("{} {} repeat {repeat}/{repeats}: {} actors, {warmup_seconds}s warmup + {measurement_seconds}s measurement, 10 viewers, 5 offered orders/s; run {}; initialization={}ms",if qualification {"QUALIFY"} else {"EXPLORE"}, options.profile,options.population,expected_id,initialization_us / 1000);
         for i in 0..count {
             let intended_offset_us = i * 1_000_000 / c.offered_orders_per_second;
             let deadline = origin + Duration::from_micros(intended_offset_us);
@@ -412,13 +497,33 @@ pub fn run(options: Options) -> Result<bool> {
                     .run_record()
                     .run_id()
                     .find(&expected_id)
-                    .is_some_and(|r| r.completed_at.is_some())
+                    .is_some_and(|r| {
+                        if qualification {
+                            r.completed_at.is_some()
+                        } else {
+                            r.last_slot >= duration * 20
+                        }
+                    })
             },
             Duration::from_secs(10),
         )
         .is_ok();
-        if !finished {
+        // Capture runtime failure before the intentional exploratory stop. Never
+        // use a shortened run to validate/publish a qualified BenchmarkResult.
+        let failed_before_stop = owner
+            .db
+            .db
+            .run_record()
+            .run_id()
+            .find(&expected_id)
+            .is_some_and(|r| r.status == "FAILED");
+        if !finished || !qualification {
             let _ = invoke!(owner, pause_simulation_then());
+        }
+        if !qualification {
+            if let Err(e) = host_metrics(&options, repeat, "after") {
+                eprintln!("Metrics unavailable: {e}");
+            }
         }
         let _ = client::wait_until(
             || offers.lock().unwrap().iter().all(|o| o.accepted.is_some()),
@@ -465,17 +570,36 @@ pub fn run(options: Options) -> Result<bool> {
         )?;
         let audit_ok = client::audit(&audit_client).is_ok();
         drop(audit_client);
-        let validation = evidence::validate(
-            &receipts,
-            expected_id,
-            options.population,
-            origin_us,
-            latest.status == "FAILED" || !audit_ok,
-            workload,
-            healthy,
-        );
+        let exploratory_metrics = options.exploration.map(|window| {
+            crate::explore::measure(
+                &receipts,
+                expected_id,
+                options.population,
+                origin_us,
+                window,
+                failed_before_stop || !audit_ok,
+                workload,
+                healthy,
+            )
+        });
+        let validation = if let Some(metrics) = &exploratory_metrics {
+            metrics.validation.clone()
+        } else {
+            evidence::validate(
+                &receipts,
+                expected_id,
+                options.population,
+                origin_us,
+                latest.status == "FAILED" || !audit_ok,
+                workload,
+                healthy,
+            )
+        };
         let artifact = Artifact {
-            format_version: 1,
+            format_version: 2,
+            mode: if qualification { "QUALIFY" } else { "EXPLORE" }.into(),
+            initialization_us,
+            exploratory_metrics,
             database: options.database.clone(),
             environment: options.environment.clone(),
             profile: options.profile.clone(),
@@ -497,8 +621,8 @@ pub fn run(options: Options) -> Result<bool> {
             subscriber_count: c.viewers,
             subscription_queries: client::public_queries(),
             offered_orders_per_second: c.offered_orders_per_second,
-            warmup_seconds: c.warmup_seconds,
-            measurement_seconds: c.measurement_seconds,
+            warmup_seconds,
+            measurement_seconds,
             workload_maintained: workload,
             connections_healthy: healthy,
             accounting_audit: audit_ok,
@@ -513,7 +637,7 @@ pub fn run(options: Options) -> Result<bool> {
                 .join(format!("{}-{repeat}", options.profile.to_lowercase())),
             &artifact,
         )?;
-        if finished {
+        if finished && qualification {
             invoke!(
                 owner,
                 validate_run_then(expected_id, hash.clone(), workload, healthy)
@@ -527,7 +651,11 @@ pub fn run(options: Options) -> Result<bool> {
             .find(&expected_id)
             .ok_or("run missing")?
             .status;
-        let passed = artifact.validation.status == "PASSED" && status == "PASSED";
+        let passed = if qualification {
+            artifact.validation.status == "PASSED" && status == "PASSED"
+        } else {
+            artifact.validation.status == "EXPLORE_PASS"
+        };
         println!(
             "  {}: p99={}us, updates={}, skipped={}, load={}, audit={}; {}",
             artifact.validation.status,
@@ -544,13 +672,15 @@ pub fn run(options: Options) -> Result<bool> {
         drop(human);
         drop(viewers);
     }
-    let summary = serde_json::json!({"profile":options.profile,"population":options.population,"environment":options.environment,
-        "status":if all_passed {"PASSED"} else {"NOT_QUALIFIED"},"run_ids":run_ids,"artifact_hashes":artifact_hashes,
+    let summary = serde_json::json!({"mode":if qualification {"QUALIFY"} else {"EXPLORE"},
+        "warmup_seconds":warmup_seconds,"measurement_seconds":measurement_seconds,"repeats":repeats,
+        "profile":options.profile,"population":options.population,"environment":options.environment,
+        "status":if all_passed {if qualification {"PASSED"} else {"EXPLORE_PASS"}} else {"NOT_QUALIFIED"},"run_ids":run_ids,"artifact_hashes":artifact_hashes,
         "configuration_hash":workload_hash(options.population,c.seed,&options.profile),"build_hash":options.build_hash});
     let bytes = serde_json::to_vec_pretty(&summary).map_err(|e| e.to_string())?;
     let hash = blake3::hash(&bytes).to_hex().to_string();
     fs::write(options.output.join("summary.json"), bytes).map_err(|e| e.to_string())?;
-    if all_passed {
+    if all_passed && qualification {
         invoke!(
             owner,
             publish_benchmark_result_then(run_ids, options.environment, hash)

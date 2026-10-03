@@ -9,6 +9,7 @@ crate-type = ["cdylib"]
 
 [features]
 test-support = []
+profile-ticks = []
 
 [dependencies]
 spacetimedb.workspace = true

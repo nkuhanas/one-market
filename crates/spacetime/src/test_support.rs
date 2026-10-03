@@ -78,7 +78,7 @@ pub fn test_corrupt_coverage(ctx: &ReducerContext, actor_id: u64) -> Result<()> 
         .actor_id()
         .find(actor_id)
         .ok_or("actor missing")?;
-    actor.last_step_tick = Some(u64::MAX);
+    actor.last_step_tick = Some(u64::MAX).into();
     ctx.db.actor_state().actor_id().update(actor);
     Ok(())
 }
@@ -96,9 +96,12 @@ pub fn test_actor_fixture(
     if runtime(ctx)?.enabled {
         return Err("pause before fixture setup".into());
     }
-    if !["ACTIVE", "EXITING", "COOLDOWN"].contains(&status.as_str()) {
-        return Err("invalid fixture state".into());
-    }
+    let status = match status.as_str() {
+        "ACTIVE" => ActorStatus::Active,
+        "EXITING" => ActorStatus::Exiting,
+        "COOLDOWN" => ActorStatus::Cooldown,
+        _ => return Err("invalid fixture state".into()),
+    };
     let mut actor = ctx
         .db
         .actor_state()
@@ -106,20 +109,20 @@ pub fn test_actor_fixture(
         .find(actor_id)
         .ok_or("actor missing")?;
     let mut market = crate::market(ctx)?;
-    if actor.status == "ACTIVE" && status != "ACTIVE" {
+    if actor.status == ActorStatus::Active && status != ActorStatus::Active {
         market.active_actor_count = market
             .active_actor_count
             .checked_sub(1)
             .ok_or("active count underflow")?;
     }
-    if actor.status != "ACTIVE" && status == "ACTIVE" {
+    if actor.status != ActorStatus::Active && status == ActorStatus::Active {
         market.active_actor_count = add(market.active_actor_count, 1)?;
     }
     actor.status = status;
     actor.cash_cents = cash_cents;
     actor.shares = shares;
     actor.life_peak_equity_cents = one_market_core::equity(cash_cents, shares, market.price_cents)?;
-    actor.cooldown_started_tick = cooldown_started_tick;
+    actor.cooldown_started_tick = cooldown_started_tick.into();
     actor.conviction_threshold_bps = u64::MAX;
     ctx.db.actor_state().actor_id().update(actor);
     ctx.db.market_state().id().update(market);

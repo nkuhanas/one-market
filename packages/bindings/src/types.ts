@@ -35,14 +35,28 @@ export const ActorState = __t.object("ActorState", {
   newsWeight: __t.i32(),
   riskToleranceBps: __t.u64(),
   convictionThresholdBps: __t.u64(),
-  lastStepTick: __t.option(__t.u64()),
-  status: __t.string(),
-  cooldownStartedTick: __t.option(__t.u64()),
+  get lastStepTick() {
+    return OptionalTick;
+  },
+  get status() {
+    return ActorStatus;
+  },
+  get cooldownStartedTick() {
+    return OptionalTick;
+  },
   lifetimePnlCents: __t.i64(),
   wipeoutCount: __t.u64(),
   filledOrderCount: __t.u64(),
 });
 export type ActorState = __Infer<typeof ActorState>;
+
+// The tagged union or sum type for the algebraic type `ActorStatus`.
+export const ActorStatus = __t.enum("ActorStatus", {
+  Active: __t.unit(),
+  Exiting: __t.unit(),
+  Cooldown: __t.unit(),
+});
+export type ActorStatus = __Infer<typeof ActorStatus>;
 
 export const AdminAllowlist = __t.object("AdminAllowlist", {
   identity: __t.identity(),
@@ -169,6 +183,12 @@ export const NewsEvent = __t.object("NewsEvent", {
   endTick: __t.u64(),
 });
 export type NewsEvent = __Infer<typeof NewsEvent>;
+
+export const OptionalTick = __t.object("OptionalTick", {
+  value: __t.u64(),
+  present: __t.bool(),
+});
+export type OptionalTick = __Infer<typeof OptionalTick>;
 
 export const OrderWatermark = __t.object("OrderWatermark", {
   identity: __t.identity(),

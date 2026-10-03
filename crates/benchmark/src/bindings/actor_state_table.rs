@@ -3,6 +3,8 @@
 
 #![allow(unused, clippy::all)]
 use super::actor_state_type::ActorState;
+use super::actor_status_type::ActorStatus;
+use super::optional_tick_type::OptionalTick;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 /// Table handle for the table `actor_state`.

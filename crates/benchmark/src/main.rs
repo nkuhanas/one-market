@@ -1,5 +1,11 @@
+#[cfg(not(feature = "probe-bindings"))]
+mod bindings;
+#[cfg(feature = "probe-bindings")]
+#[rustfmt::skip]
+#[path = "probe_bindings/mod.rs"]
 mod bindings;
 mod client;
+mod explore;
 mod runner;
 
 fn main() {
@@ -60,6 +66,27 @@ fn execute() -> client::Result<bool> {
                 .ok_or("publishing token missing")?
         }
     };
+    let exploration = if args.get("--mode") == Some(&"explore") {
+        if environment != "LOCAL" {
+            return Err("exploration is local-only".into());
+        }
+        Some(explore::Window::new(
+            required("--warmup-seconds")?
+                .parse()
+                .map_err(|_| "invalid warmup")?,
+            required("--measurement-seconds")?
+                .parse()
+                .map_err(|_| "invalid measurement")?,
+            required("--repeats")?
+                .parse()
+                .map_err(|_| "invalid repeats")?,
+        )?)
+    } else {
+        if args.get("--mode").is_some_and(|s| *s != "qualify") {
+            return Err("mode must be qualify or explore".into());
+        }
+        None
+    };
     runner::run(runner::Options {
         uri,
         database: required("--database")?,
@@ -71,5 +98,6 @@ fn execute() -> client::Result<bool> {
         profile: required("--profile")?,
         environment,
         output: required("--output")?.into(),
+        exploration,
     })
 }

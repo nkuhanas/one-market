@@ -4,6 +4,9 @@ version.workspace = true
 edition.workspace = true
 publish.workspace = true
 
+[features]
+probe-bindings = []
+
 [dependencies]
 one-market-core.workspace = true
 spacetimedb-sdk = "=2.10.1"

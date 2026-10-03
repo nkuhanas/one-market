@@ -4,6 +4,9 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::actor_status_type::ActorStatus;
+use super::optional_tick_type::OptionalTick;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct ActorState {
@@ -21,9 +24,9 @@ pub struct ActorState {
     pub news_weight: i32,
     pub risk_tolerance_bps: u64,
     pub conviction_threshold_bps: u64,
-    pub last_step_tick: Option<u64>,
-    pub status: String,
-    pub cooldown_started_tick: Option<u64>,
+    pub last_step_tick: OptionalTick,
+    pub status: ActorStatus,
+    pub cooldown_started_tick: OptionalTick,
     pub lifetime_pnl_cents: i64,
     pub wipeout_count: u64,
     pub filled_order_count: u64,
@@ -51,9 +54,9 @@ pub struct ActorStateCols {
     pub news_weight: __sdk::__query_builder::Col<ActorState, i32>,
     pub risk_tolerance_bps: __sdk::__query_builder::Col<ActorState, u64>,
     pub conviction_threshold_bps: __sdk::__query_builder::Col<ActorState, u64>,
-    pub last_step_tick: __sdk::__query_builder::Col<ActorState, Option<u64>>,
-    pub status: __sdk::__query_builder::Col<ActorState, String>,
-    pub cooldown_started_tick: __sdk::__query_builder::Col<ActorState, Option<u64>>,
+    pub last_step_tick: __sdk::__query_builder::Col<ActorState, OptionalTick>,
+    pub status: __sdk::__query_builder::Col<ActorState, ActorStatus>,
+    pub cooldown_started_tick: __sdk::__query_builder::Col<ActorState, OptionalTick>,
     pub lifetime_pnl_cents: __sdk::__query_builder::Col<ActorState, i64>,
     pub wipeout_count: __sdk::__query_builder::Col<ActorState, u64>,
     pub filled_order_count: __sdk::__query_builder::Col<ActorState, u64>,
