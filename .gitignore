@@ -13,3 +13,4 @@ test-results/
 .aws/
 .codex/
 .agents/
+tests/private-bindings/

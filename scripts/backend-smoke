@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+compose up -d --wait db
+compose run --rm --no-deps tools cargo build --locked --release -p one-market-spacetime \
+  --features test-support --target wasm32-unknown-unknown --target-dir target/test-support
+compose run --rm --no-deps tools spacetime --root-dir /state generate \
+  --bin-path target/test-support/wasm32-unknown-unknown/release/one_market_spacetime.wasm \
+  --lang typescript --include-private --out-dir tests/private-bindings --no-config --yes
+# Each invocation has its own database; no existing/shared world is reset.
+database="one-market-v02-test-$(date +%s)-$$"
+compose run --rm --no-deps tools spacetime --root-dir /state publish \
+  --server http://db:3000 --bin-path target/test-support/wasm32-unknown-unknown/release/one_market_spacetime.wasm \
+  --no-config --delete-data=never --yes=remote,migrate,skip-login "$database"
+module_hash="$(compose run --rm --no-deps tools sha256sum target/test-support/wasm32-unknown-unknown/release/one_market_spacetime.wasm | cut -d ' ' -f 1)"
+compose run --rm --no-deps \
+  -e BACKEND_DATABASE="$database" -e BACKEND_URI=http://db:3000 -e MODULE_HASH="$module_hash" \
+  browser-tests npx playwright test --config backend.playwright.config.ts

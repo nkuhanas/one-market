@@ -6,7 +6,35 @@
 import { type Infer as __Infer } from "spacetimedb";
 
 // Import all reducer arg schemas
+import AuthorizeReaderReducer from "../authorize_reader_reducer";
+import BenchmarkStepReducer from "../benchmark_step_reducer";
+import EnterMarketReducer from "../enter_market_reducer";
+import InitializeBatchReducer from "../initialize_batch_reducer";
+import PauseSimulationReducer from "../pause_simulation_reducer";
 import PingReducer from "../ping_reducer";
+import PlaceOrderReducer from "../place_order_reducer";
+import PublishBenchmarkResultReducer from "../publish_benchmark_result_reducer";
+import RecoverSimulationReducer from "../recover_simulation_reducer";
+import ResetBatchReducer from "../reset_batch_reducer";
+import ResetMarketReducer from "../reset_market_reducer";
+import SetActorPopulationReducer from "../set_actor_population_reducer";
+import StartRunReducer from "../start_run_reducer";
+import TriggerChaosReducer from "../trigger_chaos_reducer";
+import ValidateRunReducer from "../validate_run_reducer";
 
+export type AuthorizeReaderParams = __Infer<typeof AuthorizeReaderReducer>;
+export type BenchmarkStepParams = __Infer<typeof BenchmarkStepReducer>;
+export type EnterMarketParams = __Infer<typeof EnterMarketReducer>;
+export type InitializeBatchParams = __Infer<typeof InitializeBatchReducer>;
+export type PauseSimulationParams = __Infer<typeof PauseSimulationReducer>;
 export type PingParams = __Infer<typeof PingReducer>;
+export type PlaceOrderParams = __Infer<typeof PlaceOrderReducer>;
+export type PublishBenchmarkResultParams = __Infer<typeof PublishBenchmarkResultReducer>;
+export type RecoverSimulationParams = __Infer<typeof RecoverSimulationReducer>;
+export type ResetBatchParams = __Infer<typeof ResetBatchReducer>;
+export type ResetMarketParams = __Infer<typeof ResetMarketReducer>;
+export type SetActorPopulationParams = __Infer<typeof SetActorPopulationReducer>;
+export type StartRunParams = __Infer<typeof StartRunReducer>;
+export type TriggerChaosParams = __Infer<typeof TriggerChaosReducer>;
+export type ValidateRunParams = __Infer<typeof ValidateRunReducer>;
 

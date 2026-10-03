@@ -41,15 +41,19 @@ convention. Separate unrelated changes into separate commits.
 
 ## Checks and boundaries
 
-CI runs formatting, frontend lint/types/build, Rust formatting/Clippy/WASM build,
-binding freshness, and real browser integration tests. Add tests for meaningful
+CI runs formatting, frontend lint/types/build, Rust formatting/tests/Clippy/WASM
+build, binding freshness, and real browser and backend integration tests. Add tests for meaningful
 behavior or regressions; avoid tests that only mirror implementation details.
 
 Never commit credentials, `.env`, CLI authentication state, or database data.
 Publishing and startup preserve local data. Destructive migrations or resets need
 an explicit purpose and must not happen automatically.
 
-Keep `SPEC.md` unchanged unless a spec edit is explicitly requested. The initial
-scaffold does not resolve settlement, bankruptcy, or benchmark methodology.
-Agree on those rules before implementing them. Do not present placeholder values
-as measured performance or implement authoritative actors outside SpacetimeDB.
+Keep `SPEC.md` unchanged unless a spec edit is explicitly requested. Version any
+workload changes in `config/v02.json` and document them in
+`docs/implementation-decisions.md`; new configuration/build hashes need new
+qualification evidence. Do not present live population or placeholder values as
+measured performance, or implement authoritative actors outside SpacetimeDB.
+Run `./scripts/backend-smoke` for market/lifecycle changes. Full qualification is
+separate from CI: `./scripts/benchmark` takes about 21 minutes at the default
+population and preserves all six runs, including failures.

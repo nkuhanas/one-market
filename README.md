@@ -4,10 +4,11 @@ A globally shared synthetic market for humans and persistent autonomous policy
 actors. The experiment asks how many actors SpacetimeDB can sustain at a 20 Hz
 simulation cadence. All money is synthetic.
 
-[SPEC.md](SPEC.md) describes the product and intended architecture. This initial
-scaffold proves the client/runtime connection: a persistent shared tick, a static
-$100 price, zero actors, and a public ping reducer. Trading, actor policies,
-CHAOS, and benchmark measurements are not implemented yet.
+[SPEC.md](SPEC.md) describes the product and intended architecture. The v0.2
+backend implements persistent actors, uniform-price clearing, human orders,
+lifecycle accounting, CHAOS, and a Rust qualification harness. The frontend is
+still Kaleb's minimal shared-clock observer; the new typed contracts are ready
+for its market controls and visualization.
 
 ## Quick start
 
@@ -29,8 +30,10 @@ advancing tick. **Ping runtime** confirms a public reducer call.
 ./scripts/local-up         # restart and republish without deleting data
 ```
 
-The tick targets 20 Hz; this scaffold does not certify scheduler performance or
-claim any sustainable actor capacity.
+Local startup initializes 200 actors and starts a development run. This live
+population is not a capacity claim. Qualification uses separate fresh databases;
+see [benchmark methodology](docs/benchmark-methodology.md) and the
+[backend handoff](docs/backend-handoff.md) for measured evidence and limitations.
 
 ## Development
 
@@ -38,14 +41,23 @@ claim any sustainable actor capacity.
 | ----------------------------- | --------------------------------------------------------------------------------- |
 | `./scripts/local-up`          | Build images, install locked dependencies, publish, generate bindings, start Vite |
 | `./scripts/local-publish`     | Build and republish the Rust module, then regenerate bindings                     |
-| `./scripts/generate-bindings` | Regenerate TypeScript bindings from the Rust module                               |
+| `./scripts/generate-bindings` | Regenerate public TypeScript and private Rust harness bindings                    |
 | `./scripts/check`             | Formatting, lint, types, frontend build, Rust checks/build, binding freshness     |
 | `./scripts/smoke`             | Start the stack and run Chromium integration tests against a real database        |
+| `./scripts/backend-smoke`     | Run real-runtime authorization, trading, lifecycle, and fault-injection tests     |
+| `./scripts/benchmark`         | Three NORMAL and three CHAOS runs at 200 actors; about 21 minutes                 |
 | `./scripts/local-down`        | Stop services while retaining Docker volumes                                      |
 
 Frontend edits reload through Vite. After editing the Rust schema or reducers,
 run `./scripts/local-publish`; backend changes are not automatically watched.
 Generated bindings are committed and must be regenerated rather than hand-edited.
+Run `backend-smoke` after market or lifecycle changes. `POPULATION=200` and
+`PROFILE=ALL` are benchmark defaults; `PROFILE=NORMAL` or `CHAOS` selects one
+profile. Each profile still requires all three fresh confirmations.
+
+If Docker requires elevated access on your Linux host, preserve workspace
+ownership with `sudo -n env LOCAL_UID=$(id -u) LOCAL_GID=$(id -g) ./scripts/check`
+(and the same prefix for other scripts).
 
 The scripts consistently select the local database service and use
 `--delete-data=never` for publishing. Normal development does not publish to
@@ -62,13 +74,15 @@ take precedence. `.env` is ignored by Git.
 | ----------------------- | ----------------------- | ------------------------------------- |
 | `WEB_PORT`              | `5173`                  | Host frontend port                    |
 | `DB_PORT`               | `3000`                  | Host database port                    |
-| `SPACETIMEDB_DATABASE`  | `one-market-local`      | Local database name                   |
+| `SPACETIMEDB_DATABASE`  | `one-market-v02-local`  | Local database name                   |
 | `VITE_SPACETIMEDB_HOST` | `http://localhost:3000` | Database URL reachable by the browser |
 | `COMPOSE_PROJECT_NAME`  | `one-market`            | Namespace for containers and volumes  |
 
 If you change `DB_PORT`, also change `VITE_SPACETIMEDB_HOST` to match it. Database
 and web ports bind to loopback by default. `VITE_*` values are public client
 configuration; never put credentials in them.
+The original scaffold database `one-market-local` is left intact. The v0.2
+schema uses its own database instead of silently resetting existing rows.
 
 ### Troubleshooting
 
@@ -88,22 +102,24 @@ docker compose --project-directory . -f infra/docker-compose.yml logs db web
 
 ## Repository and contract
 
-| Location            | Responsibility                                         |
-| ------------------- | ------------------------------------------------------ |
-| `apps/web`          | React + TypeScript + Vite frontend                     |
-| `crates/spacetime`  | Authoritative Rust SpacetimeDB module                  |
-| `crates/benchmark`  | Reserved for the future Rust benchmark harness         |
-| `packages/bindings` | Generated TypeScript client interface                  |
-| `infra`             | Docker images and Compose configuration                |
-| `scripts`           | Container-backed development and verification commands |
-| `tests`             | Browser integration checks                             |
+| Location             | Responsibility                                                            |
+| -------------------- | ------------------------------------------------------------------------- |
+| `apps/web`           | React + TypeScript + Vite frontend                                        |
+| `crates/spacetime`   | Authoritative Rust SpacetimeDB module                                     |
+| `crates/market-core` | Shared deterministic arithmetic, auction, policy, and evidence validation |
+| `crates/benchmark`   | Rust fixed-workload qualification harness                                 |
+| `packages/bindings`  | Generated TypeScript client interface                                     |
+| `infra`              | Docker images and Compose configuration                                   |
+| `scripts`            | Container-backed development and verification commands                    |
+| `tests`              | Browser integration checks                                                |
 
-The public singleton `market_state` row has `id: u8 = 0`, `tick: u64`,
-`price: u64` in cents, and `actor_count: u64`. The SDK exposes 64-bit integers as
-JavaScript `bigint`. The row starts at tick 0, price 10,000 cents, and zero actors.
-One private interval schedule calls `simulation_tick` every 50 ms. Public
-`ping()` succeeds without mutating market state. The tick remains persisted
-across restarts; `init` runs only when a database is created.
+The [client contract](docs/client-contract.md) defines public market/feed tables,
+identity-scoped human views, and reducer calls. JavaScript uses `bigint` for
+64-bit quantities. Deprecated `tick` and `price` aliases keep the current observer
+working. One private absolute-time schedule targets the original 50 ms deadline
+grid. Scheduler-origin and admin guards protect clock/control reducers.
+Missed slots, pause, and recovery invalidate qualification; they never erase
+failure evidence. Ordinary publication/restart preserves rows and scheduling.
 
 The browser subscribes to the singleton and tears down its connection on unmount.
 The smoke check recreates the database container and republishes to verify that
@@ -111,7 +127,7 @@ the tick, server signing keys, publishing identity, and single scheduler survive
 Integration tests launch two independent browser contexts, exercise ping, and
 verify disconnect/reconnect behavior using real subscriptions and reducers.
 
-Versions: SpacetimeDB server/CLI/Rust crate/TypeScript SDK **2.10.1**, Rust
+Versions: SpacetimeDB server/CLI/Rust module and client SDKs/TypeScript SDK **2.10.1**, Rust
 **1.93.0**, Node **24.21.0**, npm workspaces, and committed npm/Cargo lockfiles.
 The Docker tooling image installs the pinned Rust toolchain over the official
 SpacetimeDB image. Browser tests use Playwright **1.63.0**.
@@ -123,7 +139,7 @@ owns frontend, UX, visualization, and Vercel. The generated schema contract is
 shared. See [CONTRIBUTING.md](CONTRIBUTING.md) for development and commit rules,
 and [AGENTS.md](AGENTS.md) for coding-agent guidance.
 
-Before implementing market or benchmark behavior, settle clearing/settlement,
-liquidation triggers, the full public contract, and benchmark instrumentation and
-workload definitions. The scaffold leaves those decisions open and preserves the
-original spec.
+Remaining parameter choices are frozen in [config/v02.json](config/v02.json) and
+[implementation decisions](docs/implementation-decisions.md). `SPEC.md` is
+unchanged. Maincloud publication and qualification require a selected development
+database and explicit credentials; they are not part of ordinary local startup.

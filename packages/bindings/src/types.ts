@@ -10,17 +10,284 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+export const ActorSample = __t.object("ActorSample", {
+  actorId: __t.u64(),
+  status: __t.string(),
+  markedEquityCents: __t.u64(),
+  lifetimePnlCents: __t.i64(),
+  wipeoutCount: __t.u64(),
+  lastStepTick: __t.option(__t.u64()),
+});
+export type ActorSample = __Infer<typeof ActorSample>;
+
+export const ActorState = __t.object("ActorState", {
+  actorId: __t.u64(),
+  bucket: __t.u8(),
+  cashCents: __t.u64(),
+  shares: __t.u64(),
+  markedEquityCents: __t.u64(),
+  initialEndowmentValueCents: __t.u64(),
+  lifePeakEquityCents: __t.u64(),
+  cumulativeRecapitalizationGrantsCents: __t.u64(),
+  momentumWeight: __t.i32(),
+  meanReversionWeight: __t.i32(),
+  contrarianWeight: __t.i32(),
+  newsWeight: __t.i32(),
+  riskToleranceBps: __t.u64(),
+  convictionThresholdBps: __t.u64(),
+  lastStepTick: __t.option(__t.u64()),
+  status: __t.string(),
+  cooldownStartedTick: __t.option(__t.u64()),
+  lifetimePnlCents: __t.i64(),
+  wipeoutCount: __t.u64(),
+  filledOrderCount: __t.u64(),
+});
+export type ActorState = __Infer<typeof ActorState>;
+
+export const AdminAllowlist = __t.object("AdminAllowlist", {
+  identity: __t.identity(),
+});
+export type AdminAllowlist = __Infer<typeof AdminAllowlist>;
+
+export const BenchmarkReader = __t.object("BenchmarkReader", {
+  identity: __t.identity(),
+});
+export type BenchmarkReader = __Infer<typeof BenchmarkReader>;
+
+export const BenchmarkResult = __t.object("BenchmarkResult", {
+  id: __t.u64(),
+  status: __t.string(),
+  environment: __t.string(),
+  workloadProfile: __t.string(),
+  actorCount: __t.u64(),
+  tickIntervalUs: __t.u64(),
+  bucketCount: __t.u8(),
+  warmupSeconds: __t.u64(),
+  measurementSeconds: __t.u64(),
+  repeatCount: __t.u64(),
+  subscriberCount: __t.u64(),
+  offeredHumanOrdersPerSecond: __t.u64(),
+  committedActorUpdates: __t.u64(),
+  skippedApplicationSlots: __t.u64(),
+  startLatenessP99Us: __t.u64(),
+  configurationHash: __t.string(),
+  buildHash: __t.string(),
+  evidenceHash: __t.string(),
+  runIds: __t.array(__t.u64()),
+  completedAt: __t.option(__t.timestamp()),
+});
+export type BenchmarkResult = __Infer<typeof BenchmarkResult>;
+
+export const BucketManifest = __t.object("BucketManifest", {
+  bucket: __t.u8(),
+  actorCount: __t.u64(),
+  membershipDigest: __t.byteArray(),
+});
+export type BucketManifest = __Infer<typeof BucketManifest>;
+
+export const ConnectionState = __t.object("ConnectionState", {
+  connectionId: __t.connectionId(),
+  identity: __t.identity(),
+});
+export type ConnectionState = __Infer<typeof ConnectionState>;
+
+export const GrantAccounting = __t.object("GrantAccounting", {
+  id: __t.u8(),
+  actorInitialCashCents: __t.u128(),
+  humanEntryCashCents: __t.u128(),
+  recapitalizationCashCents: __t.u128(),
+  initialShareSupply: __t.u128(),
+  humanEntryCount: __t.u64(),
+  recapitalizationCount: __t.u64(),
+});
+export type GrantAccounting = __Infer<typeof GrantAccounting>;
+
+export const HumanOrderReceipt = __t.object("HumanOrderReceipt", {
+  key: __t.string(),
+  identity: __t.identity(),
+  clientOrderId: __t.u64(),
+  sequence: __t.u64(),
+  logicalTick: __t.u64(),
+  buy: __t.bool(),
+  requestedQuantity: __t.u64(),
+  filledQuantity: __t.u64(),
+  priceCents: __t.u64(),
+  status: __t.string(),
+  recordedAt: __t.timestamp(),
+});
+export type HumanOrderReceipt = __Infer<typeof HumanOrderReceipt>;
+
+export const HumanTrader = __t.object("HumanTrader", {
+  identity: __t.identity(),
+  cashCents: __t.u64(),
+  shares: __t.u64(),
+  reservedCashCents: __t.u64(),
+  reservedShares: __t.u64(),
+  pnlCents: __t.i64(),
+  createdAt: __t.timestamp(),
+  lastOrderAt: __t.option(__t.timestamp()),
+  completedOrders: __t.u64(),
+});
+export type HumanTrader = __Infer<typeof HumanTrader>;
+
 export const MarketState = __t.object("MarketState", {
   id: __t.u8(),
   tick: __t.u64(),
   price: __t.u64(),
+  logicalTick: __t.u64(),
+  epoch: __t.u64(),
+  priceCents: __t.u64(),
+  previousTradedPriceCents: __t.u64(),
+  matchedShareVolume: __t.u64(),
+  volatilityBps: __t.u64(),
   actorCount: __t.u64(),
+  activeActorCount: __t.u64(),
+  registeredHumanTraderCount: __t.u64(),
+  connectedIdentityCount: __t.u64(),
+  cumulativeActorSteps: __t.u64(),
+  cumulativePolicyEvaluations: __t.u64(),
+  cumulativeActorRowsUpdated: __t.u64(),
+  cumulativeOrdersSubmitted: __t.u64(),
+  cumulativeOrdersFilled: __t.u64(),
+  cumulativeMatchedShareVolume: __t.u64(),
+  rateWindowUs: __t.u64(),
+  rateWindowStartedAt: __t.timestamp(),
+  rateWindowEndedAt: __t.timestamp(),
+  chaosActive: __t.bool(),
+  phase: __t.string(),
+  configurationHash: __t.string(),
 });
 export type MarketState = __Infer<typeof MarketState>;
+
+export const NewsEvent = __t.object("NewsEvent", {
+  id: __t.u64(),
+  headline: __t.string(),
+  direction: __t.i8(),
+  severityBps: __t.u64(),
+  confidenceBps: __t.u64(),
+  startTick: __t.u64(),
+  endTick: __t.u64(),
+});
+export type NewsEvent = __Infer<typeof NewsEvent>;
+
+export const OrderWatermark = __t.object("OrderWatermark", {
+  identity: __t.identity(),
+  clientOrderId: __t.u64(),
+});
+export type OrderWatermark = __Infer<typeof OrderWatermark>;
+
+export const PendingHumanOrder = __t.object("PendingHumanOrder", {
+  identity: __t.identity(),
+  orderKey: __t.u64(),
+  clientOrderId: __t.u64(),
+  buy: __t.bool(),
+  quantity: __t.u64(),
+  limitPriceCents: __t.u64(),
+  acceptedAt: __t.timestamp(),
+});
+export type PendingHumanOrder = __Infer<typeof PendingHumanOrder>;
+
+export const PricePoint = __t.object("PricePoint", {
+  logicalTick: __t.u64(),
+  recordedAt: __t.timestamp(),
+  priceCents: __t.u64(),
+  matchedShareVolume: __t.u64(),
+});
+export type PricePoint = __Infer<typeof PricePoint>;
+
+export const PublicActivity = __t.object("PublicActivity", {
+  id: __t.u64(),
+  logicalTick: __t.u64(),
+  recordedAt: __t.timestamp(),
+  participantType: __t.string(),
+  participantId: __t.string(),
+  eventKind: __t.string(),
+  side: __t.string(),
+  quantity: __t.u64(),
+  priceCents: __t.u64(),
+  lifetimePnlCents: __t.i64(),
+  wipeoutCount: __t.u64(),
+});
+export type PublicActivity = __Infer<typeof PublicActivity>;
+
+export const RunRecord = __t.object("RunRecord", {
+  runId: __t.u64(),
+  status: __t.string(),
+  failureReason: __t.string(),
+  profile: __t.string(),
+  qualification: __t.bool(),
+  origin: __t.timestamp(),
+  population: __t.u64(),
+  seed: __t.u64(),
+  configurationHash: __t.string(),
+  buildHash: __t.string(),
+  skippedSlots: __t.u64(),
+  committedTicks: __t.u64(),
+  lastSlot: __t.u64(),
+  lastReceiptAt: __t.timestamp(),
+  maxLatenessUs: __t.u64(),
+  completedAt: __t.option(__t.timestamp()),
+});
+export type RunRecord = __Infer<typeof RunRecord>;
+
+export const RuntimeConfig = __t.object("RuntimeConfig", {
+  id: __t.u8(),
+  phase: __t.string(),
+  targetPopulation: __t.u64(),
+  initialized: __t.u64(),
+  seed: __t.u64(),
+  generation: __t.u64(),
+  enabled: __t.bool(),
+  origin: __t.timestamp(),
+  nextSlot: __t.u64(),
+  runId: __t.u64(),
+  nextRunId: __t.u64(),
+  nextOrderKey: __t.u64(),
+  nextActivityId: __t.u64(),
+  nextNewsId: __t.u64(),
+  lastActivityAt: __t.timestamp(),
+  imbalanceBps: __t.i64(),
+  chaosStart: __t.u64(),
+  chaosEnd: __t.u64(),
+  chaosSignalBps: __t.i64(),
+});
+export type RuntimeConfig = __Infer<typeof RuntimeConfig>;
+
+export const TickReceipt = __t.object("TickReceipt", {
+  key: __t.string(),
+  runId: __t.u64(),
+  intendedSlot: __t.u64(),
+  logicalTick: __t.u64(),
+  intendedAt: __t.timestamp(),
+  invokedAt: __t.timestamp(),
+  startLatenessUs: __t.u64(),
+  skippedSlots: __t.u64(),
+  scheduleDebtUs: __t.u64(),
+  bucket: __t.u8(),
+  actorSteps: __t.u64(),
+  policyEvaluations: __t.u64(),
+  actorRowsUpdated: __t.u64(),
+  membershipDigest: __t.byteArray(),
+  previousStepsValid: __t.bool(),
+  ordersSubmitted: __t.u64(),
+  ordersFilled: __t.u64(),
+  matchedShareVolume: __t.u64(),
+});
+export type TickReceipt = __Infer<typeof TickReceipt>;
 
 export const TickSchedule = __t.object("TickSchedule", {
   scheduledId: __t.u64(),
   scheduledAt: __t.scheduleAt(),
+  generation: __t.u64(),
+  intendedSlot: __t.u64(),
 });
 export type TickSchedule = __Infer<typeof TickSchedule>;
+
+export const ValidatedRun = __t.object("ValidatedRun", {
+  runId: __t.u64(),
+  evidenceHash: __t.string(),
+  measuredActorUpdates: __t.u64(),
+  startLatenessP99Us: __t.u64(),
+});
+export type ValidatedRun = __Infer<typeof ValidatedRun>;
 

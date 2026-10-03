@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+population="${POPULATION:-200}"
+profile="${PROFILE:-ALL}"
+case "$profile" in NORMAL|CHAOS|ALL) ;; *) printf 'PROFILE must be NORMAL, CHAOS, or ALL\n' >&2; exit 1;; esac
+compose up -d --wait db
+"$REPO_ROOT/scripts/generate-bindings"
+compose run --rm --no-deps tools cargo build --locked --release -p one-market-benchmark
+module_hash="$(compose run --rm --no-deps tools sha256sum target/wasm32-unknown-unknown/release/one_market_spacetime.wasm | cut -d ' ' -f 1)"
+stamp="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+result=0
+for workload in NORMAL CHAOS; do
+  if [[ "$profile" != ALL && "$profile" != "$workload" ]]; then continue; fi
+  database="one-market-baseline-${workload,,}-${stamp,,}"
+  compose run --rm --no-deps tools spacetime --root-dir /state publish \
+    --server http://db:3000 --bin-path target/wasm32-unknown-unknown/release/one_market_spacetime.wasm \
+    --no-config --delete-data=never --yes=remote,migrate,skip-login "$database"
+  compose run --rm --no-deps tools target/release/one-market-benchmark \
+    --uri http://db:3000 --database "$database" --token-file /state/config/cli.toml \
+    --build-hash "$module_hash" --population "$population" --profile "$workload" \
+    --environment LOCAL --output "artifacts/baseline/$stamp/${workload,,}" || result=$?
+done
+printf 'Baseline artifacts: artifacts/baseline/%s\n' "$stamp"
+exit "$result"
