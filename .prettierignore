@@ -1,0 +1,9 @@
+SPEC.md
+packages/bindings/src/
+node_modules/
+target/
+dist/
+package-lock.json
+Cargo.lock
+playwright-report/
+test-results/

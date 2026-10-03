@@ -1,0 +1,2 @@
+# Preserve the pinned generator's extra final newline without editing its output.
+packages/bindings/src/** whitespace=-blank-at-eof

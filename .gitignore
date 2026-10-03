@@ -1,0 +1,15 @@
+node_modules/
+target/
+dist/
+.env
+.env.*
+!.env.example
+!**/.env.example
+spacetime.local.json
+playwright-report/
+test-results/
+.DS_Store
+*.log
+.aws/
+.codex/
+.agents/

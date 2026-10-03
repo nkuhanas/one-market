@@ -1,0 +1,117 @@
+name: one-market
+
+services:
+  db:
+    image: one-market-spacetime:2.10.1
+    build:
+      context: .
+      dockerfile: infra/docker/spacetime.Dockerfile
+    user: '${LOCAL_UID:-1000}:${LOCAL_GID:-1000}'
+    environment:
+      HOME: /tmp
+    command:
+      [
+        '--root-dir',
+        '/data/cli',
+        'start',
+        '--listen-addr',
+        '0.0.0.0:3000',
+        '--data-dir',
+        '/data',
+        '--non-interactive',
+      ]
+    ports:
+      - '127.0.0.1:${DB_PORT:-3000}:3000'
+    volumes:
+      - db-data:/data
+    healthcheck:
+      test:
+        ['CMD', 'curl', '--fail', '--silent', 'http://localhost:3000/v1/ping']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+      start_period: 5s
+
+  tools:
+    image: one-market-spacetime:2.10.1
+    build:
+      context: .
+      dockerfile: infra/docker/spacetime.Dockerfile
+    profiles: ['tools']
+    user: '${LOCAL_UID:-1000}:${LOCAL_GID:-1000}'
+    entrypoint: []
+    working_dir: /workspace
+    environment:
+      HOME: /tmp
+      CARGO_HOME: /cache/cargo
+      CARGO_TARGET_DIR: /workspace/target
+    volumes:
+      - .:/workspace
+      - rust-target:/workspace/target
+      - cargo-cache:/cache/cargo
+      - cli-state:/state
+
+  web: &web
+    image: one-market-web:24.21.0
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+    user: '${LOCAL_UID:-1000}:${LOCAL_GID:-1000}'
+    working_dir: /workspace
+    environment:
+      HOME: /tmp
+      VITE_SPACETIMEDB_HOST: '${VITE_SPACETIMEDB_HOST:-http://localhost:3000}'
+      VITE_SPACETIMEDB_DATABASE: '${SPACETIMEDB_DATABASE:-one-market-local}'
+    command: ['npm', 'run', 'dev']
+    ports:
+      - '127.0.0.1:${WEB_PORT:-5173}:5173'
+    volumes:
+      - .:/workspace
+      - npm-deps:/workspace/node_modules
+      - web-deps:/workspace/apps/web/node_modules
+      - bindings-deps:/workspace/packages/bindings/node_modules
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:5173').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  browser-web:
+    <<: *web
+    profiles: ['tests']
+    ports: []
+    environment:
+      HOME: /tmp
+      VITE_SPACETIMEDB_HOST: http://db:3000
+      VITE_SPACETIMEDB_DATABASE: '${SPACETIMEDB_DATABASE:-one-market-local}'
+
+  browser-tests:
+    image: mcr.microsoft.com/playwright:v1.63.0-noble
+    profiles: ['tests']
+    user: '${LOCAL_UID:-1000}:${LOCAL_GID:-1000}'
+    working_dir: /workspace
+    environment:
+      HOME: /tmp
+      BASE_URL: http://browser-web:5173
+    command: ['npm', 'run', 'test:integration']
+    ipc: host
+    volumes:
+      - .:/workspace
+      - npm-deps:/workspace/node_modules
+      - web-deps:/workspace/apps/web/node_modules
+      - bindings-deps:/workspace/packages/bindings/node_modules
+
+volumes:
+  db-data:
+  cli-state:
+  cargo-cache:
+  rust-target:
+  npm-deps:
+  web-deps:
+  bindings-deps:

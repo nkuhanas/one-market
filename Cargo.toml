@@ -1,0 +1,15 @@
+[workspace]
+members = ["crates/spacetime"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[workspace.dependencies]
+spacetimedb = "=2.10.1"
+
+[profile.release]
+lto = true
+opt-level = 3

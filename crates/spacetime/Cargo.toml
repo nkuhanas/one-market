@@ -1,0 +1,11 @@
+[package]
+name = "one-market-spacetime"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+spacetimedb.workspace = true

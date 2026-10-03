@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+compose build tools web
+compose run --rm --no-deps web npm ci --no-audit --no-fund
+compose run --rm --no-deps web npm run format:check
+compose run --rm --no-deps web npm run lint
+compose run --rm --no-deps web npm run typecheck
+compose run --rm --no-deps web npm run build
+compose run --rm --no-deps tools cargo fmt --all -- --check
+compose run --rm --no-deps tools cargo clippy --locked --target wasm32-unknown-unknown -- -D warnings
+compose run --rm --no-deps tools spacetime --root-dir /state build --module-path crates/spacetime
+compose run --rm --no-deps tools sh -ec '
+  spacetime --root-dir /state generate --bin-path target/wasm32-unknown-unknown/release/one_market_spacetime.wasm \
+    --lang typescript --out-dir /tmp/bindings --no-config --yes
+  diff -ru packages/bindings/src /tmp/bindings
+'

@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scaffold:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static checks and binding freshness
+        run: ./scripts/check
+      - name: Live browser integration
+        run: ./scripts/smoke
+      - name: Verify tracked files remain unchanged
+        run: git diff --exit-code
+      - name: Stop local services
+        if: always()
+        run: ./scripts/local-down

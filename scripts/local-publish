@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+compose up -d --wait db
+compose run --rm --no-deps tools spacetime --root-dir /state publish \
+  --server http://db:3000 --module-path crates/spacetime --no-config \
+  --delete-data=never --yes=remote,migrate,skip-login "$(database_name)"
+"$REPO_ROOT/scripts/generate-bindings"

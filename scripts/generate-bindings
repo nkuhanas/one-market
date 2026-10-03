@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+compose run --rm --no-deps tools spacetime --root-dir /state generate \
+  --module-path crates/spacetime --lang typescript \
+  --out-dir packages/bindings/src --no-config --yes

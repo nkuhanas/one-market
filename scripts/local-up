@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+compose build tools web
+compose up -d --wait db
+compose run --rm --no-deps web npm ci --no-audit --no-fund
+"$REPO_ROOT/scripts/local-publish"
+compose up -d --wait web
+printf 'One Market is ready at http://%s\n' "$(compose port web 5173)"
