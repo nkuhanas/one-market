@@ -1,8 +1,31 @@
 import { useState } from 'react';
-import { useMarket } from './use-market';
+import { PriceChart } from './charts/price-chart';
+import { Channel } from './components/channel';
+import { EpochMeter } from './components/epoch-meter';
+import {
+  live,
+  mapPending,
+  pending,
+  TARGET_HZ,
+  TICKS_PER_EPOCH,
+  type Pending,
+} from './market/contract';
+import { useLiveMarket } from './market/use-live-market';
+import { formatCount, formatUsd } from './lib/units';
+
+const WAITING: Pending<never> = pending('Waiting for the shared clock');
 
 export function App() {
-  const { state, status, error, ping, reconnect } = useMarket();
+  const {
+    snapshot,
+    priceHistory,
+    priceHistoryIsClientObserved,
+    verifiedCapacity,
+    status,
+    error,
+    ping,
+    reconnect,
+  } = useLiveMarket();
   const [pingMessage, setPingMessage] = useState('');
   const [pinging, setPinging] = useState(false);
 
@@ -20,84 +43,129 @@ export function App() {
   }
 
   return (
-    <main>
-      <header>
+    <div className="terminal">
+      <header className="masthead">
         <a className="wordmark" href="/">
-          ONE MARKET<span>●</span>
+          One Market
         </a>
+        <p className="masthead-note">
+          One market, shared by everyone watching. All money is synthetic.
+        </p>
         <span
-          className={`connection ${status === 'Connected' ? 'live' : ''}`}
+          className={`link ${status === 'Connected' ? 'link-live' : ''}`}
           data-testid="connection-status"
         >
-          <span className="indicator" />
           {status}
         </span>
       </header>
-      <section className="intro">
-        <p className="eyebrow">ONE WORLD. ONE SHARED STATE.</p>
-        <h1>
-          The market starts
-          <br />
-          with a heartbeat.
-        </h1>
-        <p className="description">
-          A shared synthetic market for humans and autonomous actors. The clock
-          is live. The simulation comes next.
-        </p>
-      </section>
-      <section className="metrics" aria-label="Live market state">
-        <article className="metric primary">
-          <p>SIMULATION TICK</p>
-          <strong data-testid="tick">
-            {state?.tick.toLocaleString() ?? '—'}
+
+      <section className="readout" aria-label="Live market state">
+        <div className="readout-clock">
+          <h2>Simulation tick</h2>
+          <strong className="tick" data-testid="tick">
+            {snapshot ? (
+              formatCount(snapshot.logicalTick)
+            ) : (
+              <span className="awaiting">No clock</span>
+            )}
           </strong>
-          <span>Target cadence · 20 Hz</span>
-        </article>
-        <article className="metric">
-          <p>ONE / STARTING PRICE</p>
-          <strong>
-            {state ? `$${(Number(state.price) / 100).toFixed(2)}` : '—'}
-          </strong>
-          <span>Static until trading is implemented</span>
-        </article>
-        <article className="metric">
-          <p>AUTONOMOUS ACTORS</p>
-          <strong>{state?.actorCount.toLocaleString() ?? '—'}</strong>
-          <span>Actor runtime coming next</span>
-        </article>
-      </section>
-      <section className="integration">
-        <div>
-          <p className="eyebrow">FIRST CONNECTION</p>
-          <h2>Every window, the same clock.</h2>
-          <p>
-            Open another browser window to see the shared tick advance. Ping the
-            runtime to check the connection.
+          <EpochMeter slot={snapshot?.slot ?? -1} />
+          <p className="readout-note">
+            {snapshot
+              ? `Epoch ${formatCount(snapshot.epoch)}, slot ${snapshot.slot + 1} of ${TICKS_PER_EPOCH}`
+              : 'Waiting for the shared clock'}
+            <span className="readout-sep" />
+            {TARGET_HZ} Hz target
           </p>
         </div>
-        <div className="actions">
+
+        <div className="readout-price">
+          <h2>ONE</h2>
+          <strong className="price">
+            {snapshot ? (
+              formatUsd(snapshot.priceCents)
+            ) : (
+              <span className="awaiting">No price</span>
+            )}
+          </strong>
+          <p className="readout-note">
+            Opening price, unchanged until the auction clears its first tick
+          </p>
+        </div>
+      </section>
+
+      <section className="chart-block" aria-label="Price history">
+        <PriceChart
+          samples={priceHistory}
+          clientObserved={priceHistoryIsClientObserved}
+        />
+      </section>
+
+      <section className="channels" aria-label="Population and throughput">
+        <Channel
+          label="Autonomous actors"
+          value={snapshot ? live(formatCount(snapshot.actorCount)) : WAITING}
+          note="Persistent policy actors in the deployed world"
+        />
+        <Channel
+          label="Filled orders / sec"
+          value={mapPending(
+            snapshot?.filledOrdersPerSecond ?? WAITING,
+            (rate) => rate.toLocaleString('en-US'),
+          )}
+        />
+        <Channel
+          label="Connected identities"
+          value={mapPending(
+            snapshot?.connectedIdentityCount ?? WAITING,
+            formatCount,
+          )}
+        />
+        <Channel
+          label="Verified capacity"
+          value={mapPending(
+            verifiedCapacity,
+            (result) =>
+              `${formatCount(result.actorCount)} actors @ ${result.tickHz} Hz`,
+          )}
+        />
+      </section>
+
+      <section className="tape" aria-label="Market activity">
+        <h2>Activity</h2>
+        <p className="tape-empty">
+          Fills, drawdown wipeouts, and news land here once the auction runs.
+          Nothing is on the tape yet.
+        </p>
+      </section>
+
+      <footer className="footer">
+        <div>
+          <h2>Runtime check</h2>
+          <p>
+            Open this page in a second window. Both windows read the same tick
+            from the same database.
+          </p>
+        </div>
+        <div className="footer-actions">
           <button
             disabled={status !== 'Connected' || pinging}
             onClick={sendPing}
           >
             {pinging ? 'Sending…' : 'Ping runtime'}
-            <span aria-hidden="true">↗</span>
           </button>
           <p className="ping-result" role="status">
             {pingMessage}
           </p>
         </div>
-      </section>
+      </footer>
+
       {error && (
         <div className="error" role="alert">
           <p>{error}</p>
           <button onClick={reconnect}>Reconnect</button>
         </div>
       )}
-      <footer>
-        <span>ONE MARKET / LOCAL SCAFFOLD</span>
-        <span>All money is synthetic.</span>
-      </footer>
-    </main>
+    </div>
   );
 }
