@@ -1,14 +1,17 @@
-Yeah. At this point I’d formalize it enough that both of you—and Codex—can treat this as the source of truth.
+# One Market — Technical Spec v0.2
 
-# One Market — Technical Spec v0.1
+**Repository:** `one-market`
 
-**Repository:** `one-market`  
-**Product name:** **One Market**  
-**Conditional branding:** **One Market: One Million** only if the deployed benchmark actually sustains ≥1,000,000 actors under the defined workload. No bullshit rounding up.
+**Product name:** **One Market**
+
+**Conditional branding:** **One Market: One Million** only if the deployed benchmark actually sustains ≥1,000,000 actors under the defined workload. Publish only measured, qualified results.
 
 **Team**
+
 - **Chace** — backend/runtime, SpacetimeDB, Rust, benchmarking, Maincloud
 - **Kaleb** — frontend, UX, visualization, Vercel, pitch/demo presentation
+
+**Status:** This is the target implementation contract. The current scaffold proves a shared clock and client/runtime connection; it does not yet implement the v0.2 market, lifecycle, benchmark, or access-control contract. The amendments below supersede the v0.1 settlement, bankruptcy, timing, and client-data assumptions.
 
 ## 1. Project thesis
 
@@ -25,73 +28,68 @@ The market exists because it provides an intuitive workload with:
 - persistent individual state,
 - heterogeneous behavior,
 - human + autonomous participation,
-- highly variable write density,
+- a fixed baseline of actor writes with variable settlement and lifecycle work,
 - and immediately understandable emergent behavior.
 
 This is **not primarily a finance project**. It is a real-time actor-runtime and SpacetimeDB scalability experiment presented through a market people can understand instantly.
 
 ---
 
-# 2. Headline experience
+## 2. Headline experience
 
 Anyone should be able to open the deployed site from anywhere and immediately observe **the same market**.
 
-They see something roughly like:
+Illustrative values only:
 
 ```text
 ONE MARKET
 
-Live Actors                         487,500
-Humans Online                            38
+Persistent Actors                   487,500
+Connected Identities                     38
 Current Price                         $72.41
-Trades / sec                          18,293
+Filled orders / sec                   18,293
 
-Maximum Sustainable Actors @ 20 Hz   612,500
+Verified capacity: 612,500 persistent actors @ 20 Hz
 
               [ LIVE PRICE GRAPH ]
 
 RECENT ACTIVITY
-#49102 BUY
-#18291 LIQUIDATED
-HUMAN 0x42AF BUY
-#88201 SELL
+#49102 BUY FILLED
+#18291 WIPED — DRAWDOWN LIMIT
+HUMAN 0x42AF BUY FILLED
+#88201 SELL FILLED
 
-                    [ ENTER MARKET ]
+           [ ENTER MARKET ] [ Benchmark details ]
 ```
 
-A visitor can:
+A visitor can observe anonymously, enter with a synthetic bankroll, place a buy or sell, see accepted orders and actual fills, and watch autonomous actors respond to CHAOS. Human controls may hide the limit-order mechanics behind a visible slippage allowance.
 
-1. observe the market anonymously,
-2. enter with a synthetic bankroll,
-3. buy or sell the same asset,
-4. see their action propagate to all connected users,
-5. watch autonomous agents react,
-6. potentially get wrecked when CHAOS is triggered.
+Humans and autonomous actors use the **same authoritative SpacetimeDB market state**. An accepted order is not a guaranteed fill. A sell panic without buyers can freeze the last traded price; this is a valid outcome.
 
-Humans and autonomous actors use the **same authoritative SpacetimeDB market state**.
+The capacity headline comes from a qualified `BenchmarkResult`, never from the selected live population. Methodology and diagnostics stay behind **Benchmark details**.
 
 ---
 
-# 3. Stack
+## 3. Stack
 
-| Component | Technology |
-|---|---|
-| Monorepo | Git |
-| Backend/runtime | Rust |
-| Database + authoritative state | SpacetimeDB |
-| Production DB/runtime | SpacetimeDB Maincloud |
-| Frontend | React + TypeScript + Vite assumed |
-| Frontend deployment | Vercel |
-| Local environment | Docker / Docker Compose |
-| Benchmark harness | Rust |
-| Client/server integration | Generated SpacetimeDB bindings |
-| Public transport/sync | SpacetimeDB client subscriptions/reducers |
+| Component                      | Technology                                |
+| ------------------------------ | ----------------------------------------- |
+| Monorepo                       | Git                                       |
+| Backend/runtime                | Rust                                      |
+| Database + authoritative state | SpacetimeDB                               |
+| Production DB/runtime          | SpacetimeDB Maincloud                     |
+| Frontend                       | React + TypeScript + Vite                 |
+| Frontend deployment            | Vercel                                    |
+| Local environment              | Docker / Docker Compose                   |
+| Benchmark harness              | Rust                                      |
+| Client/server integration      | Generated SpacetimeDB bindings            |
+| Public transport/sync          | SpacetimeDB client subscriptions/reducers |
 
-SpacetimeDB supports Rust modules and runs application logic inside the database rather than requiring a conventional API server. Local SpacetimeDB can also be run using the official Docker image, which makes the Docker fallback reasonable. :chatgpt-content-reference{index="0"}
+Use exact tested dependency versions and commit the lockfiles. Compatibility is established against the deployed stack through the gate in section 19; documentation examples from different versions are not an implementation contract.
 
 ---
 
-# 4. High-level architecture
+## 4. High-level architecture
 
 ```text
                          ONE MARKET
@@ -126,594 +124,559 @@ SpacetimeDB is the integration boundary between Chace and Kaleb.
 
 ---
 
-# 5. Simulation clock
+## 5. Simulation clock
 
-## Base clock
+### Base clock and intended deadlines
 
-**20 Hz global simulation**
-
-```text
-1 tick = 50 ms
-20 ticks = 1 epoch
-1 epoch = 1 second
-```
-
-SpacetimeDB scheduled reducers support interval execution and specifically skip missed interval executions rather than attempting to replay an accumulated backlog, which makes missed ticks useful saturation evidence. :chatgpt-content-reference{index="1"}
-
-## Baseline actor scheduling
-
-Every autonomous actor belongs to one of **20 epoch buckets**:
+**20 Hz global simulation**:
 
 ```text
-bucket = deterministic_hash(agent_id) % 20
+tick_interval_us = 50,000
+20 logical ticks = 1 logical epoch
+1 logical epoch targets 1 second of wall time
 ```
 
-On tick `T`:
+An epoch is only one wall-clock second when the cadence is maintained. Do not infer elapsed time from processed tick counts during degradation.
+
+Use **absolute-time scheduled tick records**, each carrying an explicit intended slot number. Maintain at most one outstanding next tick. Assign each deadline before its callback runs:
 
 ```text
-active_bucket = T % 20
+intended_at(slot) = run_start + slot × 50,000 microseconds
+start_lateness_us = invoked_at - intended_at
 ```
 
-Only actors assigned to that bucket evaluate.
+`run_start`, `intended_at`, and `invoked_at` use SDK timestamps. Slot arithmetic uses checked intermediates. Never derive the intended deadline by flooring actual arrival time, and never re-anchor the schedule after a slow tick.
 
-Therefore:
+SpacetimeDB supports absolute-time schedules. Its native interval scheduler skips missed intervals, so counting callbacks alone cannot establish maintained cadence. [Schedule tables](https://spacetimedb.com/docs/tables/schedule-tables/).
 
-> **Every autonomous actor evaluates exactly once per one-second epoch.**
+If execution falls behind, explicitly record missed application slots and schedule debt. Do not silently omit work, relabel a delayed callback as on time, or count a giant catch-up batch as real-time operation. Keep intended slots distinct from completed logical ticks; receipts must make any gaps visible. A skipped slot fails qualification.
 
-For `1,000,000` actors:
+`ctx.timestamp` records invocation/start time and remains constant during the reducer; it is not an execution stopwatch. [Reducer context](https://spacetimedb.com/docs/functions/reducers/reducer-context/).
+
+### Baseline actor scheduling
+
+Every persistent actor belongs to one of **20 epoch buckets**:
 
 ```text
-1,000,000 persistent actors
-÷ 20 buckets
-=
-~50,000 actor evaluations per tick
-
-20 ticks/sec
-=
-1,000,000 actor evaluations/sec
+bucket = deterministic_hash(actor_id) % 20
+due_bucket = logical_tick % 20
 ```
 
-This is the initial standardized benchmark workload.
+Each actor is stepped and its row materially updated **exactly once per completed logical epoch**, including actors that pass, exit, or cool down. Only `ACTIVE` actors perform their normal policy evaluation. Risk checks occur when the actor's bucket runs, not instantaneously across the population.
 
-### Stretch
+At a maintained cadence, `1,000,000` actors imply approximately `50,000` actor steps per tick and `1,000,000` baseline actor updates/sec. Actual bucket sizes and committed coverage are verified rather than assumed.
 
-Later, selected policies may operate at faster cadence classes, but **the published headline benchmark must use a fixed scheduling profile** so the actor number cannot be gamed by changing evaluation frequency.
+Faster cadence classes are a stretch goal. The published headline always uses a fixed, versioned scheduling profile.
 
 ---
 
-# 6. Actor model
+## 6. Actor model
 
-Agents are intentionally cheap policy actors, **not LLM agents and not neural networks**.
-
-Initial actor:
-
-```rust
-Agent {
-    id,
-
-    // Economic state
-    cash,
-    shares,
-    net_worth,
-
-    // Policy
-    momentum_weight,
-    mean_reversion_weight,
-    contrarian_weight,
-    news_weight,
-    risk_tolerance,
-    conviction_threshold,
-
-    // Runtime
-    bucket,
-    last_eval_tick,
-    status,
-
-    // Persistent history
-    lifetime_pnl,
-    bankruptcies,
-    trades,
-}
-```
-
-Every actor receives a deterministic randomized strategy at initialization.
-
-A seeded PRNG should make populations reproducible between benchmark runs.
-
-## Policy output
-
-Exactly three decisions:
+Actors are cheap heterogeneous policies, **not LLM agents or neural networks**. Private `ActorState` stores at least:
 
 ```text
-BUY
-SELL
-PASS
-```
-
-Policy conceptually computes:
-
-\[
-signal =
-w_mM +
-w_rR +
-w_cC +
-w_nN +
-\epsilon
-\]
-
-where:
-
-- `M` = momentum
-- `R` = mean-reversion signal
-- `C` = crowd/contrarian signal
-- `N` = current news shock
-- `ε` = deterministic actor-specific noise
-
-Magnitude determines conviction/position sizing.
-
----
-
-# 7. Persistent actor-state requirement
-
-This is important.
-
-**Actor state must actually live in SpacetimeDB.**
-
-The benchmark must not secretly become:
-
-```text
-1,000,000 actors in a private Rust Vec
-↓
-write three aggregate values to SpacetimeDB
-```
-
-That defeats the experiment.
-
-Permitted optimizations:
-
-- bucketing,
-- batching,
-- indexes,
-- compact row design,
-- reduced allocations,
-- efficient iteration,
-- bounded event history,
-- aggregate subscriptions,
-- optimized data representation.
-
-Not permitted for the headline benchmark:
-
-- moving authoritative actor state outside SpacetimeDB,
-- external native simulation services,
-- pretending logical actors are DB actors when their state isn't persisted.
-
-### Actor evaluation writes
-
-When an actor's bucket executes, its persistent actor row should be materially updated.
-
-At minimum:
-
-```text
-last_eval_tick
-net_worth
-runtime state
-```
-
-and if it acts:
-
-```text
-cash
+actor_id
+cash_cents
 shares
-PnL-related state
-trade count
-etc.
+marked_equity_cents
+initial_endowment_value_cents
+life_peak_equity_cents
+cumulative_recapitalization_grants_cents
+
+momentum_weight
+mean_reversion_weight
+contrarian_weight
+news_weight
+risk_tolerance_bps
+conviction_threshold_bps
+
+bucket
+last_step_tick
+status                    // ACTIVE | EXITING | COOLDOWN
+cooldown_started_tick     // optional until liquidation completes
+
+lifetime_pnl_cents         // signed, grant-adjusted
+wipeout_count
+filled_order_count
 ```
 
-Therefore all `N` autonomous actors incur persistent evaluation-state mutation over each epoch.
+`RECAPITALIZED` is the recorded transition from cooldown back to active trading; identity, strategy, and lifetime statistics persist.
 
----
+Population generation uses an explicitly seeded deterministic generator or deterministic per-actor derivation. Record the seed, generator version, and policy configuration. Do not use `ctx.rng()` as the benchmark population generator: the Rust reference describes its seed as the reducer invocation timestamp. [Rust reducer context](https://docs.rs/spacetimedb/latest/spacetimedb/struct.ReducerContext.html#method.rng).
 
-# 8. Market model
+### Policy output
 
-## MVP: one synthetic asset
-
-No real companies.
-
-Example symbol:
-
-**`ONE`**
-
-Starting state can be something like:
+The decision space remains:
 
 ```text
-Price: $100
-Agent bankroll: $100,000
-Human bankroll: $100,000
-```
-
-All money is synthetic.
-
-## Clearing mechanism
-
-Start with a **tick-batched market**, not a NASDAQ-grade continuous limit order book.
-
-Each due actor produces:
-
-```text
-BUY(quantity)
-SELL(quantity)
+BUY(quantity, limit_price_cents)
+SELL(quantity, limit_price_cents)
 PASS
 ```
 
-Human orders received during the tick enter the same next clearing cycle.
-
-At the end of the tick:
+Quantity and limit price are internal policy outputs. Conceptually:
 
 ```text
-actor intents
-+
-human orders
-        ↓
-aggregate demand / supply
-        ↓
-market clearing
-        ↓
-new price
-        ↓
-portfolio settlement
-        ↓
-persistent actor/human updates
+signal = momentum_weight × momentum
+       + mean_reversion_weight × mean_reversion
+       + contrarian_weight × crowd_signal
+       + news_weight × news_signal
+       + deterministic_actor_noise
 ```
 
-Price response should depend on net order imbalance and configurable market depth/liquidity.
-
-The exact equation can evolve as long as:
-
-- the same input state is reproducible,
-- agent actions materially affect price,
-- humans participate in the same mechanism,
-- market behavior doesn't require hard-coded scripted crashes.
-
-### Stretch goal
-
-Actual order book / limit orders only **after the baseline system and benchmark work**.
+Signal magnitude determines conviction and sizing. Buys must be affordable at their limit price; sells must be covered by owned shares. Version the policy, sizing, limit-price, and noise rules in the benchmark configuration.
 
 ---
 
-# 9. Bankruptcy
+## 7. Persistent actor-state requirement
 
-Agents retain:
+**Authoritative actor state must live in SpacetimeDB.** A private Rust vector containing the real actor population, with only aggregate values written to the database, does not satisfy the experiment.
 
-- identity,
-- policy,
-- lifetime statistics.
+Permitted optimizations include bucketing, batching, indexes, compact rows, reduced allocations, efficient iteration, bounded history, and aggregate subscriptions. External native simulation services and nonpersistent authoritative actors are excluded from the headline benchmark.
 
-When insolvent:
+Every due actor incurs a material persistent row update, including `PASS`, `EXITING`, and `COOLDOWN`. At minimum update `last_step_tick`, marked equity, and runtime/lifecycle state; fills additionally update balances and lifetime counters. A complete epoch with `N` actors therefore commits `N` baseline actor updates.
+
+Count all actor steps separately from normal policy evaluations. Exiting sell instructions and cooldown bookkeeping do not pretend to be normal policy evaluations. Tick receipts and per-bucket coverage must prove the full workload was performed.
+
+---
+
+## 8. Market model and settlement
+
+### Initial conditions and units
+
+The MVP has one entirely synthetic asset, **`ONE`**, and no debt, shorting, fees, or invisible market maker.
+
+| Property                      | v0.2 default                                          |
+| ----------------------------- | ----------------------------------------------------- |
+| Starting price                | `$100.00` = `10,000` cents                            |
+| Agent endowment               | `$50,000` cash = `5,000,000` cents, plus `500` shares |
+| Initial agent endowment value | `$100,000` = `10,000,000` cents at the starting price |
+| Initial share supply          | Exactly `500 × initial_agent_count`                   |
+| Human endowment               | `$100,000` cash = `10,000,000` cents, zero shares     |
+| Cash and prices               | Integer cents, `u64`                                  |
+| Share quantities              | Whole shares, `u64`                                   |
+| Arithmetic intermediates      | Checked `u128` wherever multiplication could overflow |
+| Debt, shorting, fees          | None                                                  |
+
+Check arithmetic and conversions before storing results; overflow must never wrap. Prices remain positive. The numeric minimum permitted price is an implementation parameter to freeze before market implementation.
+
+Initialize the population before a benchmark run. Resizing or resetting during measurement invalidates that run. Share conservation is measured within an initialized world; a reset begins a new world with a newly recorded initialization.
+
+### One-tick uniform-price batch auction
+
+Every tick gathers due actors' intents and accepted human orders for **one auction**. Orders are good for this auction only; unfilled remainders expire after clearing. There is no persistent order book and no fabricated fill.
+
+For each candidate price `p`:
 
 ```text
-ACTIVE
-↓
-LIQUIDATED
-↓
-COOLDOWN
-↓
-RECAPITALIZED
-↓
-ACTIVE
+D(p) = sum of buy quantities whose limit_price_cents >= p
+S(p) = sum of sell quantities whose limit_price_cents <= p
+Q(p) = min(D(p), S(p))
 ```
 
-Default cooldown:
+Candidate prices are the submitted limit prices plus the previous traded price. Choose the price by the following priority:
 
-**1 epoch / 20 ticks**, tunable.
+1. Maximum executable quantity `Q(p)`.
+2. Minimum unmatched imbalance `abs(D(p) - S(p))`.
+3. Minimum distance from the previous traded price.
+4. Lower price.
 
-Recapitalization resets current holdings but not strategy/history.
+All fills execute at that single clearing price. Allocate buys by higher-limit-price priority and sells by lower-limit-price priority, with deterministic seeded tie-breaking among equally priced orders. Partially fill marginal orders. **Total shares bought must equal total shares sold exactly.**
 
-Example:
+When `Q(p)` is zero for every candidate, there are no fills and the last traded price stays unchanged. The executable orders determine price; there is no separate imbalance/depth equation that moves it before settlement. A sell panic without actual buyers can produce a frozen market instead of a crash.
+
+### Human order reservations
+
+The public call is:
 
 ```text
-☠ AGENT #418201 LIQUIDATED
-Lifetime bankruptcies: 7
+place_order(client_order_id, side, quantity, limit_price_cents)
+```
+
+Permit **one outstanding order per human identity**. A buy reserves `quantity × limit_price_cents`; a sell reserves the requested shares. Acceptance validates positive quantity, the permitted price range, order-size/rate limits, and **available** balances:
+
+```text
+available_cash_cents = cash_cents - reserved_cash_cents
+available_shares = shares - reserved_shares
+```
+
+Repeated submission of the same caller-scoped client order ID must not create another order or reserve balances again. Settlement consumes the actual fill at the clearing price, releases all unused reservations, and expires the remainder. A price improvement releases the unused portion of a buy's reservation too.
+
+Kaleb may present simple buy/sell controls with a visible slippage allowance while sending the full limit-order contract.
+
+### Atomic boundary and invariants
+
+Actor updates, clearing, balance transfers, reservation release, lifecycle changes, fill receipts, and the resulting tick receipt belong in **the same reducer transaction**. SpacetimeDB rolls back reducer changes on failure, supporting this atomic boundary. [Transactional reducers](https://spacetimedb.com/docs/functions/reducers/#transactional-execution).
+
+Required invariants:
+
+```text
+cash_cents >= 0
+shares >= 0
+reserved_cash_cents <= cash_cents
+reserved_shares <= shares
+
+total shares are conserved after initialization
+trading conserves cash
+cash creation occurs only through explicitly recorded grants
+```
+
+Record initial endowments, human entry grants, and recapitalization grants so created cash is accountable. No fill can use a nonexistent counterparty or uncovered balance.
+
+Call the activity metric **filled orders/sec**. Count an order once if it receives a nonzero fill in its auction; count matched share volume once for the transferred shares. Do not call the two filled sides separate trades. A future matched buyer–seller trade-pair metric requires an explicit pairing/counting definition.
+
+---
+
+## 9. Drawdown wipeouts and recapitalization
+
+With no debt, nonnegative cash and shares, and a positive price:
+
+```text
+marked_equity_cents = cash_cents + shares × price_cents >= 0
+```
+
+A price decline alone does not create insolvency. A wipeout is a **simulation risk limit**, not negative net worth, bankruptcy, or a margin call.
+
+Default trigger:
+
+> An actor is wiped when its marked equity falls to **50% or less of its current life's peak equity** (`5,000` basis points).
+
+Maintain the per-life peak and evaluate this condition when the actor's bucket runs. Do not advertise instantaneous risk detection across the full population.
+
+### Lifecycle
+
+```text
+ACTIVE
+  ↓ drawdown limit breached
+EXITING
+  ↓ remaining shares actually sold
+COOLDOWN
+  ↓ 20 logical ticks elapsed
+RECAPITALIZED → ACTIVE
+```
+
+An exiting actor replaces its normal policy with a sell instruction for all remaining shares at the minimum permitted price whenever its bucket runs. Actual buyers are required. Partial fills leave it exiting; no buyers means no instant liquidation. If it has no shares remaining, it enters cooldown and records the cooldown start tick.
+
+After 20 logical ticks have elapsed, its next due bucket update grants only enough cash to restore its bankroll to `$100,000`:
+
+```text
+recapitalization_grant_cents = max(0, 10,000,000 - cash_cents)
+```
+
+Record the grant, reset the per-life peak to post-grant equity, and return the actor to `ACTIVE`. Never mint its original 500 shares again. Retain its identity, strategy, wipeout count, and lifetime statistics.
+
+Lifetime performance is grant-adjusted:
+
+```text
+lifetime_pnl_cents = current_marked_equity_cents
+                   - initial_endowment_value_cents
+                   - cumulative_recapitalization_grants_cents
+```
+
+Compute the subtraction in checked signed arithmetic. Free recapitalizations must not appear as investment profits.
+
+Every state continues receiving its bucketed persistent row update; only trading behavior changes. Presentation may show:
+
+```text
+☠ AGENT #418201 WIPED — DRAWDOWN LIMIT
+Lifetime wipeouts: 7
 Lifetime P&L: -$381,291
 ```
 
-That keeps the requested actor population stable while still allowing wipeouts to matter.
-
 ---
 
-# 10. CHAOS
+## 10. CHAOS
 
-`CHAOS` is both:
+`CHAOS` is both a demonstration mechanic and a stress workload. It is **admin-only**.
 
-1. a demonstration mechanic,
-2. a pathological stress workload.
-
-Admin-only.
-
-When triggered, generate an obviously fictional scandal:
+A shock introduces an obviously fictional scandal, for example:
 
 > **ONE Industries admits its lunar revenue division does not actually exist.**
 
-Event:
+A versioned `NewsEvent` carries a headline, direction, severity/confidence in basis points, and logical start/end ticks. It modifies actors' news signals rather than hard-coding a price crash:
 
 ```text
-NewsEvent {
-    headline,
-    direction,
-    severity,
-    confidence,
-    duration_ticks,
-}
+news shock → individual policy evaluations → more buy/sell orders
+           → auction clearing and actual settlement
+           → possible price changes, drawdown stop-outs, and contrarian responses
 ```
 
-The event modifies agents' `news` signal.
+Price movement and exits depend on executable counterparties. A frozen market is a valid response when nobody buys.
 
-**It must not directly hard-code a market crash.**
+Because every due actor already persists an update, normal and CHAOS conditions have the same baseline `N` actor updates per completed epoch. CHAOS increases order participation, clearing work, settlement work, lifecycle transitions, and additional persistent records. Measure those changes; do not claim that only 5% of actors write normally while 90% write during CHAOS.
 
-Instead:
-
-```text
-news shock
-↓
-individual policy evaluations
-↓
-more SELL / BUY decisions
-↓
-order imbalance
-↓
-price movement
-↓
-liquidations
-↓
-contrarian entry
-↓
-secondary behavior
-```
-
-That distinction matters.
-
-The simulation creates the crash.
-
-CHAOS simply changes the environment.
+Qualification uses a fixed, versioned shock at a predetermined intended slot, with the rest of the workload unchanged.
 
 ---
 
-# 11. Human traders
+## 11. Human traders
 
-A visitor does not need conventional account registration.
+Visitors do not need conventional account registration. The SDK-authenticated caller identity may create one lightweight human trader through `enter_market()`; re-entering does not issue another endowment.
 
-Each connected identity may create one lightweight human trader.
+Private `HumanTrader` stores identity, `cash_cents`, `shares`, `reserved_cash_cents`, `reserved_shares`, signed `pnl_cents`, and `created_at`. Humans use the same auction and reservations defined in section 8, with no derivatives, shorting, or leverage.
 
-```text
-HumanTrader {
-    identity,
-    cash,
-    shares,
-    pnl,
-    created_at,
-}
-```
+The server enforces one trader and one outstanding order per identity, idempotent client order IDs, order-size limits, rate limits, and available-balance validation. Browser controls are not authorization or validation.
 
-Humans can:
+Human traders **do not count toward the autonomous actor capacity number**. Distinguish:
 
-```text
-BUY
-SELL
-```
-
-No derivatives, shorting or leverage in MVP.
-
-Server-side constraints:
-
-- maximum order size,
-- rate limiting,
-- sufficient cash validation,
-- sufficient share validation,
-- one human trader per identity.
-
-Human participation **does not count toward the autonomous actor benchmark number**.
-
-UI explicitly separates:
-
-```text
-AUTONOMOUS ACTORS   812,500
-HUMAN TRADERS            72
-```
+- `actor_count`: all persistent autonomous actors, including exiting/cooldown actors.
+- `active_actor_count`: actors currently eligible for normal policy trading.
+- `registered_human_trader_count`: human identities with a trader record.
+- `connected_identity_count`: distinct currently connected identities, not connections or registered traders.
 
 ---
 
-# 12. Public data contract
+## 12. Typed, private, and bounded client contract
 
-Kaleb should be able to build almost everything from a small stable outward-facing schema.
+Chace and Kaleb agree on this contract before splitting runtime and presentation work. The following records define required semantics; generated bindings provide the exact tested SDK types.
 
-## `MarketState`
+### Names and units
+
+| Value                                 | Contract                                  |
+| ------------------------------------- | ----------------------------------------- |
+| Cash, price, equity                   | Integer cents; fields use `_cents`        |
+| P&L                                   | Signed integer cents; fields use `_cents` |
+| Quantity                              | Whole shares, `u64`                       |
+| Tick, slot, counters                  | Unsigned integers                         |
+| Timestamp                             | SDK timestamp type                        |
+| Duration                              | Integer microseconds; fields use `_us`    |
+| Percentages and configured thresholds | Integer basis points; fields use `_bps`   |
+
+Preserve 64-bit integer values through the frontend, using the SDK's integer representation. Convert to charting numbers only after an explicit range check. Arithmetic and any narrowing conversion must be checked.
+
+### Private state and caller-scoped views
+
+Keep these tables private:
 
 ```text
-tick
+ActorState
+HumanTrader
+PendingHumanOrder
+HumanOrderReceipt
+RuntimeConfig
+AdminAllowlist
+DetailedBenchmarkReceipts
+```
+
+`TickReceipt` rows in section 14 are the records retained in private `DetailedBenchmarkReceipts`; benchmark readers require authorized access. Scheduler/control state and grant accounting are private too.
+
+Expose only the current human's information through:
+
+```text
+my_trader
+my_pending_order
+my_recent_fills
+```
+
+These views derive identity from the authenticated caller and use indexed lookups. They must not accept an arbitrary identity from the browser. Choosing a subscription for one's own row is not access control. SpacetimeDB supports exposing private-table data through caller-filtered views. [Table permissions](https://spacetimedb.com/docs/tables/access-permissions/), [views](https://spacetimedb.com/docs/functions/views/).
+
+### Public observer surfaces
+
+Separate public presentation data from private authoritative actors and human accounts.
+
+`MarketState` contains at least:
+
+```text
+logical_tick
 epoch
-price
-previous_price
-volume
-volatility
-
+price_cents
+previous_traded_price_cents
+matched_share_volume
+volatility_bps
 actor_count
 active_actor_count
-human_count
+registered_human_trader_count
+connected_identity_count
 
-evaluations_per_second
-actor_updates_per_second
-orders_per_second
-trades_per_second
-
+cumulative_actor_steps
+cumulative_policy_evaluations
+cumulative_actor_rows_updated
+cumulative_orders_submitted
+cumulative_orders_filled
+cumulative_matched_share_volume
+rate_window_us
+rate_window_started_at
+rate_window_ended_at
 chaos_active
 ```
 
-## `PricePoint`
+Publish cumulative activity counters and document the configured rate window. Compute displayed rates from counter deltas divided by **actual elapsed time**. Twenty completed ticks cannot be assumed to equal one elapsed second. Define whether each rate includes autonomous actors, humans, or both.
 
-```text
-tick
-price
-volume
-```
+`PricePoint` carries `logical_tick`, `recorded_at`, `price_cents`, and `matched_share_volume`. Public activity carries an ID, tick, timestamp, participant type/public identifier, event kind, side where relevant, quantity, and price in cents for fills. Wipeout activity uses `WIPED — DRAWDOWN LIMIT`, signed lifetime P&L, and a wipeout count; it must not imply completed share liquidation before it happens.
 
-Bounded history.
+`NewsEvent` carries an ID, headline, direction, `severity_bps`, `confidence_bps`, `start_tick`, and `end_tick`. A public actor sample may expose limited presentation fields for 64 actors without making the full `ActorState` table queryable.
 
-## `TradeEvent`
+### Retention limits
 
-Recent/sample feed only.
+| Surface                | Retention                                    |
+| ---------------------- | -------------------------------------------- |
+| Price history          | Last 3,600 ticks                             |
+| Public activity feed   | Last 500 entries; at most 20 new entries/sec |
+| News                   | Last 16 events                               |
+| Public actor sample    | 64 actors                                    |
+| Per-human fill history | Last 32 fills                                |
+| Benchmark summaries    | Last 20 results                              |
+| Detailed tick receipts | Last 8,192 ticks per retained run            |
 
-```text
-id
-tick
-participant_type
-participant_id
-side
-quantity
-price
-```
+The activity feed is sampled presentation data. Its size must never compute actual trading throughput. A separate unbounded liquidation feed must not bypass these limits.
 
-## `LiquidationEvent`
+Use ordinary bounded tables when reconnecting clients need history. Transient event tables exist only within their originating transaction and are not interchangeable with retained feeds or benchmark evidence. [Event tables](https://spacetimedb.com/docs/tables/event-tables/).
 
-```text
-id
-tick
-agent_id
-lifetime_pnl
-bankruptcy_count
-```
+### `BenchmarkResult`
 
-## `NewsEvent`
+The public headline record contains at minimum:
 
 ```text
 id
-headline
-severity
-start_tick
-end_tick
+status                    // RUNNING | PASSED | FAILED | INCONCLUSIVE
+environment               // LOCAL | MAINCLOUD
+workload_profile
+actor_count
+tick_interval_us
+bucket_count
+warmup_seconds
+measurement_seconds
+repeat_count
+subscriber_count
+offered_human_orders_per_second
+committed_actor_updates
+skipped_application_slots
+start_lateness_p99_us
+configuration_hash
+build_hash
+completed_at              // SDK timestamp; absent while running
 ```
 
-## `HumanTrader`
+A passed capacity result must satisfy the fixed qualification profile and all three fresh confirmations. Preserve per-run evidence behind the summary. The frontend selects a qualified result for the named environment/profile; it does not manufacture capacity from `MarketState.actor_count`.
 
-Only the information required by the current identity/client.
+Commit generated bindings or generate them reproducibly in CI, and make CI detect schema/binding drift. The scaffold commits its generated bindings. Chace owns schema semantics; Kaleb owns presentation; breaking changes require agreement from both.
 
 ---
 
-# 13. Public reducers
+## 13. Reducers and authorization
 
-Initial public surface:
+Public human surface:
 
 ```text
 enter_market()
-place_order(side, quantity)
+place_order(client_order_id, side, quantity, limit_price_cents)
 ```
 
-Admin surface:
+Admin-authorized surface:
 
 ```text
 trigger_chaos(...)
 set_actor_population(...)
 reset_market(...)
+publish_benchmark_result(...)
+benchmark_step(...)          // optional; refuses while scheduled simulation is enabled
 ```
 
-Internal:
+Scheduler-only wrapper:
 
 ```text
-simulation_tick(...)
+simulation_tick(scheduled_tick_record)
 ```
 
-Scheduled reducers should reject external calls when intended to be scheduler-only; SpacetimeDB's docs explicitly note scheduled reducers remain callable by clients unless authorization is checked. :chatgpt-content-reference{index="2"}
+Keep a scheduler-origin guard on the scheduled wrapper as defense in depth. Any manual benchmark-step wrapper must require admin authorization and refuse to operate while scheduled simulation is enabled. Normal viewers and human traders must not advance ticks, reset the world, change population, publish benchmark results, or trigger CHAOS.
+
+The 2.0 migration guide describes scheduled functions as private by default, with manual calls available to owners and collaborators. The Rust reducer reference still recommends a caller-origin check. Resolve observed access behavior against the exact deployed stack and acceptance tests in section 19 rather than guessing which documentation page wins. [Migration guide](https://spacetimedb.com/docs/upgrade/#scheduled-functions-are-now-private), [Rust reducer reference](https://docs.rs/spacetimedb/latest/spacetimedb/attr.reducer.html#restricting-scheduled-reducers).
+
+Use the chosen 2.x client API's per-call reducer results and explicit event tables for transient cross-client notifications. Do not use old global reducer-completion callback examples. Retained tick/fill evidence remains in ordinary tables. [Client migration](https://spacetimedb.com/docs/upgrade/#reducer-callbacks).
 
 ---
 
-# 14. Benchmark
+## 14. Benchmark evidence and qualification
 
-## Headline metric
+### One public headline
 
-There should be **one number judges remember**:
+> **Verified capacity: N persistent actors @ 20 Hz**
 
-# Maximum Sustainable Actors @ 20 Hz
+This is the largest population actually tested successfully under a named fixed workload and environment. It is not a universal upper bound on SpacetimeDB, and it is not a claim about execution duration.
 
-Definition:
+All persistent actors receive a row update once per completed 20-tick logical epoch, including passing, exiting, and cooling-down actors. Population setup happens before the run; resizing or resetting during measurement invalidates it.
 
-> Largest persistent autonomous population for which all actors are evaluated and their state persisted once per 20-tick epoch while SpacetimeDB continuously sustains the 20 Hz scheduler without missed ticks during the benchmark window.
+### Fixed qualification workload
 
-### Standard run
+| Parameter    | Qualification setting                                       |
+| ------------ | ----------------------------------------------------------- |
+| Tick target  | 20 Hz; `tick_interval_us = 50,000`                          |
+| Buckets      | 20; every actor stepped once per logical epoch              |
+| Warm-up      | 30 seconds                                                  |
+| Measurement  | 180 seconds                                                 |
+| Confirmation | Three fresh runs at the final candidate population          |
+| Randomness   | Explicit seed and versioned policy configuration            |
+| Viewer load  | 10 connected clients using the production subscription set  |
+| Human load   | Five offered orders/sec total, using a deterministic script |
+| Read mode    | Confirmed reads                                             |
+| Environment  | Record local and Maincloud separately                       |
 
-Proposed:
+Freeze and hash the complete workload configuration: population/strategy generator, seed, policy rules, actor cadence, retention/subscription sets, deterministic human script, and shock configuration. Record offered orders separately from accepted orders and actual fills. Do not reduce load when the database slows and continue claiming the same profile.
 
-```text
-Warmup:       30 sec
-Measurement: 180 sec
-Tick rate:    20 Hz
-Epoch:        20 ticks
-Agent eval:   1 / epoch
-```
+### Committed tick receipts
 
-A run fails sustainability if:
-
-- any scheduled ticks are skipped,
-- P99 scheduler start lateness exceeds one 50 ms tick interval,
-- transaction/reducer failures occur,
-- Maincloud resource/service limits invalidate the run.
-
-The UI only needs:
+The transaction that updates actors and settles the auction inserts one `TickReceipt` per successful tick:
 
 ```text
-MAX SUSTAINABLE ACTORS
-812,500
-
-20 Hz · 0 skipped ticks
+run_id
+intended_slot
+logical_tick
+intended_at
+invoked_at
+actor_steps
+policy_evaluations
+actor_rows_updated
+orders_submitted
+orders_filled
+matched_share_volume
 ```
 
-The deep measurements can exist behind a details drawer.
+`actor_steps` counts every due actor; `policy_evaluations` counts normal active-policy evaluations. `orders_filled` counts orders with a nonzero fill, and `matched_share_volume` counts transferred shares once. Retain the last 8,192 receipts per retained run, enough for the standard warm-up and measurement window, with per-bucket coverage evidence tied to the same run.
 
-## Supporting diagnostics
+The Rust harness validates receipts, intended deadlines, logical/slot sequences, and per-bucket row-update coverage rather than merely counting callback arrivals. Missing, duplicate, or reduced workload must remain visible; aggregate counts alone cannot establish that every actor was updated.
 
-Rust harness records:
+Use **confirmed reads** for the measurement connection and verify the setting on the tested stack. The 2.0 migration guide says updates wait for durability confirmation. Receipt arrival still includes delivery latency and is not a server execution timer. [Confirmed reads](https://spacetimedb.com/docs/upgrade/#confirmed-reads-enabled-by-default).
 
-- scheduling lateness,
-- skipped ticks,
-- reducer completion RTT,
-- client-observed update interval,
-- actor evaluations/sec,
-- actor row writes/sec,
-- transactions/sec,
-- failures,
-- Maincloud resource/energy behavior where available.
+### Qualification gate
 
-Do **not** use `ctx.timestamp` as an execution timer.
+Every confirmation run must establish:
 
-The purpose of these metrics is diagnosis, not cluttering the judge pitch.
+- Zero skipped application slots.
+- Complete actor-update coverage for each measured logical epoch/bucket.
+- Zero reducer failures.
+- P99 start lateness **strictly below 50,000 microseconds**.
+- The offered workload and viewer load remained fixed.
+- Achieved committed throughput, with no growing schedule debt.
+
+Use the preassigned timeline in section 5. Never floor invocation time to derive the deadline or re-anchor after delays. Record start lateness separately from client delivery latency and reducer-call RTT.
+
+Report run status as `RUNNING`, `PASSED`, `FAILED`, or `INCONCLUSIVE`. Established gate violations fail the run. A client disconnect or missing evidence makes the run inconclusive, not automatic proof that the database saturated. An inconclusive run cannot qualify the headline.
+
+Repeat the final candidate three times with fresh initialized populations under the same versioned configuration. Publish the qualified result backed by all three runs, not the best lucky run. Preserve individual run evidence and environment/build metadata.
+
+This is a **schedule-adherence qualification**. Do not publish “P99 execution time below 50 ms” unless execution duration is measured using a validated host-side source. Exact host execution duration is optional; `ctx.timestamp` cannot supply it.
+
+### Benchmark details
+
+The details drawer and methodology retain intended deadlines, start-lateness distribution, skipped slots, schedule debt, committed actor steps/row updates, policy evaluations, submitted/filled orders, matched share volume, reducer failures, observed delivery latency/RTT, connection health, configuration/build hashes, repeat evidence, and resource/energy metrics where available. Diagnostic client timings are labeled as client timings.
+
+Publish a documented rate window using actual elapsed time. Neither public feed sampling nor callback counts supply trading or actor-update throughput.
 
 ---
 
-# 15. Benchmark profiles
+## 15. Benchmark profiles
 
-At minimum:
+At minimum, qualify **NORMAL** and **CHAOS** profiles. They use the same population, cadence, seed, policies, viewer subscriptions, human order script, warm-up, measurement, read mode, and confirmation settings. The only difference is a fixed, versioned shock introduced at a predetermined intended slot in CHAOS.
 
-### Normal
+The base actor-write workload remains `N` updates per completed epoch in both profiles. Record the increase in order participation, auction clearing, settlement, lifecycle transitions, and additional persistent records rather than assuming the shock changes the number of baseline actor writes.
 
-Standard market conditions.
-
-### CHAOS
-
-Same actor count and scheduler profile with a severe news event producing far greater trading/liquidation activity.
-
-The headline stays **Maximum Sustainable Actors @ 20 Hz**.
-
-Chaos can provide a secondary statement:
-
-```text
-NORMAL CAPACITY       812,500
-CHAOS CAPACITY        530,000
-```
-
-only if useful.
+Keep one primary headline: **Verified capacity: N persistent actors @ 20 Hz**, backed by the selected qualified environment/profile. Profile comparisons and the three fresh confirmation runs belong in Benchmark details. Local results cannot stand in for Maincloud qualification.
 
 ---
 
-# 16. Production deployment
+## 16. Production deployment
 
-## Primary
+### Primary
 
 ```text
 Vercel
@@ -725,11 +688,11 @@ SpacetimeDB Maincloud
   └── Rust One Market module
 ```
 
-Maincloud is the real production/shared world. Publishing Rust application modules there is a first-party deployment path. :chatgpt-content-reference{index="3"}
+Maincloud is the canonical production/shared world. Record its observed runtime version and qualify it separately from the local Docker environment.
 
 Maincloud Pro is acceptable project spend.
 
-## Offline fallback
+### Offline fallback
 
 ```text
 localhost frontend
@@ -745,9 +708,9 @@ The public Maincloud deployment remains the canonical benchmark/demo target.
 
 ---
 
-# 17. Monorepo
+## 17. Monorepo
 
-Recommended:
+Target layout; runtime files and benchmark documents are added as their milestones are implemented:
 
 ```text
 one-market/
@@ -787,146 +750,135 @@ one-market/
 │   └── benchmark
 │
 ├── docs/
+│   ├── versions.md
 │   └── benchmark-methodology.md
 │
 ├── README.md
+├── CONTRIBUTING.md
+├── SPEC.md
 └── AGENTS.md
 ```
 
 ---
 
-# 18. Ownership
+## 18. Ownership
 
-| Area | Owner |
-|---|---|
-| Rust module | **Chace** |
-| Actor scheduler | **Chace** |
-| Actor policies | **Chace** |
-| Market clearing | **Chace** |
-| Persistence/schema internals | **Chace** |
-| Benchmark harness | **Chace** |
-| Maincloud | **Chace** |
-| React/frontend | **Kaleb** |
-| Visualization | **Kaleb** |
-| Responsive/mobile | **Kaleb** |
-| Vercel | **Kaleb** |
-| Client subscription lifecycle | **Kaleb** |
-| Demo visual hierarchy | **Kaleb** |
-| Pitch | **Kaleb lead** |
-| Schema/interface contract | **Shared** |
-| Final demo sequence | **Shared** |
+| Area                          | Owner                                                 |
+| ----------------------------- | ----------------------------------------------------- |
+| Rust module                   | **Chace**                                             |
+| Actor scheduler               | **Chace**                                             |
+| Actor policies                | **Chace**                                             |
+| Market clearing               | **Chace**                                             |
+| Persistence/schema internals  | **Chace**                                             |
+| Benchmark harness             | **Chace**                                             |
+| Maincloud                     | **Chace**                                             |
+| React/frontend                | **Kaleb**                                             |
+| Visualization                 | **Kaleb**                                             |
+| Responsive/mobile             | **Kaleb**                                             |
+| Vercel                        | **Kaleb**                                             |
+| Client subscription lifecycle | **Kaleb**                                             |
+| Demo visual hierarchy         | **Kaleb**                                             |
+| Pitch                         | **Kaleb lead**                                        |
+| Schema/interface contract     | **Chace owns schema; both agree on breaking changes** |
+| Final demo sequence           | **Shared**                                            |
 
-The rule should basically be:
+> **Chace owns the schema and runtime below the generated bindings. Kaleb owns presentation above them.**
 
-> **Chace owns everything below the generated bindings. Kaleb owns everything above them.**
-
-That is an absurdly clean division.
+Breaking changes require both owners to agree; CI detects binding drift.
 
 ---
 
-# 19. First integration milestone
+## 19. Compatibility gate and first integration milestone
 
-Do this **before either of you disappears into your respective caves**.
+### Version record
 
-Backend:
-
-```text
-MarketState {
-    tick,
-    price,
-    actor_count,
-}
-```
-
-One scheduled tick.
-
-One public reducer.
-
-Frontend subscribes and sees live changes.
-
-Then verify:
+Before the first v0.2 integration milestone, Chace produces `docs/versions.md` with:
 
 ```text
-Browser A
-Browser B
-      ↓
-same SpacetimeDB
-      ↓
-both show synchronized price/tick
+SpacetimeDB CLI:
+Local runtime image tag + digest:
+Rust module SDK:
+Rust client SDK:
+TypeScript client SDK:
+Rust toolchain:
+Generated-bindings schema/build hash:
+Observed Maincloud version/build, where exposed:
 ```
 
-Once that succeeds, freeze the first client contract and split.
+Use exact tested dependency versions and committed lockfiles. Record the local image digest in addition to its tag. Do not assume the managed Maincloud runtime can be pinned; record its observed version/build where exposed, or explicitly record that it is unavailable.
 
-Kaleb can build the entire experience while your backend evolves from:
+### Acceptance checks
 
-```text
-actor_count = 100
-```
+Against the exact local and deployed stacks, establish that an ordinary anonymous client cannot:
 
-into whatever Rust purgatory eventually produces 700k actors.
+- Advance ticks through either scheduled or manual wrappers.
+- Reset the simulation or change population.
+- Publish benchmark results or trigger CHAOS.
+- Read another human's private trader, pending order, or fill history, including through caller-scoped views.
+
+Also verify that scheduler-origin calls succeed, the optional manual-step wrapper is admin-only and refuses while scheduled simulation is enabled, confirmed reads behave as configured, and the chosen client SDK uses per-call results rather than old global callbacks. Document observed behavior instead of choosing between conflicting documentation descriptions.
+
+### Integration milestone
+
+The existing scaffold establishes the basic connection with a persistent tick, static price, actor count, one interval schedule, public ping, and two synchronized browsers. That proof does not establish v0.2 benchmark timing or access-control compatibility.
+
+For the v0.2 milestone, implement the explicit absolute-time slot schedule, typed market contract, caller-scoped views, and authorized reducer boundary. Regenerate bindings and verify two browsers observe the same shared market while each human sees only its own account state.
+
+Freeze the agreed client contract, then split runtime and presentation work. A schema change must carry regenerated bindings and coordinated frontend changes.
 
 ---
 
-# 20. Build order
+## 20. Build order
 
-### P0 — Skeleton
-- monorepo
-- Docker
-- Rust module
-- scheduled 20 Hz tick
-- generated TS bindings
-- frontend subscription
+### P0 — Skeleton and compatibility
 
-### P1 — Market
-- actors
-- 20 buckets
-- policy evaluation
-- BUY/SELL/PASS
-- clearing
-- persistent actor updates
+- Monorepo, Docker, Rust module, shared clock, generated bindings, frontend subscription.
+- Exact version/build record and local/deployed compatibility acceptance checks.
+- Absolute-time intended slots, scheduler guard, and frozen v0.2 client contract.
 
-### P2 — Scale
-- benchmark harness
-- 10k
-- 50k
-- 100k
-- 250k
-- 500k
-- 1M+
-- find actual degradation knee
+### P1 — Market and lifecycle
+
+- Persistent actors, 20 buckets, deterministic seeded policies, BUY/SELL/PASS.
+- Uniform-price auction, real counterparties, checked arithmetic, conservation invariants.
+- Drawdown exits, actual share liquidation, cooldown, recorded recapitalization grants.
+- Every due actor persists an update in every state.
+
+### P2 — Benchmark harness and exploratory scale
+
+- Atomic tick receipts, per-bucket coverage, confirmed reads, deadline/debt evidence.
+- Exploratory populations: 10k, 50k, 100k, 250k, 500k, 1M+.
+- Find the measured degradation knee without presenting exploratory runs as qualified capacity.
 
 ### P3 — Human participation
-- anonymous human trader
-- buy/sell
-- synchronized feed
-- browser-to-browser validation
+
+- One identity-scoped trader, reservations, idempotent orders, server-side limits.
+- Caller-scoped views, bounded fills/activity, synchronized browser validation.
+- Deterministic human load and 10 production-subscription viewers for qualification.
 
 ### P4 — CHAOS
-- news shock
-- liquidation cascades
-- kill feed
-- responsive strategy divergence
 
-### P5 — Production
-- Maincloud Pro
-- Vercel
-- public URL
-- local fallback
-- benchmark production deployment
+- Fixed versioned news shock and responsive strategy divergence.
+- Actual settlements and drawdown stop-outs, sampled kill feed.
+- Measure additional auction/settlement/lifecycle work; allow frozen-market outcomes.
+
+### P5 — Production and final qualification
+
+- Maincloud, Vercel, public URL, local fallback.
+- Full fixed-workload NORMAL/CHAOS qualification, three fresh runs per final candidate.
+- Authorized publication of environment-specific benchmark results.
 
 ### P6 — Polish
-- benchmark headline
-- frontend theater
-- pitch
-- backup recorded demo
+
+- Verified capacity headline, Benchmark details, mobile controls, pitch.
+- Backup recorded demo.
 
 ---
 
-# 21. Explicit non-goals
+## 21. Explicit non-goals
 
 Do **not** burn time on:
 
-- authentication flows,
+- conventional account-registration flows (server identity checks and authorization remain required),
 - real stocks,
 - real financial data,
 - LLM agents,
@@ -945,33 +897,35 @@ Do **not** burn time on:
 
 The difficult problem is already:
 
-> **How many persisted stateful actors can we shove through this fucking runtime at 20 Hz?**
-
-Do that.
+> **How many persistent stateful actors can this runtime qualify at 20 Hz under the fixed workload?**
 
 ---
 
-# 22. Demo definition of done
+## 22. Demo definition of done
 
 A judge should be able to:
 
-1. open the public site on their phone,
-2. immediately see the same live market as your laptop,
-3. see **N autonomous actors** operating,
-4. enter the market,
-5. buy something,
-6. see their trade propagate everywhere,
-7. see the validated **Maximum Sustainable Actors @ 20 Hz** result,
-8. press/watch CHAOS,
-9. watch the market implode organically,
-10. see agents liquidated and contrarians enter while the system remains synchronized.
+1. Open the public site on their phone and see the same live market as the laptop.
+2. See the persistent actor count, distinct connected identities, and actual filled-order rate.
+3. Enter with a synthetic bankroll and place a buy or sell with a visible slippage allowance.
+4. See their own acceptance/fill status and the shared effects of actual settlement.
+5. See **Verified capacity: N persistent actors @ 20 Hz** from a qualified result.
+6. Watch an admin trigger CHAOS and observe policies, auctions, fills, and drawdown stop-outs respond while clients remain synchronized.
 
-And if they ask:
+A crash is not guaranteed. If sellers have no buyers, the demo must honestly show a frozen price and incomplete exits. The public experience stays simple: **one market, a huge actor count, join from your phone, place a trade, then watch CHAOS hit.**
 
-> “How did you benchmark it?”
+Benchmark details and the Rust harness explain the measured workload, committed evidence, three confirmations, and named environment behind the headline.
 
-then you have the serious Rust harness and methodology underneath the flashy demo.
+**One Market: One Million** is unlocked only when the deployed benchmark qualifies at least 1,000,000 persistent actors under that contract.
 
-That’s the project.
+### Implementation parameters still to freeze
 
-**One Market** is the right name right now. **One Market: One Million** gets unlocked only when Chace's Rust hell actually prints the receipt.
+The v0.2 rules above resolve the core contract gaps. Before implementing the affected runtime paths, version and record the remaining configuration choices:
+
+- Numeric minimum permitted price, human order-size/rate limits, and the visible slippage default.
+- Concrete policy/sizing/limit-price rules, generator/seed, and fixed CHAOS parameters/slot.
+- Activity rate-window length and deterministic sampling/rate-limit rules.
+- Client-order-ID type and deduplication retention so pruning recent fills cannot permit duplicate orders.
+- Number of retained detailed benchmark runs and the precise missed-slot/debt recording and recovery policy.
+
+These parameters must preserve the auction, lifecycle, access-control, retention, and qualification requirements above. They do not require adding a realistic exchange or changing the product thesis.
