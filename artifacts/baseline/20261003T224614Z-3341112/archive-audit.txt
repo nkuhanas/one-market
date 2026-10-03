@@ -1,0 +1,130 @@
+ Container one-market-tools-run-38f10b43f617 Creating 
+ Container one-market-tools-run-38f10b43f617 Created 
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running unittests src/main.rs (target/release/deps/one_market_benchmark-9fb59878b738a6c5)
+
+running 1 test
+Verified NORMAL: all three raw artifacts, hashes, CSVs and server readbacks agree.
+Verified CHAOS: all three raw artifacts, hashes, CSVs and server readbacks agree.
+{
+  "audit": "PASSED",
+  "build_hash": "2b3b53fd6f709de7236c600d970805cf35dd80f8c75fd2cb29085048a55dcbcb",
+  "runs": [
+    {
+      "accepted_offers": 671,
+      "actor_updates_per_second": 325000.0,
+      "build_hash": "2b3b53fd6f709de7236c600d970805cf35dd80f8c75fd2cb29085048a55dcbcb",
+      "configuration_hash": "9f87a3af48554edc01bc6d1920fc9208907515a17f95e6278d8841d1f2be0451",
+      "database": "one-market-baseline-normal-20261003t224614z-3341112",
+      "filled_orders_per_second": 237104.86111111112,
+      "initialization_us": 1657559,
+      "matched_shares_per_second": 711928.45,
+      "max_start_lateness_us": 29448,
+      "measured_actor_updates": 58500000,
+      "orders_per_second": 243975.74444444446,
+      "p99_start_lateness_us": 15616,
+      "population": 325000,
+      "profile": "NORMAL",
+      "repeat": 1,
+      "skipped_slots": 0
+    },
+    {
+      "accepted_offers": 668,
+      "actor_updates_per_second": 325000.0,
+      "build_hash": "2b3b53fd6f709de7236c600d970805cf35dd80f8c75fd2cb29085048a55dcbcb",
+      "configuration_hash": "9f87a3af48554edc01bc6d1920fc9208907515a17f95e6278d8841d1f2be0451",
+      "database": "one-market-baseline-normal-20261003t224614z-3341112",
+      "filled_orders_per_second": 237089.96666666667,
+      "initialization_us": 1441199,
+      "matched_shares_per_second": 709683.6055555556,
+      "max_start_lateness_us": 30213,
+      "measured_actor_updates": 58500000,
+      "orders_per_second": 243940.54444444444,
+      "p99_start_lateness_us": 16938,
+      "population": 325000,
+      "profile": "NORMAL",
+      "repeat": 2,
+      "skipped_slots": 0
+    },
+    {
+      "accepted_offers": 657,
+      "actor_updates_per_second": 325000.0,
+      "build_hash": "2b3b53fd6f709de7236c600d970805cf35dd80f8c75fd2cb29085048a55dcbcb",
+      "configuration_hash": "9f87a3af48554edc01bc6d1920fc9208907515a17f95e6278d8841d1f2be0451",
+      "database": "one-market-baseline-normal-20261003t224614z-3341112",
+      "filled_orders_per_second": 237126.75555555554,
+      "initialization_us": 1469486,
+      "matched_shares_per_second": 711905.2277777778,
+      "max_start_lateness_us": 36213,
+      "measured_actor_updates": 58500000,
+      "orders_per_second": 243999.63888888888,
+      "p99_start_lateness_us": 19001,
+      "population": 325000,
+      "profile": "NORMAL",
+      "repeat": 3,
+      "skipped_slots": 0
+    },
+    {
+      "accepted_offers": 667,
+      "actor_updates_per_second": 325000.0,
+      "build_hash": "2b3b53fd6f709de7236c600d970805cf35dd80f8c75fd2cb29085048a55dcbcb",
+      "configuration_hash": "81d541c7012a89621a87760ed6994541c126ff94296e7fc39f343c096948d3d8",
+      "database": "one-market-baseline-chaos-20261003t224614z-3341112",
+      "filled_orders_per_second": 150881.73888888888,
+      "initialization_us": 1526853,
+      "matched_shares_per_second": 981158.4944444444,
+      "max_start_lateness_us": 29606,
+      "measured_actor_updates": 58500000,
+      "orders_per_second": 284784.4111111111,
+      "p99_start_lateness_us": 17746,
+      "population": 325000,
+      "profile": "CHAOS",
+      "repeat": 1,
+      "skipped_slots": 0
+    },
+    {
+      "accepted_offers": 680,
+      "actor_updates_per_second": 325000.0,
+      "build_hash": "2b3b53fd6f709de7236c600d970805cf35dd80f8c75fd2cb29085048a55dcbcb",
+      "configuration_hash": "81d541c7012a89621a87760ed6994541c126ff94296e7fc39f343c096948d3d8",
+      "database": "one-market-baseline-chaos-20261003t224614z-3341112",
+      "filled_orders_per_second": 153802.17222222223,
+      "initialization_us": 1482805,
+      "matched_shares_per_second": 1004838.3222222222,
+      "max_start_lateness_us": 48380,
+      "measured_actor_updates": 58500000,
+      "orders_per_second": 284192.59444444446,
+      "p99_start_lateness_us": 19924,
+      "population": 325000,
+      "profile": "CHAOS",
+      "repeat": 2,
+      "skipped_slots": 0
+    },
+    {
+      "accepted_offers": 673,
+      "actor_updates_per_second": 325000.0,
+      "build_hash": "2b3b53fd6f709de7236c600d970805cf35dd80f8c75fd2cb29085048a55dcbcb",
+      "configuration_hash": "81d541c7012a89621a87760ed6994541c126ff94296e7fc39f343c096948d3d8",
+      "database": "one-market-baseline-chaos-20261003t224614z-3341112",
+      "filled_orders_per_second": 150001.55,
+      "initialization_us": 1450644,
+      "matched_shares_per_second": 974411.1666666666,
+      "max_start_lateness_us": 30682,
+      "measured_actor_updates": 58500000,
+      "orders_per_second": 285110.77777777775,
+      "p99_start_lateness_us": 17889,
+      "population": 325000,
+      "profile": "CHAOS",
+      "repeat": 3,
+      "skipped_slots": 0
+    }
+  ],
+  "summary_hashes": {
+    "CHAOS": "fe3b4e0b116fdf243d19461c0e1b335c4fe8c0097f7fc3974bc948fcd997f064",
+    "NORMAL": "472f4147cfafede2af9abf3f5110ce8dee974706b7988288f777592e9fe58654"
+  }
+}
+test runner::archive_tests::qualification_archive_matches_raw_evidence ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.18s
+

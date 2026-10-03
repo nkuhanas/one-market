@@ -39,9 +39,12 @@ On the capacity-optimization branch, private actor rows use a fixed-width schema
 Existing baseline worlds are deliberately not migrated or deleted. To opt into
 a separate local world, set `SPACETIMEDB_DATABASE=one-market-v02-fixed-local`
 in your ignored `.env` (or export it) before the development commands. Public
-observer/human contracts are unchanged. See the ongoing
-[capacity worklog](docs/capacity-worklog.md) for exploratory results; these are
-not qualified capacity headlines.
+observer/human contracts are unchanged. The branch qualified **325,000 persistent
+actors at 20 Hz locally for both NORMAL and CHAOS**, with three passing runs
+per profile. The [capacity worklog](docs/capacity-worklog.md) records the evidence,
+failed higher candidate, before/after measurements and reproduction commands.
+This is not a Maincloud result or a universal platform limit; local startup
+still uses 200 actors.
 
 ## Development
 

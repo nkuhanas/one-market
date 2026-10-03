@@ -1,11 +1,38 @@
 # Local capacity optimization log
 
-This is an in-progress investigation, not a new qualified capacity headline.
+The highest population qualified locally for **both NORMAL and CHAOS is 325,000
+persistent actors at 20 Hz**, with three fresh passing confirmations per profile.
+337,500 qualified for NORMAL only; its CHAOS failures remain in the archive.
+This is the highest tested passing combined candidate, not a universal limit or
+a Maincloud result. The final search resolution was 12,500 actors.
+
 The original passing baseline is commit `f507b23`, annotated tag
 `baseline/v02-local-200`; its six-run evidence remains under
 `artifacts/baseline/20261003T200840Z-2571553/`. Its release WASM SHA-256 is
 `863462dde83f39137100f91d946623a4f133643ac9975a78779f9d1349762ecd`.
 No market configuration or qualification criteria have changed.
+
+## Scope and unchanged workload
+
+Only the private actor storage representation was optimized. `config/v02.json`,
+`crates/market-core/src` (policy, auction, arithmetic, scheduling and qualification
+validation), `SPEC.md`, and `apps/web` are byte-for-byte unchanged from the
+preserved baseline. Runtime changes translate the same actor status and optional
+ticks to/from fixed-width storage; the indexed bucket query, membership digest,
+previous-step check, and one final row update for every due actor remain.
+The optional phase timers are compiled into diagnostic builds only, and those
+builds refuse qualification. Public samples still expose the original types.
+
+All full qualifications retain 20 Hz, 20 buckets, the same seed, 30s warm-up,
+180s measurement, ten production-subscription viewers, five offered human
+orders/second and confirmed reads. Cash/share audits run after measurement,
+never in place of persistent actor updates. Failed confirmations are retained
+and cannot be replaced with a selection of successful repeats.
+
+Measurements are local to this Docker host: 12 visible logical CPUs on an AMD
+Ryzen 9 9950X host, with no exclusive-core isolation claimed. Other machines and
+Maincloud require their own qualification. No Maincloud deployment or stress
+test was performed, and no existing database was deleted for this investigation.
 
 ## Original behavior
 
@@ -97,11 +124,39 @@ auction 1.465 ms, settlement/final actor write 14.618 ms. Compared with the
 original diagnostic probe, reads fell 34% and writes/settlement 41%. No policy,
 auction or coverage algorithm was removed or changed. Substantial transaction
 work still occurs outside WASM; it is not equivalent to disk latency.
+
+Subscription/serialization counters from the first original and fixed 500k
+production probes (`20261003T212432Z-2926844` and `20261003T214332Z-3027488`)
+also separate client-facing work from actor-row cost. Before/after counter
+deltas give mean WebSocket serialization of 18.075 / 17.992 µs per message
+(3,615 / 4,511 messages), and mean subscription-update lock wait of
+0.203 / 0.250 µs (411 / 486 observations). Reducer-plus-query elapsed time
+averaged 88.557 / 69.683 ms per simulation tick. Send-queue gauges were zero at
+both endpoint snapshots; that does not rule out transient queues. These metrics
+are not end-to-end delivery latency or evidence of a network ceiling. Raw
+`host-1-before.prom` / `host-1-after.prom` retain the metric definitions and
+counts. The diagnostic bounded feed/receipt/scheduling phase averaged 0.081 ms
+after optimization; it is separate from outgoing-message serialization.
+
 Pinned runtime source shows commit materializes old/new rows and maintains
 indexes ([commit merge](https://github.com/clockworklabs/SpacetimeDB/blob/v2.10.1/crates/datastore/src/locking_tx_datastore/committed_state.rs)).
 The next investigation is this row/commit cost, not a claim of a platform limit.
 The additional `20261003-fixed-row-500k/perf.data` sample overlaps the end of the
 run and audit; like the earlier native sample, it is not clean tick attribution.
+
+The same 500k NORMAL workload provides the before/after comparison below.
+Throughput/skips are from uninstrumented production builds; phase timings are
+from the separate diagnostic builds. Ranges describe observed repeats, not
+confidence intervals, and neither build qualified at 500k.
+
+| Measurement                           |  Original | Fixed-width actor rows |
+| ------------------------------------- | --------: | ---------------------: |
+| Committed actor updates / wall second |  274–281k |               349–355k |
+| Skipped slots (5+20s probes)          |   218–228 |                142–151 |
+| Mean host transaction time            |  87–90 ms |               68–70 ms |
+| Sampled selection/read/sort           | 16.556 ms |              10.922 ms |
+| Sampled settlement/final actor write  | 24.875 ms |              14.618 ms |
+| Sampled auction                       |  1.482 ms |               1.465 ms |
 
 Verification after the optimization: `scripts/check` passed formatting, lint,
 types, builds, Clippy, binding freshness, seven core tests, three runtime tests,
@@ -158,7 +213,8 @@ was 15,712 µs. Offered/viewer load, confirmed-read connection health, and the
 conservation audit passed in both. Initialization took 1,505 / 1,424 ms.
 Evidence is in `20261003T223636Z-3297714/325000-normal` and
 `20261003T223841Z-3307679/325000-chaos`. The next full six-run candidate is
-325,000; these two exploratory passes alone do not qualify it.
+325,000; these two exploratory passes alone did not qualify it. The full result
+is recorded below.
 
 An additional original-build 500k probe using the newly regenerated isolated
 decoder reproduced failure: P99 90,744 µs, 217 skips, 282,490 updates/second.
@@ -185,18 +241,105 @@ transaction commit path, with indexed persistence and intermediate row-value
 construction still substantial. There is no measured proof of a scheduler-only,
 viewer-delivery, disk-bandwidth, or universal SpacetimeDB actor limit here.
 
+## Final local qualification
+
+`artifacts/baseline/20261003T224614Z-3341112/` contains the full 325,000-actor
+qualification. All three NORMAL and all three CHAOS confirmations passed on
+their first six-run invocation, with the unchanged 30+180s workload. Each run
+retains 4,200 committed receipts, including 3,600 measured ticks and exactly
+58,500,000 measured actor updates. All six maintained the ten viewers and five
+offered orders/second, used confirmed reads, had healthy connections and zero
+skipped slots, and passed the cash/share conservation audit. That is 351,000,000
+measured updates across the six runs.
+
+| Profile / repeat | P99 start lateness (µs) | Skips | Actor updates/s | Submitted orders/s | Filled orders/s | Initialization (ms) |
+| ---------------- | ----------------------: | ----: | --------------: | -----------------: | --------------: | ------------------: |
+| NORMAL 1         |                  15,616 |     0 |         325,000 |            243,976 |         237,105 |           1,657.559 |
+| NORMAL 2         |                  16,938 |     0 |         325,000 |            243,941 |         237,090 |           1,441.199 |
+| NORMAL 3         |                  19,001 |     0 |         325,000 |            244,000 |         237,127 |           1,469.486 |
+| CHAOS 1          |                  17,746 |     0 |         325,000 |            284,784 |         150,882 |           1,526.853 |
+| CHAOS 2          |                  19,924 |     0 |         325,000 |            284,193 |         153,802 |           1,482.805 |
+| CHAOS 3          |                  17,889 |     0 |         325,000 |            285,111 |         150,002 |           1,450.644 |
+
+Order rates are rounded here; exact rates and matched-share rates are in
+`archive-audit.txt`. Rates count committed receipts within the fixed 180-second
+server-invocation timestamp window, not completed ticks treated as elapsed time
+or exact commit-completion timestamps. The worst individual start lateness was
+48,380 µs in CHAOS repeat two. These finite confirmations establish the specified
+qualification, not an indefinite zero-miss service-level guarantee.
+
+The independent read-only archive audit passed both profiles: exact workload
+bytes, module SHA-256, consistent build metadata, artifact and summary BLAKE3
+hashes, CSV/JSON parity, original receipt validation, bucket coverage, every
+offered order and receipt arrival, public result and private run/validation
+readbacks, and the retained CHAOS event's direction/severity/confidence/timing.
+The same audit correctly rejects the failed 337,500 combined archive.
+
+- Module SHA-256: `2b3b53fd6f709de7236c600d970805cf35dd80f8c75fd2cb29085048a55dcbcb`.
+- Harness binary BLAKE3: `ac7cdee83e766d6437c4447cea1ccff40f8d2682f925571a326f75f1f6ad4ba3`.
+- NORMAL workload hash: `9f87a3af48554edc01bc6d1920fc9208907515a17f95e6278d8841d1f2be0451`.
+- CHAOS workload hash: `81d541c7012a89621a87760ed6994541c126ff94296e7fc39f343c096948d3d8`.
+- NORMAL summary hash: `472f4147cfafede2af9abf3f5110ce8dee974706b7988288f777592e9fe58654`.
+- CHAOS summary hash: `fe3b4e0b116fdf243d19461c0e1b335c4fe8c0097f7fc3974bc948fcd997f064`.
+
+The next likely bottleneck is still actor-row serialization/materialization,
+index maintenance and transaction commit work. At the boundary, rare deadline
+tails also matter: the cause of the isolated 337,500 misses is not established.
+Further work should measure end-to-end commit and deadline tails before choosing
+another optimization; these data do not isolate disk bandwidth, scheduler
+contention or client delivery as the limiting resource. Native CPU sampling
+exposes allocation/free work, but does not count allocations, and unsymbolized
+JIT frames limit exact attribution. No reduction in writes or load is justified.
+
+## Final regression and preservation checks
+
+After all measurement stopped, `scripts/check` passed formatting, lint,
+TypeScript/Vite, twelve Rust unit tests, WASM/native Clippy, the release build
+and both generated-binding comparisons. `scripts/backend-smoke` passed all
+twelve real-runtime tests, including access control, rollback, coverage and
+lifecycle. `scripts/smoke` passed both browser tests and verified persistent
+state plus one scheduler across container recreation and republishing.
+Logs are retained in `artifacts/verification/20261003-capacity/`.
+
+The final archive audit passed again after that database restart. Its separate
+negative check returned the expected exit 101 for the failed 337,500 archive
+with `CHAOS summary is not qualified`; `archive-rejection.txt` records that
+intentional rejection, not a regression-test failure. The archive test is
+ignored by ordinary unit-test runs because it requires completed benchmark
+artifacts, and was explicitly executed for both archives.
+
+The rebuilt production module compares byte-for-byte equal to the preserved
+optimized WASM. Git comparisons confirm the original baseline evidence, workload
+configuration, market-core rules, spec and frontend are unchanged. This final
+snapshot is tagged `capacity/local-325k` on `perf/local-capacity`. Commits, tags
+and evidence remain local; nothing was pushed or deployed to Maincloud.
+
 ## Reproduction
 
-All commands are local. On this host prefix them with
-`sudo -n env LOCAL_UID=1000 LOCAL_GID=1000` for Docker access.
+All commands are local and run from the repository root. On this host Docker
+requires the following prefix; on a Docker-enabled user account, use `env` in
+place of `sudo -n env LOCAL_UID=1000 LOCAL_GID=1000`. The explicit database
+selection keeps the old private schema's worlds intact.
 
 ```sh
-POPULATION=500000 MODULE_WASM=artifacts/builds/baseline-v02.wasm ./scripts/explore
-POPULATION=500000 MODULE_WASM=artifacts/builds/fixed-row.wasm ./scripts/explore
-POPULATION=500000 PROFILE_TICKS=1 ./scripts/explore
-POPULATION=500000 MODULE_WASM=artifacts/builds/fixed-row.wasm ./scripts/profile-native
-POPULATION=337500 PROFILE=ALL ./scripts/benchmark
-docker compose --project-directory . -f infra/docker-compose.yml run --rm --no-deps web \
+capacity_run() { sudo -n env LOCAL_UID=1000 LOCAL_GID=1000 "$@"; }
+capacity_run SPACETIMEDB_DATABASE=one-market-v02-fixed-local ./scripts/local-up
+capacity_run ./scripts/check
+capacity_run ./scripts/backend-smoke
+capacity_run SPACETIMEDB_DATABASE=one-market-v02-fixed-local ./scripts/smoke
+
+# Both 500k probes are expected to fail; retain their failures and compare rates.
+capacity_run POPULATION=500000 MODULE_WASM=artifacts/builds/baseline-v02.wasm ./scripts/explore
+capacity_run POPULATION=500000 MODULE_WASM=artifacts/builds/fixed-row.wasm ./scripts/explore
+capacity_run POPULATION=500000 PROFILE_TICKS=1 ./scripts/explore
+capacity_run POPULATION=500000 MODULE_WASM=artifacts/builds/fixed-row.wasm ./scripts/profile-native
+
+capacity_run POPULATION=325000 PROFILE=NORMAL WARMUP_SECONDS=30 MEASUREMENT_SECONDS=90 ./scripts/explore
+capacity_run POPULATION=325000 PROFILE=CHAOS WARMUP_SECONDS=30 MEASUREMENT_SECONDS=90 ./scripts/explore
+capacity_run POPULATION=325000 PROFILE=ALL ./scripts/benchmark
+# For a new run, substitute the archive folder printed by benchmark.
+capacity_run ./scripts/audit-capacity artifacts/baseline/20261003T224614Z-3341112
+capacity_run docker compose --project-directory . -f infra/docker-compose.yml run --rm --no-deps web \
   node scripts/report-capacity.mjs artifacts/exploration
 ```
 
@@ -204,7 +347,7 @@ Both measured WASM binaries are retained in `artifacts/builds/`, with hashes and
 provenance. The original exploration harness binary also remains in the Docker
 target volume; the script can rebuild a compatible decoder/harness from source.
 The immutable tag also permits rebuilding the original source in a
-separate worktree. Full 3× NORMAL + 3× CHAOS qualification remains required after
-a materially improved knee and final-candidate bracketing. So far, 337,500 is
-qualified for NORMAL only; the highest population qualified for both profiles
-remains the preserved 200-actor baseline while the lower candidate is tested.
+separate worktree. The final candidate was qualified with a non-diagnostic build;
+no builds, profiling or smoke/restart checks ran concurrently with measurement.
+Re-auditing live readbacks requires the retained named benchmark databases; a
+fresh clone can reproduce them by running `benchmark` and auditing its new folder.

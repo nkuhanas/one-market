@@ -48,6 +48,7 @@ fn qualification_archive_matches_raw_evidence() {
     let build_hash = hash_output.split_whitespace().next().unwrap();
     let c = config();
     let mut population = None;
+    let mut build_metadata = None;
     let mut reports = vec![];
     let mut summary_hashes = BTreeMap::new();
     for profile in ["NORMAL", "CHAOS"] {
@@ -102,6 +103,11 @@ fn qualification_archive_matches_raw_evidence() {
             assert!(news.is_empty());
         } else {
             assert_eq!(news.len(), 1);
+            assert_eq!(news[0]["direction"], -1);
+            assert_eq!(
+                news[0]["headline"],
+                "ONE Industries admits its lunar revenue division does not actually exist."
+            );
             assert_eq!(news[0]["start_tick"], c.chaos_slot - 1);
             assert_eq!(
                 news[0]["end_tick"],
@@ -162,6 +168,10 @@ fn qualification_archive_matches_raw_evidence() {
             );
             assert!(a.initialization_us > 0);
             assert_eq!(a.build_metadata["harness_binary_blake3"].len(), 64);
+            assert_eq!(
+                &*build_metadata.get_or_insert_with(|| a.build_metadata.clone()),
+                &a.build_metadata
+            );
 
             assert_eq!(a.offers.len(), 1050);
             for (i, offer) in a.offers.iter().enumerate() {

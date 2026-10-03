@@ -9,6 +9,8 @@ documented in [implementation decisions](implementation-decisions.md).
 ## Run locally
 
 ```sh
+# On the fixed-row branch, use a separate world from the old baseline schema.
+export SPACETIMEDB_DATABASE=one-market-v02-fixed-local
 ./scripts/local-up
 ./scripts/check
 ./scripts/backend-smoke
@@ -17,6 +19,9 @@ documented in [implementation decisions](implementation-decisions.md).
 ```
 
 Run smoke before benchmarking: it intentionally recreates the database server.
+If Docker requires `sudo`, pass `SPACETIMEDB_DATABASE` through `sudo env` together
+with `LOCAL_UID` and `LOCAL_GID`, or put it in the ignored `.env`; do not assume
+`sudo` preserves the exported database selection.
 Avoid server restarts, module publication, or builds during measured runs.
 `POPULATION=200 PROFILE=ALL` is the default. A complete invocation takes about
 21 minutes plus setup. Each profile gets a new named local database, and each

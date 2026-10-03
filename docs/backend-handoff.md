@@ -8,6 +8,13 @@ This page records the original baseline preserved at `baseline/v02-local-200`
 [capacity worklog](capacity-worklog.md) for optimization, later evidence, and
 the private-schema upgrade instructions. Changes remain local and unpushed.
 
+The later optimization qualified 325,000 actors locally for both NORMAL and
+CHAOS (three confirmations each), with the unchanged workload. The original
+200-actor evidence below remains the preserved correctness baseline, not the
+latest capacity result. Use `SPACETIMEDB_DATABASE=one-market-v02-fixed-local`
+on the optimization branch to avoid publishing its changed private schema into
+an existing baseline world.
+
 ## Ready for development
 
 - `crates/market-core`: checked arithmetic, deterministic policy/generator,
