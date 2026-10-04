@@ -19,7 +19,13 @@ export function Header({
   return (
     <header className="header">
       <a className="brand" href="#market">
-        <span className="brand-mark" aria-hidden="true" />
+        <img
+          className="brand-mark"
+          src="/one-market-mark.png"
+          alt=""
+          width={197}
+          height={128}
+        />
         One Market
       </a>
 

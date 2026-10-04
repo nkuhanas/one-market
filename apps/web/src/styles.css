@@ -54,10 +54,10 @@
   --text-2: #a8aeb9;
   --text-3: #8f96a3;
 
-  --accent: #3b7bff;
-  --accent-solid: #2f6ae8;
-  --accent-dim: #1d3f8f;
-  --accent-ink: #ffffff;
+  --accent: #22c2e8;
+  --accent-solid: #12b3d9;
+  --accent-dim: #0b6b85;
+  --accent-ink: #06161b;
   --up: #22c55e;
   --down: #ff5a5a;
 
@@ -195,11 +195,9 @@ main {
 }
 
 .brand-mark {
-  width: 15px;
-  height: 15px;
-  border-radius: 3px;
-  background: linear-gradient(145deg, var(--accent), var(--accent-dim));
-  box-shadow: 0 0 0 1px rgb(59 123 255 / 0.25);
+  height: 22px;
+  width: auto;
+  display: block;
 }
 
 .nav {
@@ -260,10 +258,10 @@ main {
 @keyframes pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgb(59 123 255 / 0.5);
+    box-shadow: 0 0 0 0 rgb(34 194 232 / 0.5);
   }
   60% {
-    box-shadow: 0 0 0 5px rgb(59 123 255 / 0);
+    box-shadow: 0 0 0 5px rgb(34 194 232 / 0);
   }
 }
 
@@ -319,8 +317,8 @@ main {
   font-size: 12px;
   font-weight: 400;
   color: var(--accent);
-  border: 1px solid rgb(59 123 255 / 0.32);
-  background: rgb(59 123 255 / 0.1);
+  border: 1px solid rgb(34 194 232 / 0.32);
+  background: rgb(34 194 232 / 0.1);
   padding: 3px 9px;
   border-radius: 999px;
   letter-spacing: 0;
@@ -477,7 +475,7 @@ main {
 }
 
 .chart-area {
-  fill: rgb(59 123 255 / 0.08);
+  fill: rgb(34 194 232 / 0.08);
   stroke: none;
 }
 
