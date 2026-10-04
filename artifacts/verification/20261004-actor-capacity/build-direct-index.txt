@@ -1,0 +1,84 @@
+ Container one-market-tools-run-07d2f8105385 Creating 
+ Container one-market-tools-run-07d2f8105385 Created 
+Generating TypeScript module bindings for module crates/spacetime
+   Compiling one-market-spacetime v0.1.0 (/workspace/crates/spacetime)
+    Finished `release` profile [optimized] target(s) in 3.31s
+Optimising module with wasm-opt...
+Build finished successfully.
+Skipping private tables during codegen: actor_state, admin_allowlist, benchmark_reader, bucket_manifest, connection_state, detailed_benchmark_receipts, grant_accounting, human_order_receipt, human_trader, order_watermark, pending_human_order, run_record, runtime_config, tick_schedule, validated_run.
+Creating directory packages/bindings/src/types
+Creating directory packages/bindings/src/types
+Generate finished successfully.
+ Container one-market-tools-run-b66f81a0bed3 Creating 
+ Container one-market-tools-run-b66f81a0bed3 Created 
+Generating Rust module bindings for module spacetimedb
+Skipping build. Instead we are inspecting target/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+Writing file crates/benchmark/src/bindings/actor_sample_table.rs
+Writing file crates/benchmark/src/bindings/actor_state_table.rs
+Writing file crates/benchmark/src/bindings/admin_allowlist_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_reader_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_result_table.rs
+Writing file crates/benchmark/src/bindings/bucket_manifest_table.rs
+Writing file crates/benchmark/src/bindings/connection_state_table.rs
+Writing file crates/benchmark/src/bindings/detailed_benchmark_receipts_table.rs
+Writing file crates/benchmark/src/bindings/grant_accounting_table.rs
+Writing file crates/benchmark/src/bindings/human_order_receipt_table.rs
+Writing file crates/benchmark/src/bindings/human_trader_table.rs
+Writing file crates/benchmark/src/bindings/market_state_table.rs
+Writing file crates/benchmark/src/bindings/news_event_table.rs
+Writing file crates/benchmark/src/bindings/order_watermark_table.rs
+Writing file crates/benchmark/src/bindings/pending_human_order_table.rs
+Writing file crates/benchmark/src/bindings/price_point_table.rs
+Writing file crates/benchmark/src/bindings/public_activity_table.rs
+Writing file crates/benchmark/src/bindings/run_record_table.rs
+Writing file crates/benchmark/src/bindings/runtime_config_table.rs
+Writing file crates/benchmark/src/bindings/tick_schedule_table.rs
+Writing file crates/benchmark/src/bindings/validated_run_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_latest_receipt_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_runs_table.rs
+Writing file crates/benchmark/src/bindings/my_pending_order_table.rs
+Writing file crates/benchmark/src/bindings/my_recent_fills_table.rs
+Writing file crates/benchmark/src/bindings/my_trader_table.rs
+Writing file crates/benchmark/src/bindings/tick_receipt_type.rs
+Writing file crates/benchmark/src/bindings/optional_tick_type.rs
+Writing file crates/benchmark/src/bindings/pending_human_order_type.rs
+Writing file crates/benchmark/src/bindings/connection_state_type.rs
+Writing file crates/benchmark/src/bindings/price_point_type.rs
+Writing file crates/benchmark/src/bindings/benchmark_reader_type.rs
+Writing file crates/benchmark/src/bindings/market_state_type.rs
+Writing file crates/benchmark/src/bindings/runtime_config_type.rs
+Writing file crates/benchmark/src/bindings/actor_status_type.rs
+Writing file crates/benchmark/src/bindings/human_order_receipt_type.rs
+Writing file crates/benchmark/src/bindings/run_record_type.rs
+Writing file crates/benchmark/src/bindings/validated_run_type.rs
+Writing file crates/benchmark/src/bindings/bucket_manifest_type.rs
+Writing file crates/benchmark/src/bindings/benchmark_result_type.rs
+Writing file crates/benchmark/src/bindings/admin_allowlist_type.rs
+Writing file crates/benchmark/src/bindings/human_trader_type.rs
+Writing file crates/benchmark/src/bindings/order_watermark_type.rs
+Writing file crates/benchmark/src/bindings/actor_sample_type.rs
+Writing file crates/benchmark/src/bindings/tick_schedule_type.rs
+Writing file crates/benchmark/src/bindings/public_activity_type.rs
+Writing file crates/benchmark/src/bindings/grant_accounting_type.rs
+Writing file crates/benchmark/src/bindings/actor_state_type.rs
+Writing file crates/benchmark/src/bindings/news_event_type.rs
+Writing file crates/benchmark/src/bindings/authorize_reader_reducer.rs
+Writing file crates/benchmark/src/bindings/benchmark_step_reducer.rs
+Writing file crates/benchmark/src/bindings/connected_reducer.rs
+Writing file crates/benchmark/src/bindings/disconnected_reducer.rs
+Writing file crates/benchmark/src/bindings/enter_market_reducer.rs
+Writing file crates/benchmark/src/bindings/initialize_batch_reducer.rs
+Writing file crates/benchmark/src/bindings/pause_simulation_reducer.rs
+Writing file crates/benchmark/src/bindings/ping_reducer.rs
+Writing file crates/benchmark/src/bindings/place_order_reducer.rs
+Writing file crates/benchmark/src/bindings/publish_benchmark_result_reducer.rs
+Writing file crates/benchmark/src/bindings/recover_simulation_reducer.rs
+Writing file crates/benchmark/src/bindings/reset_batch_reducer.rs
+Writing file crates/benchmark/src/bindings/reset_market_reducer.rs
+Writing file crates/benchmark/src/bindings/set_actor_population_reducer.rs
+Writing file crates/benchmark/src/bindings/simulation_tick_reducer.rs
+Writing file crates/benchmark/src/bindings/start_run_reducer.rs
+Writing file crates/benchmark/src/bindings/trigger_chaos_reducer.rs
+Writing file crates/benchmark/src/bindings/validate_run_reducer.rs
+Writing file crates/benchmark/src/bindings/mod.rs
+Generate finished successfully.

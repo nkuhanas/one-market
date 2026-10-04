@@ -1,0 +1,22 @@
+ Container one-market-db-1 Running 
+ Container one-market-db-1 Waiting 
+ Container one-market-db-1 Healthy 
+ Container one-market-tools-run-49b78288a84a Creating 
+ Container one-market-tools-run-49b78288a84a Created 
+ Container one-market-tools-run-0010e94c7964 Creating 
+ Container one-market-tools-run-0010e94c7964 Created 
+(WASM) Skipping build. Instead we are publishing artifacts/builds/fixed-row.wasm
+You are about to publish to a non-local server: db
+Skipping confirmation due to --yes
+Uploading to http://db:3000 => http://db:3000
+Checking for breaking changes...
+Publishing module...
+Created new database with name: one-market-explore-337500-normal-20261004t021425z-129660, identity: c200c98a3612116ce0f3b643576735072adb4f230788f646174ae7d88ab62622
+ Container one-market-tools-run-af0945fef4a9 Creating 
+ Container one-market-tools-run-af0945fef4a9 Created 
+EXPLORE NORMAL repeat 1/2: 337500 actors, 5s warmup + 20s measurement, 10 viewers, 5 offered orders/s; run 1; initialization=1905ms
+  offered 0/125; committed ticks 0
+  EXPLORE_PASS: p99=13814us, updates=6750000, skipped=0, load=true, audit=true; 
+EXPLORE NORMAL repeat 2/2: 337500 actors, 5s warmup + 20s measurement, 10 viewers, 5 offered orders/s; run 2; initialization=1475ms
+  offered 0/125; committed ticks 0
+  EXPLORE_PASS: p99=18188us, updates=6750000, skipped=0, load=true, audit=true; 

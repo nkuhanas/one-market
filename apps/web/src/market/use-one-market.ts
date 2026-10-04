@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DbConnection } from '@one-market/bindings';
+import { openOrderedWebSocket } from '@one-market/transport';
 import type {
   ActorSample,
   BenchmarkResult,
@@ -207,6 +208,9 @@ export function useOneMarket(): OneMarket {
     setShock(undefined);
 
     const conn = DbConnection.builder()
+      .withWSFn(openOrderedWebSocket)
+      .withCompression('gzip')
+      .withConfirmedReads(true)
       .withUri(import.meta.env.VITE_SPACETIMEDB_HOST || 'http://localhost:3000')
       .withDatabaseName(
         import.meta.env.VITE_SPACETIMEDB_DATABASE || 'one-market-local',

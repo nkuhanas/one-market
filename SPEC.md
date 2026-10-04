@@ -226,6 +226,14 @@ signal = momentum_weight × momentum
 
 Signal magnitude determines conviction and sizing. Buys must be affordable at their limit price; sells must be covered by owned shares. Version the policy, sizing, limit-price, and noise rules in the benchmark configuration.
 
+The market-recovery policy uses the magnitude of the stored mean-reversion
+weight so reversion is restoring, while momentum, crowd and news responses
+remain heterogeneous. Active limit prices use an actor-specific reservation
+price anchored partway toward the initial-price reference. Buy limits round up
+to integer cents; sell limits round down. Freeze the anchor strength and exact
+formula in the workload configuration. This changes submitted orders, never
+the traded price directly, and introduces no synthetic counterparty.
+
 ---
 
 ## 7. Persistent actor-state requirement
@@ -355,7 +363,20 @@ COOLDOWN
 RECAPITALIZED → ACTIVE
 ```
 
-An exiting actor replaces its normal policy with a sell instruction for all remaining shares at the minimum permitted price whenever its bucket runs. Actual buyers are required. Partial fills leave it exiting; no buyers means no instant liquidation. If it has no shares remaining, it enters cooldown and records the cooldown start tick.
+An exiting actor replaces its normal policy with a bounded liquidation slice
+whenever its bucket runs. The market-recovery defaults are at most 10 remaining
+shares per due epoch, with a reserve of 95% of the previous traded price rounded
+up to cents and clamped to the permitted range. Freeze and version both the
+quantity cap and discount. Actual buyers are required. Partial fills leave it
+exiting; no buyers means no instant liquidation. If it has no shares remaining,
+it enters cooldown and records the cooldown start tick. Elapsed time alone
+never discards inventory or moves an actor into cooldown.
+
+Recovery is conditional on executable counterparties. Because auctions contain
+only the current due bucket plus accepted human orders, an entirely exiting
+bucket cannot autonomously recover without a buyer. Do not promise universal
+recovery, manufacture fills, or hide the stalled population. Policy regressions
+must distinguish this illiquidity from an integer-rounding penny-price trap.
 
 After 20 logical ticks have elapsed, its next due bucket update grants only enough cash to restore its bankroll to `$100,000`:
 

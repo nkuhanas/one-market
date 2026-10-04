@@ -351,3 +351,262 @@ separate worktree. The final candidate was qualified with a non-diagnostic build
 no builds, profiling or smoke/restart checks ran concurrently with measurement.
 Re-auditing live readbacks requires the retained named benchmark databases; a
 fresh clone can reproduce them by running `benchmark` and auditing its new folder.
+
+## Follow-up delta: controls and CI escalation (2026-10-04 UTC)
+
+The sections above describe the preserved fixed-row capacity snapshot. The
+subsequent merged frontend changes are retained unchanged in this follow-up.
+Implementation of the [timestamped delta](../deltas/actor-capacity-optimization_2026-10-03_20-57-22_EST.md)
+is incomplete in draft [PR #3](https://github.com/nkuhanas/one-market/pull/3).
+At the initial controls checkpoint, no direct-index or digest change had been
+implemented and no new capacity had been qualified. The module, specification,
+workload, bindings, and frontend were unchanged from upstream base `cbcf187`.
+Later implementation and transport results are recorded below.
+
+Fresh controls used the same preserved fixed-row WASM, hash
+`2b3b53fd6f709de7236c600d970805cf35dd80f8c75fd2cb29085048a55dcbcb`, and existing
+production harness. Each uninstrumented NORMAL population used two fresh runs
+with 5s warm-up, 20s measurement, ten viewers, five offered orders/sec, confirmed
+reads, coverage validation and a post-run conservation audit.
+
+|  Actors | P99 start lateness, repeats 1 / 2 (µs) | Skips, repeats 1 / 2 | Short-probe result | Archive under `artifacts/exploration/` |
+| ------: | -------------------------------------: | -------------------: | ------------------ | -------------------------------------- |
+| 325,000 |                        20,506 / 19,391 |                0 / 0 | Both pass          | `20261004T021322Z-124451`              |
+| 337,500 |                        13,814 / 18,188 |                0 / 0 | Both pass          | `20261004T021425Z-129660`              |
+| 350,000 |                        37,745 / 37,201 |                0 / 0 | Both pass          | `20261004T021528Z-135023`              |
+| 500,000 |                        68,956 / 74,801 |            135 / 139 | Both fail          | `20261004T021631Z-140356`              |
+
+Both 500k failures retained offered load and passed the conservation audit;
+measured updates were 7,274,786 and 7,175,090 over 20 wall seconds. These failed
+rates are comparisons for future experiments, not capacity claims.
+
+A separate 350k CHAOS 30+90s diagnostic passed with P99 25,151 µs, no skips,
+31,500,000 measured updates, maintained load and passing conservation. It did
+not reproduce the earlier isolated deadline misses. The process sampler retained
+1,131 approximately 100ms samples and correlated 2,396 receipt windows. Its
+largest lateness was 35,700 µs; the surrounding 318ms process-wide sample window
+included one major fault, about 88 MB of writes, 377ms summed thread CPU time,
+and 2.72ms summed thread runqueue time. The windows overlap and include other
+runtime work: these observations do not prove a storage or scheduler cause.
+Thread churn also limits interpretation of aggregate scheduler counter deltas.
+The instrumented run cannot qualify capacity.
+
+Reproduction (using the `capacity_run` prefix above):
+
+```sh
+capacity_run POPULATION=350000 PROFILE=CHAOS MODULE_WASM=artifacts/builds/fixed-row.wasm \
+  HARNESS_BIN=target/release/one-market-benchmark ./scripts/profile-deadlines
+capacity_run docker compose --project-directory . -f infra/docker-compose.yml run --rm --no-deps web \
+  node scripts/report-deadlines.mjs artifacts/profiling/deadlines-20261004T021050Z-102855 \
+  artifacts/exploration/20261004T021051Z-103017/350000-chaos/chaos-1.json
+# Substitute each control population; failures are expected at 500k.
+capacity_run POPULATION=500000 PROFILE=NORMAL REPEATS=2 MODULE_WASM=artifacts/builds/fixed-row.wasm \
+  HARNESS_BIN=target/release/one-market-benchmark ./scripts/explore
+```
+
+The pause-test change uses owner-authorized HTTP SQL reads and bounded cache
+synchronization. It passed local static checks and three fresh 24-test backend
+runs, including twelve new regression cases. CI nevertheless found persistent
+divergence: server tick 60, disabled/generation 2/FAILED/no schedule, versus cache
+tick 60, enabled/generation 1/RUNNING/one schedule after five seconds. The failure
+is retained rather than hidden with retries or weakened assertions.
+
+The installed TypeScript SDK 2.10.1 decompresses WebSocket messages concurrently
+before its inbound queue. A controlled diagnostic using the unmodified adapter
+and real gzip payloads reversed callback order in ten of ten mixed gzip/plain
+trials; ten plain/plain controls preserved order. This proves an SDK ordering
+defect and provides a strong hypothesis for CI, but no CI wire trace was captured
+to prove that causal link. Evidence, source hashes, logs and reproduction code
+are in `artifacts/verification/20261004-actor-capacity/`.
+
+The PR remained unmerged at this checkpoint. The scope decision was whether to
+extend shared client transport ordering or use
+an explicitly documented test-only uncompressed transport workaround. No SDK
+patch, dependency upgrade, compression change, or frontend transport change has
+been made at that point. The user subsequently authorized the shared transport
+extension below; final qualification remains pending.
+
+## Shared transport extension (2026-10-04 UTC)
+
+The user authorized extending PR #3 to fix production client ordering, not just
+disable compression in tests. `@one-market/transport` serializes raw frames
+before decompression for both TypeScript clients through `withWSFn`. It keeps
+gzip, confirmed reads, token exchange, and SpacetimeDB 2.10.1. The frontend
+change is connection lifecycle only; visual design and runtime semantics are
+unchanged. Closing cancels queued work, and corrupt frames fail closed.
+
+Local validation of this checkpoint passed `scripts/check`, all 33 backend and
+transport tests, and all three browser smoke tests, including mixed gzip/plain
+wire ordering. Smoke used the fresh `one-market-v02-delta-smoke` world and
+verified persistent tick plus one scheduler after restart and republish. Logs:
+`artifacts/verification/20261004-actor-capacity/{check-transport,backend-transport-1,smoke-transport}.txt`.
+Both [push CI](https://github.com/nkuhanas/one-market/actions/runs/37171331525)
+and [PR CI](https://github.com/nkuhanas/one-market/actions/runs/37171333193)
+passed at `8e52986`, including all 33 backend/transport cases and three browser
+cases. The pinned-SDK reproduction remains as negative evidence. Final CI must
+be checked again on the retained capacity implementation.
+
+## Independent direct-index experiment (2026-10-04 UTC)
+
+The production candidate `2b6afc4` changes only the private actor primary-key
+index to direct addressing. The bucket B-tree, explicit actor ordering, row
+writes and digest remain unchanged. Preserved WASM:
+`artifacts/builds/capacity-delta/direct-index.wasm`, SHA-256
+`055bb41343a998a16aa9d8b78fa90572601a8508b70aef33323604d61126b4ef`.
+Bindings were regenerated and are byte-identical. Static checks and all 24
+pre-transport backend tests passed, followed by the transport validation above.
+
+The same baseline Rust harness (`ac7cdee8...`) ran two 5+20s NORMAL probes at
+each population with unchanged viewer/offered load, seed and gates. No compile,
+smoke or profiling process ran during measurement. The fresh smoke world was
+paused first; prior development worlds were retained. This shared host is not
+exclusive, so repeat comparisons are evidence, not universal speedup guarantees.
+
+|  Actors | P99 µs, repeats 1 / 2 |   Skips | Result    | Archive under `artifacts/exploration/` |
+| ------: | --------------------: | ------: | --------- | -------------------------------------- |
+| 325,000 |         2,781 / 3,953 |   0 / 0 | Both pass | `20261004T023159Z-226516`              |
+| 337,500 |         2,143 / 4,967 |   0 / 0 | Both pass | `20261004T023301Z-231787`              |
+| 350,000 |         5,901 / 9,882 |   0 / 0 | Both pass | `20261004T023403Z-237018`              |
+| 500,000 |       59,185 / 58,823 | 63 / 70 | Both fail | `20261004T023505Z-242329`              |
+
+500k committed throughput was 435,017 and 431,250 updates/wall second versus
+363,739 and 358,755 in the matched baseline controls. Load and conservation
+passed even on the failed runs. Lower short-run lateness and improved failure
+throughput justify retaining the index for combined testing, not claiming
+qualified higher capacity. Full qualification is still required.
+
+`scripts/check-index-migration` published the fixed-row baseline to a fresh
+named world, initialized 200 actors, started/paused a run, and republished the
+direct-index module with `--delete-data=never`. The runtime removed the B-tree
+primary-key index and created the direct index without deleting rows. All eight
+checked tables matched exactly after sorting rows and preserving integer text.
+Result: `artifacts/verification/index-migration-20261004T023640Z-250562/result.txt`;
+the raw private-row snapshots stay ignored locally, not committed. The first
+script attempt stopped on an output-directory permission error before migration;
+that log and world are retained. No existing development world was migrated.
+
+The digest-only experiment uses the baseline B-tree primary key and preserves
+the exact hash chain while removing per-actor digest allocations. Its two new
+equivalence tests cover empty/single/multiple/boundary IDs and all buckets at
+20, 200, 325k, 337.5k, 350k and 500k. `scripts/check` passed with unchanged
+bindings. Preserved digest-only SHA-256:
+`814625047ade3b0fa8833ad2fbeeda0b967800a6c51ffce5eb0b1703e62d8e40`.
+Matched comparison (same 5+20s NORMAL windows and baseline harness):
+
+|  Actors | P99 µs, repeats 1 / 2 |     Skips | Result    | Archive under `artifacts/exploration/` |
+| ------: | --------------------: | --------: | --------- | -------------------------------------- |
+| 325,000 |       11,630 / 13,141 |     0 / 0 | Both pass | `20261004T023712Z-256186`              |
+| 337,500 |       24,725 / 25,590 |     0 / 0 | Both pass | `20261004T023814Z-261446`              |
+| 350,000 |       21,550 / 25,648 |     0 / 0 | Both pass | `20261004T023916Z-266714`              |
+| 500,000 |       71,095 / 72,268 | 132 / 136 | Both fail | `20261004T024019Z-271960`              |
+
+At 500k, digest-only throughput was 367,487 / 361,242 updates/sec: the paired
+mean is only 0.86% above controls. Mean host transaction time fell from
+66.73 / 67.56 ms to 66.16 / 66.94 ms, while mean WASM time fell from
+36.86 / 36.92 ms to 35.81 / 36.15 ms. P99 lateness was mixed across populations;
+these two non-interleaved repeats do not establish a robust capacity gain.
+At 350k, mean transaction time fell from 46.39 / 46.49 to 43.54 / 44.09 ms.
+In contrast, index-only 350k means were 36.54 / 37.50 ms, a larger reduction.
+All variants reported identical WASM memory snapshots (6 MiB at 325k;
+10.8125 MiB at the other populations), not total runtime/database memory.
+Per-run initialization and complete host summaries are retained in each
+archive's `capacity.csv`. Combined testing will decide whether the smaller
+digest improvement survives alongside direct indexing.
+
+Reproduction uses the exact frozen modules and the control harness hash above:
+
+```sh
+# Repeat for 325000, 337500, 350000, 500000; retain nonzero exits at 500k.
+capacity_run POPULATION=350000 PROFILE=NORMAL REPEATS=2 \
+  MODULE_WASM=artifacts/builds/capacity-delta/digest-only.wasm \
+  HARNESS_BIN=target/capacity-control-harness ./scripts/explore
+capacity_run ./scripts/check-index-migration
+```
+
+The harness was copied from `target/release/one-market-benchmark` before the
+digest edits were compiled; its recorded BLAKE3 matches the baseline controls.
+The copy is a local cache convenience, not a prerequisite for future builds;
+rebuilding the harness at the retained baseline source must reproduce the
+recorded identity for an exact matched comparison. Module hashes and source
+commits are in `artifacts/builds/capacity-delta/provenance.json`. No performance
+claim is based on the source filename or an assumed module identity.
+
+## Combined result and retention decision
+
+Combined candidate `4f84bca` / WASM `d13c1a9f...` used the identical paired
+5+20s workload and control harness:
+
+|  Actors | P99 µs, repeats 1 / 2 |   Skips | Result    | Archive under `artifacts/exploration/` |
+| ------: | --------------------: | ------: | --------- | -------------------------------------- |
+| 325,000 |         2,155 / 3,106 |   0 / 0 | Both pass | `20261004T024226Z-282886`              |
+| 337,500 |        5,147 / 10,020 |   0 / 0 | Both pass | `20261004T024328Z-288209`              |
+| 350,000 |         7,075 / 5,241 |   0 / 0 | Both pass | `20261004T024430Z-293463`              |
+| 500,000 |       64,084 / 59,565 | 61 / 64 | Both fail | `20261004T024533Z-298816`              |
+
+At 500k the combined build delivered 437,510 / 436,262 updates/sec, versus
+index-only 435,017 / 431,250. The paired mean difference is only 0.87%.
+Mean WASM time improved from 33.36 / 33.65 to 32.35 / 32.34 ms, but total
+transaction means changed only from 55.51 / 56.37 to 55.23 / 55.54 ms.
+At 337.5k, both combined transaction means and P99 lateness were worse than
+index-only. There was no memory-snapshot reduction or change in pass/fail
+boundaries. All raw receipts, failed probes and initialization costs are kept.
+
+Decision: **keep the direct index; do not retain the digest production change**.
+The sub-1% failure-throughput difference and mixed tails do not establish a
+reliable capacity benefit from these non-interleaved paired runs. The candidate
+builds/source commits remain reproducible; equivalence fixtures remain test-only.
+This rejects an inconclusive optimization, not the correctness of fixed arrays.
+The retained production digest, coverage and persistence representation are
+unchanged from the fixed-row baseline.
+
+The next candidate is 375,000 actors, using longer 30+90s NORMAL and CHAOS probes
+before any full qualification. This is a measured-selection exercise above the
+350k short controls, not an assertion that 375k passes or is the platform ceiling.
+
+## 375k working baseline and market-recovery extension
+
+Both retained 30+90s direct-index probes passed the exploratory gates:
+NORMAL `artifacts/exploration/20261004T024844Z-317831/` (P99 23,487 µs) and
+CHAOS `artifacts/exploration/20261004T025049Z-327815/` (P99 16,055 µs).
+Each measured 33,750,000 actor updates with zero skips and valid accounting.
+The user then waived the planned six fresh confirmations and accepted 375k as
+the working baseline. The first confirmation was intentionally stopped after
+2,087 ticks; its incomplete archive and explicit cancellation record remain
+under `artifacts/baseline/20261004T025337Z-339470/`. This is not a qualification.
+
+Market-health inspection found NORMAL at $85.69–$108.53 with all 375k active,
+but CHAOS at $0.01 for its final 38.6 seconds, with 263,469 actors EXITING.
+The old qualified 325k CHAOS repeat 3 also reached the penny floor, so this is
+not an index regression. Runtime scheduling/conservation and healthy economic
+behavior are distinct properties.
+
+The user authorized a separate, timestamped
+[market-recovery delta](../deltas/market-recovery_2026-10-03_22-05-19_EST.md),
+implementation, explicit spec changes, and safe merge of this branch. Commit
+`294aac9` versions the pricing/liquidation rules, adds model/runtime regressions,
+and captures market-health traces using the harness's existing market-row
+subscription. No new viewer or full-population scan is added during measurement.
+The new workload cannot inherit historical qualification. The original auction,
+bucket coverage, persistence cadence, and three-confirmation gates remain intact.
+
+New-workload 375k exploratory verification passed:
+
+| Profile | Warm-up + measured | Measured actor updates | P99 lateness | Skips | Price range    | Final active |
+| ------- | ------------------ | ---------------------- | ------------ | ----- | -------------- | ------------ |
+| NORMAL  | 30 + 90 s          | 33,750,000             | 17,922 µs    | 0     | $99.62–$100.49 | 375,000      |
+| CHAOS   | 30 + 170 s         | 63,750,000             | 19,733 µs    | 0     | $98.68–$101.38 | 375,000      |
+
+Artifacts are `artifacts/exploration/20261004T031747Z-469269/375000-normal/`
+and `artifacts/exploration/20261004T032215Z-497039/375000-chaos/`. Both retained
+the fixed viewers/offered load and exact coverage, with valid accounting, zero
+floor ticks, zero zero-volume ticks, and no wipeouts in these windows. CHAOS
+contains 80 seconds after shock expiry, not merely its last two ticks. Market
+health and model/counterparty limitations are detailed in the recovery delta.
+The final module is `artifacts/builds/market-recovery/market-recovery.wasm`,
+SHA-256 `c1b23e38e9bcf821f88a2fb06b1fbc5c3659d3fb01c8dc2ba92a074a54f42e9c`.
+
+The workload-hash preflight was added to the harness after these probes; their
+recorded harness BLAKE3 remains `aeb7da36cf4df81a20d247237e7bd6b42e40cbc3ab23e99b9bf0225039521608`.
+That guard runs before offered load and does not change measured tick work.
+This policy change alters the economics; its timings are not presented as a
+controlled performance comparison with the older, distressed CHAOS workload.

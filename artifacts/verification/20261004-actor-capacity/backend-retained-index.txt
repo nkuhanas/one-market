@@ -1,0 +1,79 @@
+ Container one-market-db-1 Running 
+ Container one-market-db-1 Waiting 
+ Container one-market-db-1 Healthy 
+ Container one-market-tools-run-4c8cf3c7c394 Creating 
+ Container one-market-tools-run-4c8cf3c7c394 Created 
+   Compiling one-market-core v0.1.0 (/workspace/crates/market-core)
+   Compiling one-market-spacetime v0.1.0 (/workspace/crates/spacetime)
+    Finished `release` profile [optimized] target(s) in 3.78s
+ Container one-market-tools-run-950883fab8e0 Creating 
+ Container one-market-tools-run-950883fab8e0 Created 
+Generating TypeScript module bindings for module spacetimedb
+Skipping build. Instead we are inspecting target/test-support/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+Creating directory tests/private-bindings/types
+Creating directory tests/private-bindings/types
+Generate finished successfully.
+ Container one-market-tools-run-25dd5c6a499a Creating 
+ Container one-market-tools-run-25dd5c6a499a Created 
+(WASM) Skipping build. Instead we are publishing target/test-support/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+You are about to publish to a non-local server: db
+Skipping confirmation due to --yes
+Uploading to http://db:3000 => http://db:3000
+Checking for breaking changes...
+Publishing module...
+Created new database with name: one-market-v02-test-1791082071-312292, identity: c200e6c330a56daa1eea0504042ea14a4e25fe802074a9d84c09213247a84b63
+ Container one-market-tools-run-55ea7a6b50f9 Creating 
+ Container one-market-tools-run-55ea7a6b50f9 Created 
+ Container one-market-browser-tests-run-d0a1ecde05d7 Creating 
+ Container one-market-browser-tests-run-d0a1ecde05d7 Created 
+
+Running 33 tests using 1 worker
+
+  ✓   1 tests/backend-sync.spec.ts:21:1 › pause fence waits for delayed pre-pause ticks, not two equal stale samples (34ms)
+  ✓   2 tests/backend-sync.spec.ts:31:1 › pause fence independently waits for the delayed run-status update (32ms)
+  ✓   3 tests/backend-sync.spec.ts:40:1 › pause fence requires matching runtime generation, run ID and schedule (41ms)
+  ✓   4 tests/backend-sync.spec.ts:52:1 › a permanently stale run cache times out without accepting RUNNING (32ms)
+  ✓   5 tests/backend-sync.spec.ts:68:3 › pause fence rejects enabled runtime even with an apparently correct cache (1ms)
+  ✓   6 tests/backend-sync.spec.ts:68:3 › pause fence rejects surviving schedule even with an apparently correct cache (0ms)
+  ✓   7 tests/backend-sync.spec.ts:68:3 › pause fence rejects wrong authoritative status even with an apparently correct cache (1ms)
+  ✓   8 tests/backend-sync.spec.ts:79:1 › post-pause server progress while the cache synchronizes is rejected (1ms)
+  ✓   9 tests/backend-sync.spec.ts:90:1 › cached progress beyond the authoritative fence is never tolerated (0ms)
+  ✓  10 tests/backend-sync.spec.ts:96:1 › pause observation detects real progress despite a frozen client cache (26ms)
+  ✓  11 tests/backend-sync.spec.ts:108:1 › pause fence propagates denied pause/read operations without retrying (1ms)
+  ✓  12 tests/backend-sync.spec.ts:129:1 › SQL snapshots preserve all u64 bits and select the current run (0ms)
+ℹ️ INFO Connecting to SpacetimeDB WS...
+ℹ️ INFO Connecting to SpacetimeDB WS...
+ℹ️ INFO Connecting to SpacetimeDB WS...
+  ✓  13 tests/backend.spec.ts:103:3 › v0.2 exact-runtime compatibility and transactions › bounded resumable setup, no ticks during setup, and authorization (34ms)
+ℹ️ INFO Connecting to SpacetimeDB WS...
+ℹ️ INFO Connecting to SpacetimeDB WS...
+ℹ️ INFO Connecting to SpacetimeDB WS...
+ℹ️ INFO Connecting to SpacetimeDB WS...
+ℹ️ INFO Connecting to SpacetimeDB WS...
+  ✓  14 tests/backend.spec.ts:141:3 › v0.2 exact-runtime compatibility and transactions › caller-scoped views and private tables reject cross-identity reads (27ms)
+  ✓  15 tests/backend.spec.ts:173:3 › v0.2 exact-runtime compatibility and transactions › reservations, durable IDs, limits, and rejected transaction rollback (10ms)
+  ✓  16 tests/backend.spec.ts:235:3 › v0.2 exact-runtime compatibility and transactions › absolute scheduler commits coverage and trades; manual calls cannot advance it (3.9s)
+  ✓  17 tests/backend.spec.ts:281:3 › v0.2 exact-runtime compatibility and transactions › pause and recovery cannot rehabilitate a failed run (301ms)
+  ✓  18 tests/backend.spec.ts:312:3 › v0.2 exact-runtime compatibility and transactions › authorized receipt view is available without exposing it to other identities (102ms)
+  ✓  19 tests/backend.spec.ts:320:3 › v0.2 exact-runtime compatibility and transactions › replayed IDs remain invalid after receipt pruning (7.8s)
+  ✓  20 tests/backend.spec.ts:346:3 › v0.2 exact-runtime compatibility and transactions › post-write failure rolls back settlement and evidence; stalled tick requires recovery (595ms)
+  ✓  21 tests/backend.spec.ts:388:3 › v0.2 exact-runtime compatibility and transactions › late callbacks expose slot gaps; stale generation cannot advance a paused world (492ms)
+  ✓  22 tests/backend.spec.ts:414:3 › v0.2 exact-runtime compatibility and transactions › runtime persists PASS, EXITING and COOLDOWN and records a recapitalization grant (68ms)
+  ✓  23 tests/backend.spec.ts:480:3 › v0.2 exact-runtime compatibility and transactions › qualification publication requires admin and three verified fresh runs (5ms)
+  ✓  24 tests/backend.spec.ts:513:3 › v0.2 exact-runtime compatibility and transactions › incorrect per-actor coverage aborts the tick; reset retains the order watermark (13ms)
+  ✓  25 tests/transport.spec.ts:41:1 › gzip and plain frames enter the SDK in exact wire order, repeatedly (138ms)
+  ✓  26 tests/transport.spec.ts:59:1 › plain and brotli tags preserve bytes as well as order (15ms)
+  ✓  27 tests/transport.spec.ts:78:3 › local close cancels decompression and drops pending callbacks (32ms)
+  ✓  28 tests/transport.spec.ts:78:3 › remote close cancels decompression and drops pending callbacks (31ms)
+  ✓  29 tests/transport.spec.ts:101:3 › invalid frame  fails closed without delivering later rows (1ms)
+  ✓  30 tests/transport.spec.ts:101:3 › invalid frame 9,1 fails closed without delivering later rows (0ms)
+  ✓  31 tests/transport.spec.ts:101:3 › invalid frame 2,1,2 fails closed without delivering later rows (7ms)
+  ✓  32 tests/transport.spec.ts:116:1 › forwards protocol, ready state, outbound bytes, open and error events (1ms)
+  ✓  33 tests/transport.spec.ts:137:1 › factory keeps compression, confirmation, protocol and temporary-token authentication (3ms)
+
+  33 passed (14.5s)
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

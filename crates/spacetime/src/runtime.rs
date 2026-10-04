@@ -2,7 +2,7 @@ use crate::{access::admin, lifecycle, market, now_us, runtime, schema::*, timest
 use one_market_core::{
     add,
     auction::{self, Order},
-    config::{config, workload_hash},
+    config::{config, configuration_hash, workload_hash},
     equity, extend_digest, mix,
     policy::{self, Signals, Weights},
     schedule, Result,
@@ -125,9 +125,26 @@ pub fn recover_simulation(ctx: &ReducerContext) -> Result<()> {
     if run.completed_at.is_some() {
         return Err("completed runs cannot resume".into());
     }
+    // Explicit owner recovery can adopt new rules without resetting inventory.
+    // Preserve the old run hashes: this mixed-version continuation is FAILED,
+    // not new benchmark evidence, and its reason records the adopted workload.
+    let mut m = market(ctx)?;
+    let changed = m.configuration_hash != configuration_hash();
+    if changed {
+        m.configuration_hash = configuration_hash();
+        ctx.db.market_state().id().update(m);
+    }
     // Recovery records evidence of interruption and cannot turn FAILED into PASSED.
     run.status = "FAILED".into();
-    run.failure_reason = "authorized recovery after pause/stall".into();
+    run.failure_reason =
+        if run.configuration_hash != workload_hash(r.initialized, r.seed, &run.profile) {
+            format!(
+                "authorized non-qualifying recovery after workload change: {}",
+                workload_hash(r.initialized, r.seed, &run.profile)
+            )
+        } else {
+            "authorized recovery after pause/stall".into()
+        };
     let elapsed = i128::from(now_us(ctx)) - i128::from(r.origin.to_micros_since_unix_epoch());
     let next = if elapsed < 0 {
         1
@@ -237,6 +254,31 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
     if run.completed_at.is_some() {
         return Err("run already ended".into());
     }
+    // Do not execute even one new-policy tick under an old workload hash.
+    // Commit a stopped/failed state (returning Err would roll it back).
+    if m.configuration_hash != configuration_hash() {
+        run.status = "FAILED".into();
+        if !run
+            .failure_reason
+            .starts_with("workload configuration changed")
+        {
+            run.failure_reason = format!(
+                "workload configuration changed; explicit recovery required; previous failure: {}",
+                run.failure_reason
+            );
+        }
+        ctx.db.run_record().run_id().update(run);
+        r.enabled = false;
+        r.generation = add(r.generation, 1)?;
+        for row in ctx.db.tick_schedule().iter() {
+            ctx.db
+                .tick_schedule()
+                .scheduled_id()
+                .delete(row.scheduled_id);
+        }
+        ctx.db.runtime_config().id().update(r);
+        return Ok(());
+    }
     let intended = schedule::deadline(r.origin.to_micros_since_unix_epoch(), r.next_slot)?;
     let (next, skipped, lateness) = if scheduled {
         schedule::advance(
@@ -337,7 +379,7 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
             }
         }
         let intent = if a.status == ActorStatus::Exiting && a.shares > 0 {
-            Some((false, a.shares, c.min_price_cents))
+            policy::liquidation(a.shares, m.price_cents, &c)?
         } else if a.status == ActorStatus::Active && transition != Some("RECAPITALIZED") {
             evaluations = add(evaluations, 1)?;
             policy::decide(
@@ -356,8 +398,7 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
                 a.cash_cents,
                 a.shares,
                 m.price_cents,
-                c.actor_max_quantity,
-                c.max_price_cents,
+                &c,
             )?
         } else {
             None

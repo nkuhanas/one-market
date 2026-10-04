@@ -21,6 +21,9 @@ pub struct Config {
     pub pending_order_max: u64,
     pub slippage_bps: u64,
     pub actor_max_quantity: u64,
+    pub quote_reversion_bps: u64,
+    pub liquidation_max_quantity: u64,
+    pub liquidation_discount_bps: u64,
     pub drawdown_bps: u64,
     pub cooldown_ticks: u64,
     pub price_retention: u64,
@@ -68,4 +71,22 @@ pub fn workload_hash(population: u64, seed: u64, profile: &str) -> String {
     hasher.update(&seed.to_le_bytes());
     hasher.update(profile.as_bytes());
     hasher.finalize().to_hex().to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn recovery_workload_cannot_reuse_old_or_different_run_qualification() {
+        let normal = workload_hash(375_000, 20261003, "NORMAL");
+        assert_ne!(
+            normal,
+            "f63de483e5aa7a3a6d6bdfd812fb6c17bed72956956c5d61c8ba34978b5f9340"
+        );
+        assert_ne!(normal, workload_hash(325_000, 20261003, "NORMAL"));
+        assert_ne!(normal, workload_hash(375_000, 42, "NORMAL"));
+        assert_ne!(normal, workload_hash(375_000, 20261003, "CHAOS"));
+        assert_eq!(normal, workload_hash(375_000, 20261003, "NORMAL"));
+    }
 }

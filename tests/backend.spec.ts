@@ -1,7 +1,14 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { ScheduleAt } from 'spacetimedb';
+import { openOrderedWebSocket } from '@one-market/transport';
 import { DbConnection } from './private-bindings';
+import {
+  assertRemainsPaused,
+  cachedSnapshot,
+  pauseAndSynchronize,
+  serverSnapshot,
+} from './helpers/paused-state';
 
 const database = process.env.BACKEND_DATABASE!;
 if (!database?.startsWith('one-market-v02-test-')) {
@@ -21,6 +28,8 @@ let bob: DbConnection;
 async function connect(auth?: string): Promise<DbConnection> {
   return new Promise((resolve, reject) => {
     DbConnection.builder()
+      .withWSFn(openOrderedWebSocket)
+      .withCompression('gzip')
       .withUri(process.env.BACKEND_URI!)
       .withDatabaseName(database)
       .withConfirmedReads(true)
@@ -44,6 +53,15 @@ function subscribe(connection: DbConnection, queries: string[]): Promise<void> {
 }
 
 const row = () => owner.db.marketState.id.find(0)!;
+const readServer = () =>
+  serverSnapshot(process.env.BACKEND_URI!, database, token);
+const readCache = () => cachedSnapshot(owner);
+const pause = () =>
+  pauseAndSynchronize(
+    () => owner.reducers.pauseSimulation({}),
+    readServer,
+    readCache,
+  );
 
 test.describe
   .serial('v0.2 exact-runtime compatibility and transactions', () => {
@@ -261,32 +279,34 @@ test.describe
   });
 
   test('pause and recovery cannot rehabilitate a failed run', async () => {
-    await owner.reducers.pauseSimulation({});
-    await expect
-      .poll(() => owner.db.runtimeConfig.id.find(0)!.enabled)
-      .toBe(false);
-    // Ticks committed before the pause landed can still be in flight to this
-    // subscriber, so `enabled === false` does not mean the cache has caught up.
-    // Let it settle first; otherwise `before` is a stale read and the assertion
-    // below fails on rows the paused world had already committed.
-    let latest = -1n;
-    await expect
-      .poll(() => {
-        const current = row().logicalTick;
-        const unchanged = current === latest;
-        latest = current;
-        return unchanged;
-      })
-      .toBe(true);
-    const before = latest;
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    expect(row().logicalTick).toBe(before);
-    expect(owner.db.runRecord.runId.find(1n)!.status).toBe('FAILED');
+    const before = await pause();
+    await assertRemainsPaused(before, readServer, readCache);
+    // The independent query path must retain private-table authorization.
+    await expect(
+      serverSnapshot(process.env.BACKEND_URI!, database),
+    ).rejects.toThrow('authoritative snapshot query failed');
     await owner.reducers.recoverSimulation({});
-    await expect.poll(() => row().logicalTick).toBeGreaterThan(before);
-    expect(owner.db.runRecord.runId.find(1n)!.status).toBe('FAILED');
-    expect(owner.db.runRecord.runId.find(1n)!.skippedSlots).toBeGreaterThan(0n);
-    await owner.reducers.pauseSimulation({});
+    await expect
+      .poll(async () => (await readServer()).logicalTick)
+      .toBeGreaterThan(before.logicalTick);
+    const recovered = await readServer();
+    expect(recovered.runId).toBe(before.runId);
+    expect(recovered.enabled).toBe(true);
+    expect(recovered.status).toBe('FAILED');
+    expect(recovered.skippedSlots).toBeGreaterThan(0n);
+    await expect.poll(readCache).toMatchObject({
+      runId: before.runId,
+      status: 'FAILED',
+      enabled: true,
+      generation: recovered.generation,
+    });
+    await expect
+      .poll(() => row().logicalTick)
+      .toBeGreaterThan(before.logicalTick);
+    await expect
+      .poll(() => owner.db.runRecord.runId.find(before.runId)!.skippedSlots)
+      .toBeGreaterThan(0n);
+    await pause();
   });
 
   test('authorized receipt view is available without exposing it to other identities', async () => {
@@ -376,12 +396,19 @@ test.describe
         (r) => r.skippedSlots > 0n && r.startLatenessUs >= 50000n,
       ),
     ).toBe(true);
-    await owner.reducers.pauseSimulation({});
-    const before = row().logicalTick;
+    const before = await pause();
     await owner.reducers.testStaleCallback({});
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    expect(row().logicalTick).toBe(before);
-    expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+    // The injected record is due after 1 ms; its eventual deletion is expected,
+    // but neither the server tick nor the failed run may change while waiting.
+    await expect
+      .poll(async () => {
+        const current = await readServer();
+        expect({ ...current, scheduledTicks: 0 }).toEqual(before);
+        return current.scheduledTicks;
+      })
+      .toBe(0);
+    await expect.poll(readCache).toEqual(before);
+    await assertRemainsPaused(before, readServer, readCache, 100);
   });
 
   test('runtime persists PASS, EXITING and COOLDOWN and records a recapitalization grant', async () => {
@@ -448,6 +475,121 @@ test.describe
       owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents -
         grantsBefore,
     ).toBe(BigInt(due.length - 2) * 10000000n);
+  });
+
+  test('liquidation is quantity-bounded and rejects a below-reserve buyer', async () => {
+    const target = [...owner.db.actorState.iter()][0];
+    for (
+      let step = 0;
+      Number(row().logicalTick % 20n) !== target.bucket && step < 20;
+      step++
+    ) {
+      const before = row().logicalTick;
+      await owner.reducers.benchmarkStep({});
+      await expect.poll(() => row().logicalTick).toBe(before + 1n);
+    }
+    const due = [...owner.db.actorState.iter()].filter(
+      (a) => a.bucket === target.bucket,
+    );
+    for (const a of due) {
+      await owner.reducers.testActorFixture({
+        actorId: a.actorId,
+        status: a.actorId === target.actorId ? 'EXITING' : 'ACTIVE',
+        cashCents: 10000000n,
+        shares: a.actorId === target.actorId ? 500n : 0n,
+        cooldownStartedTick: undefined,
+      });
+    }
+    const price = row().priceCents;
+    const reserve = (price * 9500n + 9999n) / 10000n;
+    await alice.reducers.placeOrder({
+      clientOrderId: 201n,
+      side: 'BUY',
+      quantity: 100n,
+      limitPriceCents: 1n,
+    });
+    let tick = row().logicalTick;
+    await owner.reducers.benchmarkStep({});
+    await expect.poll(() => row().logicalTick).toBe(tick + 1n);
+    expect(owner.db.actorState.actorId.find(target.actorId)!.shares).toBe(500n);
+    expect(row().priceCents).toBe(price);
+    await expect
+      .poll(
+        () =>
+          [...alice.db.myRecentFills.iter()].find(
+            (r) => r.clientOrderId === 201n,
+          )?.filledQuantity,
+      )
+      .toBe(0n);
+    for (let step = 0; step < 19; step++) {
+      tick = row().logicalTick;
+      await owner.reducers.benchmarkStep({});
+      await expect.poll(() => row().logicalTick).toBe(tick + 1n);
+    }
+    const secondPrice = row().priceCents;
+    const secondReserve = (secondPrice * 9500n + 9999n) / 10000n;
+    // Other buckets may trade between attempts; compute this auction's reserve.
+    // A different funded identity avoids the real-time 200 ms rate limit while
+    // manually stepping the simulation faster than wall time.
+    await bob.reducers.placeOrder({
+      clientOrderId: 202n,
+      side: 'BUY',
+      quantity: 100n,
+      limitPriceCents: secondPrice,
+    });
+    tick = row().logicalTick;
+    await owner.reducers.benchmarkStep({});
+    await expect.poll(() => row().logicalTick).toBe(tick + 1n);
+    await expect
+      .poll(
+        () =>
+          [...bob.db.myRecentFills.iter()].find((r) => r.clientOrderId === 202n)
+            ?.filledQuantity,
+      )
+      .toBe(10n);
+    const actor = owner.db.actorState.actorId.find(target.actorId)!;
+    expect(actor.shares).toBe(490n);
+    expect(actor.status.tag).toBe('Exiting');
+    expect(row().priceCents).toBeGreaterThanOrEqual(secondReserve);
+    expect(reserve).toBeGreaterThan(1n);
+  });
+
+  test('a changed workload stops before actor writes and requires explicit non-qualifying recovery', async () => {
+    const configurationHash = row().configurationHash;
+    const runHash = '1'.repeat(64);
+    await expect(alice.reducers.testStaleConfiguration({})).rejects.toThrow();
+    await owner.reducers.testStaleConfiguration({});
+    await expect.poll(() => row().configurationHash).toBe('0'.repeat(64));
+    const tick = row().logicalTick;
+    const rows = [...owner.db.actorState.iter()]
+      .map(
+        (a) =>
+          `${a.actorId}:${a.shares}:${a.cashCents}:${a.lastStepTick.value}`,
+      )
+      .sort();
+    await owner.reducers.benchmarkStep({});
+    await expect
+      .poll(() => owner.db.runRecord.runId.find(1n)!.failureReason)
+      .toContain('workload configuration changed');
+    expect(row().logicalTick).toBe(tick);
+    expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+    expect(
+      [...owner.db.actorState.iter()]
+        .map(
+          (a) =>
+            `${a.actorId}:${a.shares}:${a.cashCents}:${a.lastStepTick.value}`,
+        )
+        .sort(),
+    ).toEqual(rows);
+    await owner.reducers.recoverSimulation({});
+    await expect.poll(() => row().configurationHash).toBe(configurationHash);
+    await expect.poll(() => row().logicalTick).toBeGreaterThan(tick);
+    expect(owner.db.runRecord.runId.find(1n)!.status).toBe('FAILED');
+    expect(owner.db.runRecord.runId.find(1n)!.configurationHash).toBe(runHash);
+    expect(owner.db.runRecord.runId.find(1n)!.failureReason).toContain(
+      'authorized non-qualifying recovery after workload change',
+    );
+    await pause();
   });
 
   test('qualification publication requires admin and three verified fresh runs', async () => {

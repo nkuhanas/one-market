@@ -1,0 +1,8 @@
+actor_state: 200 rows preserved exactly
+bucket_manifest: 20 rows preserved exactly
+grant_accounting: 1 rows preserved exactly
+market_state: 1 rows preserved exactly
+runtime_config: 1 rows preserved exactly
+run_record: 1 rows preserved exactly
+tick_schedule: 0 rows preserved exactly
+detailed_benchmark_receipts: 0 rows preserved exactly

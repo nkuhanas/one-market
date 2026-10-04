@@ -1,6 +1,8 @@
 mod access;
 mod humans;
 mod lifecycle;
+#[cfg(test)]
+mod market_regressions;
 mod qualification;
 mod runtime;
 mod schema;

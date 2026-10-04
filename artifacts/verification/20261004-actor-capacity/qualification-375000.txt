@@ -1,0 +1,109 @@
+ Container one-market-db-1 Running
+ Container one-market-db-1 Waiting
+ Container one-market-db-1 Healthy
+ Container one-market-tools-run-783ef89e8fe4 Creating
+ Container one-market-tools-run-783ef89e8fe4 Created
+Generating TypeScript module bindings for module crates/spacetime
+    Finished `release` profile [optimized] target(s) in 0.05s
+Optimising module with wasm-opt...
+Build finished successfully.
+Skipping private tables during codegen: actor_state, admin_allowlist, benchmark_reader, bucket_manifest, connection_state, detailed_benchmark_receipts, grant_accounting, human_order_receipt, human_trader, order_watermark, pending_human_order, run_record, runtime_config, tick_schedule, validated_run.
+Creating directory packages/bindings/src/types
+Creating directory packages/bindings/src/types
+Generate finished successfully.
+ Container one-market-tools-run-77c547411a00 Creating
+ Container one-market-tools-run-77c547411a00 Created
+Generating Rust module bindings for module spacetimedb
+Skipping build. Instead we are inspecting target/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+Writing file crates/benchmark/src/bindings/actor_sample_table.rs
+Writing file crates/benchmark/src/bindings/actor_state_table.rs
+Writing file crates/benchmark/src/bindings/admin_allowlist_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_reader_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_result_table.rs
+Writing file crates/benchmark/src/bindings/bucket_manifest_table.rs
+Writing file crates/benchmark/src/bindings/connection_state_table.rs
+Writing file crates/benchmark/src/bindings/detailed_benchmark_receipts_table.rs
+Writing file crates/benchmark/src/bindings/grant_accounting_table.rs
+Writing file crates/benchmark/src/bindings/human_order_receipt_table.rs
+Writing file crates/benchmark/src/bindings/human_trader_table.rs
+Writing file crates/benchmark/src/bindings/market_state_table.rs
+Writing file crates/benchmark/src/bindings/news_event_table.rs
+Writing file crates/benchmark/src/bindings/order_watermark_table.rs
+Writing file crates/benchmark/src/bindings/pending_human_order_table.rs
+Writing file crates/benchmark/src/bindings/price_point_table.rs
+Writing file crates/benchmark/src/bindings/public_activity_table.rs
+Writing file crates/benchmark/src/bindings/run_record_table.rs
+Writing file crates/benchmark/src/bindings/runtime_config_table.rs
+Writing file crates/benchmark/src/bindings/tick_schedule_table.rs
+Writing file crates/benchmark/src/bindings/validated_run_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_latest_receipt_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_runs_table.rs
+Writing file crates/benchmark/src/bindings/my_pending_order_table.rs
+Writing file crates/benchmark/src/bindings/my_recent_fills_table.rs
+Writing file crates/benchmark/src/bindings/my_trader_table.rs
+Writing file crates/benchmark/src/bindings/bucket_manifest_type.rs
+Writing file crates/benchmark/src/bindings/tick_receipt_type.rs
+Writing file crates/benchmark/src/bindings/actor_sample_type.rs
+Writing file crates/benchmark/src/bindings/pending_human_order_type.rs
+Writing file crates/benchmark/src/bindings/order_watermark_type.rs
+Writing file crates/benchmark/src/bindings/admin_allowlist_type.rs
+Writing file crates/benchmark/src/bindings/runtime_config_type.rs
+Writing file crates/benchmark/src/bindings/grant_accounting_type.rs
+Writing file crates/benchmark/src/bindings/public_activity_type.rs
+Writing file crates/benchmark/src/bindings/actor_state_type.rs
+Writing file crates/benchmark/src/bindings/benchmark_reader_type.rs
+Writing file crates/benchmark/src/bindings/news_event_type.rs
+Writing file crates/benchmark/src/bindings/human_order_receipt_type.rs
+Writing file crates/benchmark/src/bindings/market_state_type.rs
+Writing file crates/benchmark/src/bindings/benchmark_result_type.rs
+Writing file crates/benchmark/src/bindings/validated_run_type.rs
+Writing file crates/benchmark/src/bindings/actor_status_type.rs
+Writing file crates/benchmark/src/bindings/human_trader_type.rs
+Writing file crates/benchmark/src/bindings/run_record_type.rs
+Writing file crates/benchmark/src/bindings/tick_schedule_type.rs
+Writing file crates/benchmark/src/bindings/connection_state_type.rs
+Writing file crates/benchmark/src/bindings/optional_tick_type.rs
+Writing file crates/benchmark/src/bindings/price_point_type.rs
+Writing file crates/benchmark/src/bindings/authorize_reader_reducer.rs
+Writing file crates/benchmark/src/bindings/benchmark_step_reducer.rs
+Writing file crates/benchmark/src/bindings/connected_reducer.rs
+Writing file crates/benchmark/src/bindings/disconnected_reducer.rs
+Writing file crates/benchmark/src/bindings/enter_market_reducer.rs
+Writing file crates/benchmark/src/bindings/initialize_batch_reducer.rs
+Writing file crates/benchmark/src/bindings/pause_simulation_reducer.rs
+Writing file crates/benchmark/src/bindings/ping_reducer.rs
+Writing file crates/benchmark/src/bindings/place_order_reducer.rs
+Writing file crates/benchmark/src/bindings/publish_benchmark_result_reducer.rs
+Writing file crates/benchmark/src/bindings/recover_simulation_reducer.rs
+Writing file crates/benchmark/src/bindings/reset_batch_reducer.rs
+Writing file crates/benchmark/src/bindings/reset_market_reducer.rs
+Writing file crates/benchmark/src/bindings/set_actor_population_reducer.rs
+Writing file crates/benchmark/src/bindings/simulation_tick_reducer.rs
+Writing file crates/benchmark/src/bindings/start_run_reducer.rs
+Writing file crates/benchmark/src/bindings/trigger_chaos_reducer.rs
+Writing file crates/benchmark/src/bindings/validate_run_reducer.rs
+Writing file crates/benchmark/src/bindings/mod.rs
+Generate finished successfully.
+ Container one-market-tools-run-82819fccc2e1 Creating
+ Container one-market-tools-run-82819fccc2e1 Created
+   Compiling one-market-core v0.1.0 (/workspace/crates/market-core)
+   Compiling one-market-benchmark v0.1.0 (/workspace/crates/benchmark)
+    Finished `release` profile [optimized] target(s) in 19.12s
+ Container one-market-tools-run-8c0c30c9afd1 Creating
+ Container one-market-tools-run-8c0c30c9afd1 Created
+ Container one-market-tools-run-349b6c1c3274 Creating
+ Container one-market-tools-run-349b6c1c3274 Created
+(WASM) Skipping build. Instead we are publishing target/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+You are about to publish to a non-local server: db
+Skipping confirmation due to --yes
+Uploading to http://db:3000 => http://db:3000
+Checking for breaking changes...
+Publishing module...
+Created new database with name: one-market-baseline-normal-20261004t025337z-339470, identity: c20064684656b34483dbf59616856fbc8ed65692a7fbb0e9f3f1b2d09d5bfb50
+ Container one-market-tools-run-ed259e424d49 Creating
+ Container one-market-tools-run-ed259e424d49 Created
+QUALIFY NORMAL repeat 1/3: 375000 actors, 30s warmup + 180s measurement, 10 viewers, 5 offered orders/s; run 1; initialization=1597ms
+  offered 0/1050; committed ticks 0
+  offered 150/1050; committed ticks 599
+  offered 300/1050; committed ticks 1199
+  offered 450/1050; committed ticks 1799

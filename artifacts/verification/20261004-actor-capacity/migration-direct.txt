@@ -1,0 +1,22 @@
+ Container one-market-db-1 Running 
+ Container one-market-db-1 Waiting 
+ Container one-market-db-1 Healthy 
+ Container one-market-tools-run-cd2928344d13 Creating 
+ Container one-market-tools-run-cd2928344d13 Created 
+(WASM) Skipping build. Instead we are publishing artifacts/builds/fixed-row.wasm
+You are about to publish to a non-local server: db
+Skipping confirmation due to --yes
+Uploading to http://db:3000 => http://db:3000
+Checking for breaking changes...
+Publishing module...
+Created new database with name: one-market-index-migration-20261004t023622z-248954, identity: c20029d9ddcf5cdf91229a939283004f741ba9df5221c2ac66f3df7dd2b8458e
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+environment: line 10: artifacts/verification/index-migration-20261004T023622Z-248954/before-actor_state.json: Permission denied
+

@@ -8,7 +8,7 @@ use one_market_core::{
     evidence::{self, Receipt, Validation},
 };
 use serde::{Deserialize, Serialize};
-use spacetimedb_sdk::Table;
+use spacetimedb_sdk::{Table, TableWithPrimaryKey};
 use std::{
     collections::BTreeMap,
     fs,
@@ -20,6 +20,7 @@ use std::{
 
 #[cfg(test)]
 mod archive_tests;
+mod health;
 
 pub struct Options {
     pub uri: String,
@@ -72,6 +73,8 @@ pub struct Artifact {
     pub workload_maintained: bool,
     pub connections_healthy: bool,
     pub accounting_audit: bool,
+    #[serde(default)]
+    pub market_health: Option<health::Health>,
     pub validation: Validation,
     pub receipt_arrival_times_us: Vec<(u64, i64)>,
     pub offers: Vec<Offer>,
@@ -368,6 +371,23 @@ pub fn run(options: Options) -> Result<bool> {
             }
         }
         let arrivals = Arc::new(Mutex::new(vec![]));
+        // Reuse the existing subscribed market row: no additional subscribers,
+        // SQL scans or full actor reads during the measured window.
+        let market_samples = Arc::new(Mutex::new(Vec::new()));
+        let samples_callback = market_samples.clone();
+        let sample_limit = c.tick_receipt_retention as usize;
+        let market_callback = owner
+            .db
+            .db
+            .market_state()
+            .on_update(move |_, before, after| {
+                if before.logical_tick != after.logical_tick {
+                    let mut samples = samples_callback.lock().unwrap();
+                    if samples.len() < sample_limit {
+                        samples.push(health::Sample::from(after));
+                    }
+                }
+            });
         let arrivals_callback = arrivals.clone();
         let expected_id = owner
             .db
@@ -416,6 +436,16 @@ pub fn run(options: Options) -> Result<bool> {
             .run_id()
             .find(&expected_id)
             .ok_or("run missing")?;
+        let expected_workload = workload_hash(options.population, c.seed, &options.profile);
+        if record.configuration_hash != expected_workload {
+            // A preserved WASM must be paired with its own frozen workload.
+            // Do not label an old module's behavior with this harness's rules.
+            let _ = invoke!(owner, pause_simulation_then());
+            return Err(format!(
+                "module/harness workload mismatch: runtime {}, harness {}; stopped before offering load",
+                record.configuration_hash, expected_workload
+            ));
+        }
         let origin_us = record.origin.to_micros_since_unix_epoch();
         let now = Instant::now();
         let offset = origin_us - clock_us();
@@ -572,6 +602,11 @@ pub fn run(options: Options) -> Result<bool> {
                 .collect(),
         )?;
         let audit_ok = client::audit(&audit_client).is_ok();
+        owner.db.db.market_state().remove_on_update(market_callback);
+        let market_health = Some(health::summarize(
+            market_samples.lock().unwrap().clone(),
+            &audit_client,
+        ));
         drop(audit_client);
         let exploratory_metrics = options.exploration.map(|window| {
             crate::explore::measure(
@@ -629,6 +664,7 @@ pub fn run(options: Options) -> Result<bool> {
             workload_maintained: workload,
             connections_healthy: healthy,
             accounting_audit: audit_ok,
+            market_health,
             validation,
             receipt_arrival_times_us: arrivals.lock().unwrap().clone(),
             offers,

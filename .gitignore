@@ -15,3 +15,6 @@ test-results/
 .agents/
 tests/private-bindings/
 crates/benchmark/src/probe_bindings/
+# Migration verification snapshots stay local; commit only the comparison result.
+artifacts/verification/index-migration-*/before-*.json
+artifacts/verification/index-migration-*/after-*.json

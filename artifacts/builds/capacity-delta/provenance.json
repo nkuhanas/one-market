@@ -1,0 +1,35 @@
+{
+  "environment": "LOCAL",
+  "rust": "1.93.0",
+  "spacetimedb_runtime_cli_crate_sdk": "2.10.1",
+  "runtime_base_image": "sha256:5231fa24bc8eaa28b2a3c6a4725f1d31e6a868e2e9b311c8efa1ddc314466014",
+  "instrumented": false,
+  "test_support": false,
+  "build_command": "./scripts/check",
+  "source_state": "Built from uncommitted experiment edits, subsequently preserved in the matching commits below; unrelated transport/docs changes do not participate in the Rust module build.",
+  "control_harness_blake3": "ac7cdee83e766d6437c4447cea1ccff40f8d2682f925571a326f75f1f6ad4ba3",
+  "rust_bindings_blake3": "2d7be75e51ee7f78ed4a2bbc8939fcaccd4b80c92d6b8a621c79a90349f0318b",
+  "variants": [
+    {
+      "file": "direct-index.wasm",
+      "module_source_commit": "2b6afc4",
+      "sha256": "055bb41343a998a16aa9d8b78fa90572601a8508b70aef33323604d61126b4ef",
+      "direct_index": true,
+      "fixed_digest_array": false
+    },
+    {
+      "file": "digest-only.wasm",
+      "module_source_commit": "85afef9",
+      "sha256": "814625047ade3b0fa8833ad2fbeeda0b967800a6c51ffce5eb0b1703e62d8e40",
+      "direct_index": false,
+      "fixed_digest_array": true
+    },
+    {
+      "file": "combined.wasm",
+      "module_source_commit": "4f84bca",
+      "sha256": "d13c1a9fcd0cc82af969fd49250d9778603a10a0479f8f793c0371841975f68c",
+      "direct_index": true,
+      "fixed_digest_array": true
+    }
+  ]
+}

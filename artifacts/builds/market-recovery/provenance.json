@@ -1,0 +1,15 @@
+{
+  "module": "market-recovery.wasm",
+  "sha256": "c1b23e38e9bcf821f88a2fb06b1fbc5c3659d3fb01c8dc2ba92a074a54f42e9c",
+  "source_commit": "294aac940a678567e567569129ab84bb8f9be9aa",
+  "workload_version": "one-market-v02-market-recovery-2",
+  "retained_index": "direct actor primary key",
+  "production_digest": "original Vec digest; fixed-array experiment rejected",
+  "measured_harness_blake3": "aeb7da36cf4df81a20d247237e7bd6b42e40cbc3ab23e99b9bf0225039521608",
+  "rust_bindings_blake3": "2d7be75e51ee7f78ed4a2bbc8939fcaccd4b80c92d6b8a621c79a90349f0318b",
+  "normal_workload_hash_at_375000": "c864858ce84978f9d44c5ee8740a471b4fb3b18d3ea3134aeea9d228c749e72d",
+  "environment": "LOCAL Docker; AMD Ryzen 9 9950X; 12 visible logical CPUs; shared host",
+  "runtime_cli_and_sdks": "2.10.1",
+  "rust": "1.93.0",
+  "qualification": "Exploratory working baseline only; no six-run qualification or Maincloud claim"
+}

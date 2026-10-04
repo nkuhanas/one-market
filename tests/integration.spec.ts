@@ -1,4 +1,6 @@
 import { expect, test, type Page, type WebSocketRoute } from '@playwright/test';
+import { gzipSync } from 'node:zlib';
+import { resolve } from 'node:path';
 
 async function openMarket(page: Page) {
   await page.goto('/');
@@ -66,4 +68,57 @@ test('reports a dropped connection and reconnects to live state', async ({
   await page.getByRole('button', { name: 'Reconnect' }).click();
   await expect(page.getByTestId('connection-status')).toHaveText('Connected');
   await expect.poll(() => tick(page)).toBeGreaterThan(initial);
+});
+
+test('browser transport preserves mixed gzip/plain wire order', async ({
+  page,
+}) => {
+  await page.routeWebSocket(
+    /\/v1\/database\/transport-order-test\/subscribe/,
+    (route) => {
+      const url = new URL(route.url());
+      expect(url.searchParams.get('compression')).toBe('Gzip');
+      expect(url.searchParams.get('confirmed')).toBe('true');
+      for (let id = 1; id <= 20; id++) {
+        const compressed = id % 2 === 1;
+        const data = new Uint8Array(compressed ? 256 * 1024 : 1).fill(id);
+        route.send(
+          Buffer.concat([
+            Buffer.from([compressed ? 2 : 0]),
+            compressed ? gzipSync(data) : data,
+          ]),
+        );
+      }
+    },
+  );
+  await openMarket(page);
+  const messages = await page.evaluate(
+    async (modulePath) => {
+      const { openOrderedWebSocket } = await import(
+        /* @vite-ignore */ modulePath
+      );
+      const socket = await openOrderedWebSocket({
+        url: new URL('ws://ordered.test'),
+        nameOrAddress: 'transport-order-test',
+        wsProtocol: ['v2.bsatn.spacetimedb'],
+        compression: 'gzip',
+        lightMode: false,
+        confirmedReads: true,
+      });
+      return await new Promise<number[]>((resolve, reject) => {
+        const received: number[] = [];
+        socket.onerror = (error: ErrorEvent) =>
+          reject(new Error(error.message));
+        socket.onmessage = ({ data }: { data: Uint8Array }) => {
+          received.push(data[0]);
+          if (received.length === 20) {
+            socket.close();
+            resolve(received);
+          }
+        };
+      });
+    },
+    `/@fs${resolve('packages/transport/src/index.ts')}`,
+  );
+  expect(messages).toEqual(Array.from({ length: 20 }, (_, i) => i + 1));
 });

@@ -1,0 +1,22 @@
+ Container one-market-db-1 Running 
+ Container one-market-db-1 Waiting 
+ Container one-market-db-1 Healthy 
+ Container one-market-tools-run-a02c86a15615 Creating 
+ Container one-market-tools-run-a02c86a15615 Created 
+ Container one-market-tools-run-018e73417dab Creating 
+ Container one-market-tools-run-018e73417dab Created 
+(WASM) Skipping build. Instead we are publishing artifacts/builds/capacity-delta/digest-only.wasm
+You are about to publish to a non-local server: db
+Skipping confirmation due to --yes
+Uploading to http://db:3000 => http://db:3000
+Checking for breaking changes...
+Publishing module...
+Created new database with name: one-market-explore-325000-normal-20261004t023712z-256186, identity: c20028bcb4c9d4ddcdc1d2990f41a34fb5774e57df33a210c5df0f5def1f537f
+ Container one-market-tools-run-8945cde5ef8c Creating 
+ Container one-market-tools-run-8945cde5ef8c Created 
+EXPLORE NORMAL repeat 1/2: 325000 actors, 5s warmup + 20s measurement, 10 viewers, 5 offered orders/s; run 1; initialization=1425ms
+  offered 0/125; committed ticks 0
+  EXPLORE_PASS: p99=11630us, updates=6500000, skipped=0, load=true, audit=true; 
+EXPLORE NORMAL repeat 2/2: 325000 actors, 5s warmup + 20s measurement, 10 viewers, 5 offered orders/s; run 2; initialization=1375ms
+  offered 0/125; committed ticks 0
+  EXPLORE_PASS: p99=13141us, updates=6500000, skipped=0, load=true, audit=true; 
