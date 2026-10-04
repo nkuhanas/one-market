@@ -32,6 +32,16 @@ export function Header({
       </nav>
 
       <div className="header-system">
+        {/* The tick changes twenty times a second and is deliberately not a
+            live region. Connection state is the one status worth announcing,
+            and it is announced once, atomically, with context. */}
+        <span className="sr-only" aria-live="polite" aria-atomic="true">
+          {liveNow
+            ? 'Connected to the live market'
+            : status === 'Connecting'
+              ? 'Connecting to the market'
+              : 'Market connection lost'}
+        </span>
         <span
           className={`live ${liveNow ? 'live-on' : ''}`}
           data-testid="connection-status"
