@@ -2,6 +2,12 @@ import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { ScheduleAt } from 'spacetimedb';
 import { DbConnection } from './private-bindings';
+import {
+  assertRemainsPaused,
+  cachedSnapshot,
+  pauseAndSynchronize,
+  serverSnapshot,
+} from './helpers/paused-state';
 
 const database = process.env.BACKEND_DATABASE!;
 if (!database?.startsWith('one-market-v02-test-')) {
@@ -44,6 +50,15 @@ function subscribe(connection: DbConnection, queries: string[]): Promise<void> {
 }
 
 const row = () => owner.db.marketState.id.find(0)!;
+const readServer = () =>
+  serverSnapshot(process.env.BACKEND_URI!, database, token);
+const readCache = () => cachedSnapshot(owner);
+const pause = () =>
+  pauseAndSynchronize(
+    () => owner.reducers.pauseSimulation({}),
+    readServer,
+    readCache,
+  );
 
 test.describe
   .serial('v0.2 exact-runtime compatibility and transactions', () => {
@@ -261,32 +276,34 @@ test.describe
   });
 
   test('pause and recovery cannot rehabilitate a failed run', async () => {
-    await owner.reducers.pauseSimulation({});
-    await expect
-      .poll(() => owner.db.runtimeConfig.id.find(0)!.enabled)
-      .toBe(false);
-    // Ticks committed before the pause landed can still be in flight to this
-    // subscriber, so `enabled === false` does not mean the cache has caught up.
-    // Let it settle first; otherwise `before` is a stale read and the assertion
-    // below fails on rows the paused world had already committed.
-    let latest = -1n;
-    await expect
-      .poll(() => {
-        const current = row().logicalTick;
-        const unchanged = current === latest;
-        latest = current;
-        return unchanged;
-      })
-      .toBe(true);
-    const before = latest;
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    expect(row().logicalTick).toBe(before);
-    expect(owner.db.runRecord.runId.find(1n)!.status).toBe('FAILED');
+    const before = await pause();
+    await assertRemainsPaused(before, readServer, readCache);
+    // The independent query path must retain private-table authorization.
+    await expect(
+      serverSnapshot(process.env.BACKEND_URI!, database),
+    ).rejects.toThrow('authoritative snapshot query failed');
     await owner.reducers.recoverSimulation({});
-    await expect.poll(() => row().logicalTick).toBeGreaterThan(before);
-    expect(owner.db.runRecord.runId.find(1n)!.status).toBe('FAILED');
-    expect(owner.db.runRecord.runId.find(1n)!.skippedSlots).toBeGreaterThan(0n);
-    await owner.reducers.pauseSimulation({});
+    await expect
+      .poll(async () => (await readServer()).logicalTick)
+      .toBeGreaterThan(before.logicalTick);
+    const recovered = await readServer();
+    expect(recovered.runId).toBe(before.runId);
+    expect(recovered.enabled).toBe(true);
+    expect(recovered.status).toBe('FAILED');
+    expect(recovered.skippedSlots).toBeGreaterThan(0n);
+    await expect.poll(readCache).toMatchObject({
+      runId: before.runId,
+      status: 'FAILED',
+      enabled: true,
+      generation: recovered.generation,
+    });
+    await expect
+      .poll(() => row().logicalTick)
+      .toBeGreaterThan(before.logicalTick);
+    await expect
+      .poll(() => owner.db.runRecord.runId.find(before.runId)!.skippedSlots)
+      .toBeGreaterThan(0n);
+    await pause();
   });
 
   test('authorized receipt view is available without exposing it to other identities', async () => {
@@ -376,12 +393,19 @@ test.describe
         (r) => r.skippedSlots > 0n && r.startLatenessUs >= 50000n,
       ),
     ).toBe(true);
-    await owner.reducers.pauseSimulation({});
-    const before = row().logicalTick;
+    const before = await pause();
     await owner.reducers.testStaleCallback({});
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    expect(row().logicalTick).toBe(before);
-    expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+    // The injected record is due after 1 ms; its eventual deletion is expected,
+    // but neither the server tick nor the failed run may change while waiting.
+    await expect
+      .poll(async () => {
+        const current = await readServer();
+        expect({ ...current, scheduledTicks: 0 }).toEqual(before);
+        return current.scheduledTicks;
+      })
+      .toBe(0);
+    await expect.poll(readCache).toEqual(before);
+    await assertRemainsPaused(before, readServer, readCache, 100);
   });
 
   test('runtime persists PASS, EXITING and COOLDOWN and records a recapitalization grant', async () => {

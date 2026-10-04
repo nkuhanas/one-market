@@ -1,0 +1,56 @@
+ Container one-market-db-1 Running 
+ Container one-market-db-1 Waiting 
+ Container one-market-db-1 Healthy 
+ Container one-market-tools-run-5e41f5ab9b21 Creating 
+ Container one-market-tools-run-5e41f5ab9b21 Created 
+    Finished `release` profile [optimized] target(s) in 0.03s
+ Container one-market-tools-run-8b3c7ddfa2b0 Creating 
+ Container one-market-tools-run-8b3c7ddfa2b0 Created 
+Generating TypeScript module bindings for module spacetimedb
+Skipping build. Instead we are inspecting target/test-support/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+Creating directory tests/private-bindings/types
+Creating directory tests/private-bindings/types
+Generate finished successfully.
+ Container one-market-tools-run-d6b4c286b676 Creating 
+ Container one-market-tools-run-d6b4c286b676 Created 
+(WASM) Skipping build. Instead we are publishing target/test-support/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+You are about to publish to a non-local server: db
+Skipping confirmation due to --yes
+Uploading to http://db:3000 => http://db:3000
+Checking for breaking changes...
+Publishing module...
+Created new database with name: one-market-v02-test-1791079565-74606, identity: c2003b13fe62fef51c6bf160b3811bc595d8af96dfcd6d9a3d303fa3ca2aeff5
+ Container one-market-tools-run-ccc08c4021f8 Creating 
+ Container one-market-tools-run-ccc08c4021f8 Created 
+ Container one-market-browser-tests-run-5c326ecd8ea5 Creating 
+ Container one-market-browser-tests-run-5c326ecd8ea5 Created 
+
+Running 12 tests using 1 worker
+
+ℹ️ INFO Connecting to SpacetimeDB WS...
+ℹ️ INFO Connecting to SpacetimeDB WS...
+ℹ️ INFO Connecting to SpacetimeDB WS...
+  ✓   1 tests/backend.spec.ts:85:3 › v0.2 exact-runtime compatibility and transactions › bounded resumable setup, no ticks during setup, and authorization (38ms)
+ℹ️ INFO Connecting to SpacetimeDB WS...
+ℹ️ INFO Connecting to SpacetimeDB WS...
+ℹ️ INFO Connecting to SpacetimeDB WS...
+ℹ️ INFO Connecting to SpacetimeDB WS...
+ℹ️ INFO Connecting to SpacetimeDB WS...
+  ✓   2 tests/backend.spec.ts:123:3 › v0.2 exact-runtime compatibility and transactions › caller-scoped views and private tables reject cross-identity reads (23ms)
+  ✓   3 tests/backend.spec.ts:155:3 › v0.2 exact-runtime compatibility and transactions › reservations, durable IDs, limits, and rejected transaction rollback (13ms)
+  ✓   4 tests/backend.spec.ts:217:3 › v0.2 exact-runtime compatibility and transactions › absolute scheduler commits coverage and trades; manual calls cannot advance it (3.9s)
+  ✓   5 tests/backend.spec.ts:263:3 › v0.2 exact-runtime compatibility and transactions › pause and recovery cannot rehabilitate a failed run (357ms)
+  ✓   6 tests/backend.spec.ts:292:3 › v0.2 exact-runtime compatibility and transactions › authorized receipt view is available without exposing it to other identities (2ms)
+  ✓   7 tests/backend.spec.ts:300:3 › v0.2 exact-runtime compatibility and transactions › replayed IDs remain invalid after receipt pruning (7.5s)
+  ✓   8 tests/backend.spec.ts:326:3 › v0.2 exact-runtime compatibility and transactions › post-write failure rolls back settlement and evidence; stalled tick requires recovery (572ms)
+  ✓   9 tests/backend.spec.ts:368:3 › v0.2 exact-runtime compatibility and transactions › late callbacks expose slot gaps; stale generation cannot advance a paused world (458ms)
+  ✓  10 tests/backend.spec.ts:387:3 › v0.2 exact-runtime compatibility and transactions › runtime persists PASS, EXITING and COOLDOWN and records a recapitalization grant (71ms)
+  ✓  11 tests/backend.spec.ts:453:3 › v0.2 exact-runtime compatibility and transactions › qualification publication requires admin and three verified fresh runs (3ms)
+  ✓  12 tests/backend.spec.ts:486:3 › v0.2 exact-runtime compatibility and transactions › incorrect per-actor coverage aborts the tick; reset retains the order watermark (11ms)
+
+  12 passed (13.5s)
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
