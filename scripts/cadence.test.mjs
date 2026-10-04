@@ -3,11 +3,28 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import {
   cadenceLabel,
+  epochSlot,
   priceWindow,
   selectCapacity,
 } from '../apps/web/src/market/contract.ts';
 
 const ten = { profile: '10hz', tickIntervalUs: 100000n, bucketCount: 20 };
+
+test('epoch position uses exact live ticks and wraps at the server bucket count', () => {
+  assert.equal(epochSlot(0n, 20), 0);
+  assert.equal(epochSlot(19n, 20), 19);
+  assert.equal(epochSlot(20n, 20), 0);
+  assert.equal(epochSlot(15090n, 20), 10);
+  assert.equal(epochSlot(18446744073709551615n, 20), 15);
+  assert.equal(epochSlot(14n, 7), 0);
+  assert.equal(epochSlot(15n, 7), 1);
+});
+
+test('missing or invalid clock metadata stays pending rather than fabricating a bucket', () => {
+  assert.equal(epochSlot(undefined, 20), undefined);
+  for (const count of [undefined, 0, -1, 1.5, NaN, Infinity])
+    assert.equal(epochSlot(0n, count), undefined);
+});
 
 test('durable operating presets match cadence registry and retained evidence', () => {
   const read = (relative) =>
