@@ -80,6 +80,9 @@ test.describe
       'SELECT * FROM tick_schedule',
       'SELECT * FROM detailed_benchmark_receipts',
       'SELECT * FROM bucket_manifest',
+      'SELECT * FROM market_dynamics',
+      'SELECT * FROM bucket_health',
+      'SELECT * FROM actor_recovery',
     ]);
     for (const client of [alice, bob]) {
       await subscribe(client, [
@@ -157,6 +160,7 @@ test.describe
       'pending_human_order',
       'human_order_receipt',
       'actor_state',
+      'actor_recovery',
       'detailed_benchmark_receipts',
     ]) {
       const outsider = await connect();
@@ -592,6 +596,91 @@ test.describe
     await pause();
   });
 
+  test('distress revival commits bounded grants, retains inventory, and rolls back atomically', async () => {
+    await expect(alice.reducers.testClearRevivalState({})).rejects.toThrow();
+    await expect(alice.reducers.testStepMany({ count: 1n })).rejects.toThrow();
+    await owner.reducers.testClearRevivalState({});
+    for (const a of owner.db.actorState.iter()) {
+      await owner.reducers.testActorFixture({
+        actorId: a.actorId,
+        status: 'EXITING',
+        cashCents: 1000n,
+        shares: 10n,
+        cooldownStartedTick: undefined,
+      });
+    }
+    const start = row().logicalTick;
+    const price = row().priceCents;
+    await owner.reducers.testStepMany({ count: 580n });
+    await expect.poll(() => row().logicalTick).toBe(start + 580n);
+    expect(owner.db.marketDynamics.id.find(0)!.revivedActors).toBe(0n);
+    expect(row().activeActorCount).toBe(0n);
+    expect(row().priceCents).toBe(price);
+    const accounting =
+      owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents;
+    const target = [...owner.db.actorState.iter()].sort(
+      (a, b) => a.bucket - b.bucket || Number(a.actorId - b.actorId),
+    )[0];
+    const exitTick = owner.db.actorRecovery.actorId.find(
+      target.actorId,
+    )!.exitStartedTick;
+    const revivalTick =
+      ((exitTick + 600n + 399n) / 400n) * 400n + BigInt(target.bucket);
+    await owner.reducers.testStepMany({
+      count: revivalTick - row().logicalTick,
+    });
+    await expect.poll(() => row().logicalTick).toBe(revivalTick);
+    const encode = (value: unknown) =>
+      JSON.stringify(value, (_key, v: unknown) =>
+        typeof v === 'bigint' ? String(v) : v,
+      );
+    const snapshot = () =>
+      encode({
+        dynamics: owner.db.marketDynamics.id.find(0),
+        health: [...owner.db.bucketHealth.iter()].sort(
+          (a, b) => a.bucket - b.bucket,
+        ),
+        recovery: [...owner.db.actorRecovery.iter()].sort((a, b) =>
+          Number(a.actorId - b.actorId),
+        ),
+        actors: [...owner.db.actorState.iter()].sort((a, b) =>
+          Number(a.actorId - b.actorId),
+        ),
+        accounting: owner.db.grantAccounting.id.find(0),
+      });
+    const before = snapshot();
+    await owner.reducers.testSetFault({ failAfterWrites: true });
+    await expect(owner.reducers.testStepMany({ count: 1n })).rejects.toThrow();
+    expect(snapshot()).toBe(before);
+    await owner.reducers.testSetFault({ failAfterWrites: false });
+    await owner.reducers.testStepMany({ count: start + 1020n - revivalTick });
+    await expect.poll(() => row().logicalTick).toBe(start + 1020n);
+    expect(owner.db.marketDynamics.id.find(0)!.revivedActors).toBe(40n);
+    expect(row().activeActorCount).toBe(40n);
+    expect(row().priceCents).toBe(price); // no fabricated price rebound or trades
+    const dynamics = owner.db.marketDynamics.id.find(0)!;
+    expect(dynamics.totalGrantsCents).toBeLessThanOrEqual(100000000n);
+    expect(
+      owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents -
+        accounting,
+    ).toBe(dynamics.totalGrantsCents);
+    expect([...owner.db.actorState.iter()].every((a) => a.shares === 10n)).toBe(
+      true,
+    );
+    const revivalCount = dynamics.revivedActors;
+    await owner.reducers.recoverSimulation({});
+    // Accelerated manual ticks can put the original deadline grid in the future.
+    // Recovery must preserve that grid, not force an immediate callback.
+    await expect
+      .poll(() => owner.db.runtimeConfig.id.find(0)!.enabled)
+      .toBe(true);
+    await pause();
+    expect(owner.db.marketDynamics.id.find(0)!.revivedActors).toBe(
+      revivalCount,
+    );
+    expect(owner.db.runRecord.runId.find(1n)!.status).toBe('FAILED');
+  });
+
   test('qualification publication requires admin and three verified fresh runs', async () => {
     await expect(
       alice.reducers.publishBenchmarkResult({
@@ -646,6 +735,8 @@ test.describe
     while (owner.db.runtimeConfig.id.find(0)!.phase !== 'EMPTY') {
       await owner.reducers.resetBatch({});
     }
+    await expect.poll(() => [...owner.db.actorRecovery.iter()].length).toBe(0);
+    expect(owner.db.marketDynamics.id.find(0)!.revivedActors).toBe(0n);
     await owner.reducers.setActorPopulation({
       population: 20n,
       seed: 20261003n,

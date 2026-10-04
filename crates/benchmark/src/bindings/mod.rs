@@ -6,6 +6,8 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+pub mod actor_recovery_table;
+pub mod actor_recovery_type;
 pub mod actor_sample_table;
 pub mod actor_sample_type;
 pub mod actor_state_table;
@@ -21,6 +23,8 @@ pub mod benchmark_result_table;
 pub mod benchmark_result_type;
 pub mod benchmark_runs_table;
 pub mod benchmark_step_reducer;
+pub mod bucket_health_table;
+pub mod bucket_health_type;
 pub mod bucket_manifest_table;
 pub mod bucket_manifest_type;
 pub mod connected_reducer;
@@ -36,6 +40,8 @@ pub mod human_order_receipt_type;
 pub mod human_trader_table;
 pub mod human_trader_type;
 pub mod initialize_batch_reducer;
+pub mod market_dynamics_table;
+pub mod market_dynamics_type;
 pub mod market_state_table;
 pub mod market_state_type;
 pub mod my_pending_order_table;
@@ -74,6 +80,8 @@ pub mod validate_run_reducer;
 pub mod validated_run_table;
 pub mod validated_run_type;
 
+pub use actor_recovery_table::*;
+pub use actor_recovery_type::ActorRecovery;
 pub use actor_sample_table::*;
 pub use actor_sample_type::ActorSample;
 pub use actor_state_table::*;
@@ -89,6 +97,8 @@ pub use benchmark_result_table::*;
 pub use benchmark_result_type::BenchmarkResult;
 pub use benchmark_runs_table::*;
 pub use benchmark_step_reducer::benchmark_step;
+pub use bucket_health_table::*;
+pub use bucket_health_type::BucketHealth;
 pub use bucket_manifest_table::*;
 pub use bucket_manifest_type::BucketManifest;
 pub use connected_reducer::connected;
@@ -104,6 +114,8 @@ pub use human_order_receipt_type::HumanOrderReceipt;
 pub use human_trader_table::*;
 pub use human_trader_type::HumanTrader;
 pub use initialize_batch_reducer::initialize_batch;
+pub use market_dynamics_table::*;
+pub use market_dynamics_type::MarketDynamics;
 pub use market_state_table::*;
 pub use market_state_type::MarketState;
 pub use my_pending_order_table::*;
@@ -328,6 +340,7 @@ impl __sdk::Reducer for Reducer {
 #[allow(non_snake_case)]
 #[doc(hidden)]
 pub struct DbUpdate {
+    actor_recovery: __sdk::TableUpdate<ActorRecovery>,
     actor_sample: __sdk::TableUpdate<ActorSample>,
     actor_state: __sdk::TableUpdate<ActorState>,
     admin_allowlist: __sdk::TableUpdate<AdminAllowlist>,
@@ -335,12 +348,14 @@ pub struct DbUpdate {
     benchmark_reader: __sdk::TableUpdate<BenchmarkReader>,
     benchmark_result: __sdk::TableUpdate<BenchmarkResult>,
     benchmark_runs: __sdk::TableUpdate<RunRecord>,
+    bucket_health: __sdk::TableUpdate<BucketHealth>,
     bucket_manifest: __sdk::TableUpdate<BucketManifest>,
     connection_state: __sdk::TableUpdate<ConnectionState>,
     detailed_benchmark_receipts: __sdk::TableUpdate<TickReceipt>,
     grant_accounting: __sdk::TableUpdate<GrantAccounting>,
     human_order_receipt: __sdk::TableUpdate<HumanOrderReceipt>,
     human_trader: __sdk::TableUpdate<HumanTrader>,
+    market_dynamics: __sdk::TableUpdate<MarketDynamics>,
     market_state: __sdk::TableUpdate<MarketState>,
     my_pending_order: __sdk::TableUpdate<PendingHumanOrder>,
     my_recent_fills: __sdk::TableUpdate<HumanOrderReceipt>,
@@ -362,6 +377,9 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
         let mut db_update = DbUpdate::default();
         for table_update in __sdk::transaction_update_iter_table_updates(raw) {
             match &table_update.table_name[..] {
+                "actor_recovery" => db_update
+                    .actor_recovery
+                    .append(actor_recovery_table::parse_table_update(table_update)?),
                 "actor_sample" => db_update
                     .actor_sample
                     .append(actor_sample_table::parse_table_update(table_update)?),
@@ -383,6 +401,9 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "benchmark_runs" => db_update
                     .benchmark_runs
                     .append(benchmark_runs_table::parse_table_update(table_update)?),
+                "bucket_health" => db_update
+                    .bucket_health
+                    .append(bucket_health_table::parse_table_update(table_update)?),
                 "bucket_manifest" => db_update
                     .bucket_manifest
                     .append(bucket_manifest_table::parse_table_update(table_update)?),
@@ -401,6 +422,9 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "human_trader" => db_update
                     .human_trader
                     .append(human_trader_table::parse_table_update(table_update)?),
+                "market_dynamics" => db_update
+                    .market_dynamics
+                    .append(market_dynamics_table::parse_table_update(table_update)?),
                 "market_state" => db_update
                     .market_state
                     .append(market_state_table::parse_table_update(table_update)?),
@@ -466,6 +490,9 @@ impl __sdk::DbUpdate for DbUpdate {
     ) -> AppliedDiff<'_> {
         let mut diff = AppliedDiff::default();
 
+        diff.actor_recovery = cache
+            .apply_diff_to_table::<ActorRecovery>("actor_recovery", &self.actor_recovery)
+            .with_updates_by_pk(|row| &row.actor_id);
         diff.actor_sample = cache
             .apply_diff_to_table::<ActorSample>("actor_sample", &self.actor_sample)
             .with_updates_by_pk(|row| &row.actor_id);
@@ -481,6 +508,9 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.benchmark_result = cache
             .apply_diff_to_table::<BenchmarkResult>("benchmark_result", &self.benchmark_result)
             .with_updates_by_pk(|row| &row.id);
+        diff.bucket_health = cache
+            .apply_diff_to_table::<BucketHealth>("bucket_health", &self.bucket_health)
+            .with_updates_by_pk(|row| &row.bucket);
         diff.bucket_manifest = cache
             .apply_diff_to_table::<BucketManifest>("bucket_manifest", &self.bucket_manifest)
             .with_updates_by_pk(|row| &row.bucket);
@@ -505,6 +535,9 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.human_trader = cache
             .apply_diff_to_table::<HumanTrader>("human_trader", &self.human_trader)
             .with_updates_by_pk(|row| &row.identity);
+        diff.market_dynamics = cache
+            .apply_diff_to_table::<MarketDynamics>("market_dynamics", &self.market_dynamics)
+            .with_updates_by_pk(|row| &row.id);
         diff.market_state = cache
             .apply_diff_to_table::<MarketState>("market_state", &self.market_state)
             .with_updates_by_pk(|row| &row.id);
@@ -556,6 +589,9 @@ impl __sdk::DbUpdate for DbUpdate {
         let mut db_update = DbUpdate::default();
         for table_rows in raw.tables {
             match &table_rows.table[..] {
+                "actor_recovery" => db_update
+                    .actor_recovery
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "actor_sample" => db_update
                     .actor_sample
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
@@ -577,6 +613,9 @@ impl __sdk::DbUpdate for DbUpdate {
                 "benchmark_runs" => db_update
                     .benchmark_runs
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "bucket_health" => db_update
+                    .bucket_health
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "bucket_manifest" => db_update
                     .bucket_manifest
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
@@ -594,6 +633,9 @@ impl __sdk::DbUpdate for DbUpdate {
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "human_trader" => db_update
                     .human_trader
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "market_dynamics" => db_update
+                    .market_dynamics
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "market_state" => db_update
                     .market_state
@@ -647,6 +689,9 @@ impl __sdk::DbUpdate for DbUpdate {
         let mut db_update = DbUpdate::default();
         for table_rows in raw.tables {
             match &table_rows.table[..] {
+                "actor_recovery" => db_update
+                    .actor_recovery
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "actor_sample" => db_update
                     .actor_sample
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
@@ -668,6 +713,9 @@ impl __sdk::DbUpdate for DbUpdate {
                 "benchmark_runs" => db_update
                     .benchmark_runs
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "bucket_health" => db_update
+                    .bucket_health
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "bucket_manifest" => db_update
                     .bucket_manifest
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
@@ -685,6 +733,9 @@ impl __sdk::DbUpdate for DbUpdate {
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "human_trader" => db_update
                     .human_trader
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "market_dynamics" => db_update
+                    .market_dynamics
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "market_state" => db_update
                     .market_state
@@ -740,6 +791,7 @@ impl __sdk::DbUpdate for DbUpdate {
 #[allow(non_snake_case)]
 #[doc(hidden)]
 pub struct AppliedDiff<'r> {
+    actor_recovery: __sdk::TableAppliedDiff<'r, ActorRecovery>,
     actor_sample: __sdk::TableAppliedDiff<'r, ActorSample>,
     actor_state: __sdk::TableAppliedDiff<'r, ActorState>,
     admin_allowlist: __sdk::TableAppliedDiff<'r, AdminAllowlist>,
@@ -747,12 +799,14 @@ pub struct AppliedDiff<'r> {
     benchmark_reader: __sdk::TableAppliedDiff<'r, BenchmarkReader>,
     benchmark_result: __sdk::TableAppliedDiff<'r, BenchmarkResult>,
     benchmark_runs: __sdk::TableAppliedDiff<'r, RunRecord>,
+    bucket_health: __sdk::TableAppliedDiff<'r, BucketHealth>,
     bucket_manifest: __sdk::TableAppliedDiff<'r, BucketManifest>,
     connection_state: __sdk::TableAppliedDiff<'r, ConnectionState>,
     detailed_benchmark_receipts: __sdk::TableAppliedDiff<'r, TickReceipt>,
     grant_accounting: __sdk::TableAppliedDiff<'r, GrantAccounting>,
     human_order_receipt: __sdk::TableAppliedDiff<'r, HumanOrderReceipt>,
     human_trader: __sdk::TableAppliedDiff<'r, HumanTrader>,
+    market_dynamics: __sdk::TableAppliedDiff<'r, MarketDynamics>,
     market_state: __sdk::TableAppliedDiff<'r, MarketState>,
     my_pending_order: __sdk::TableAppliedDiff<'r, PendingHumanOrder>,
     my_recent_fills: __sdk::TableAppliedDiff<'r, HumanOrderReceipt>,
@@ -779,6 +833,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         event: &EventContext,
         callbacks: &mut __sdk::DbCallbacks<RemoteModule>,
     ) {
+        callbacks.invoke_table_row_callbacks::<ActorRecovery>(
+            "actor_recovery",
+            &self.actor_recovery,
+            event,
+        );
         callbacks.invoke_table_row_callbacks::<ActorSample>(
             "actor_sample",
             &self.actor_sample,
@@ -810,6 +869,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.benchmark_runs,
             event,
         );
+        callbacks.invoke_table_row_callbacks::<BucketHealth>(
+            "bucket_health",
+            &self.bucket_health,
+            event,
+        );
         callbacks.invoke_table_row_callbacks::<BucketManifest>(
             "bucket_manifest",
             &self.bucket_manifest,
@@ -838,6 +902,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         callbacks.invoke_table_row_callbacks::<HumanTrader>(
             "human_trader",
             &self.human_trader,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<MarketDynamics>(
+            "market_dynamics",
+            &self.market_dynamics,
             event,
         );
         callbacks.invoke_table_row_callbacks::<MarketState>(
@@ -1549,6 +1618,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
     type QueryBuilder = __sdk::QueryBuilder;
 
     fn register_tables(client_cache: &mut __sdk::ClientCache<Self>) {
+        actor_recovery_table::register_table(client_cache);
         actor_sample_table::register_table(client_cache);
         actor_state_table::register_table(client_cache);
         admin_allowlist_table::register_table(client_cache);
@@ -1556,12 +1626,14 @@ impl __sdk::SpacetimeModule for RemoteModule {
         benchmark_reader_table::register_table(client_cache);
         benchmark_result_table::register_table(client_cache);
         benchmark_runs_table::register_table(client_cache);
+        bucket_health_table::register_table(client_cache);
         bucket_manifest_table::register_table(client_cache);
         connection_state_table::register_table(client_cache);
         detailed_benchmark_receipts_table::register_table(client_cache);
         grant_accounting_table::register_table(client_cache);
         human_order_receipt_table::register_table(client_cache);
         human_trader_table::register_table(client_cache);
+        market_dynamics_table::register_table(client_cache);
         market_state_table::register_table(client_cache);
         my_pending_order_table::register_table(client_cache);
         my_recent_fills_table::register_table(client_cache);
@@ -1577,6 +1649,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         validated_run_table::register_table(client_cache);
     }
     const ALL_TABLE_NAMES: &'static [&'static str] = &[
+        "actor_recovery",
         "actor_sample",
         "actor_state",
         "admin_allowlist",
@@ -1584,12 +1657,14 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "benchmark_reader",
         "benchmark_result",
         "benchmark_runs",
+        "bucket_health",
         "bucket_manifest",
         "connection_state",
         "detailed_benchmark_receipts",
         "grant_accounting",
         "human_order_receipt",
         "human_trader",
+        "market_dynamics",
         "market_state",
         "my_pending_order",
         "my_recent_fills",

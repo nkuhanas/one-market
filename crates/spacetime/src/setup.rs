@@ -149,6 +149,7 @@ pub fn reset_batch(ctx: &ReducerContext) -> Result<()> {
         }};
     }
     let empty = prune!(actor_state, actor_id)
+        & prune!(actor_recovery, actor_id)
         & prune!(human_trader, identity)
         & prune!(pending_human_order, identity)
         & prune!(human_order_receipt, key)
@@ -198,6 +199,17 @@ pub fn reset_batch(ctx: &ReducerContext) -> Result<()> {
             .market_state()
             .id()
             .update(fresh_market(ctx.timestamp, connected));
+        crate::revival::ensure(ctx, config().initial_price_cents);
+        ctx.db
+            .market_dynamics()
+            .id()
+            .update(crate::revival::fresh(config().initial_price_cents));
+        for bucket in 0..20 {
+            ctx.db
+                .bucket_health()
+                .bucket()
+                .update(crate::revival::bucket_state(bucket));
+        }
         r.phase = "EMPTY".into();
         r.target_population = 0;
         r.initialized = 0;

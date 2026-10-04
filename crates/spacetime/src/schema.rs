@@ -157,6 +157,48 @@ pub struct BucketManifest {
     pub membership_digest: Vec<u8>,
 }
 
+/// Additive, bounded public observability; not a replacement traded price.
+#[table(accessor = market_dynamics, public)]
+#[derive(Clone, Debug, PartialEq)]
+pub struct MarketDynamics {
+    #[primary_key]
+    pub id: u8,
+    pub reference_price_cents: u64,
+    pub sentiment_bps: i64,
+    pub mode: String,
+    pub floor_streak: u64,
+    pub illiquid_streak: u64,
+    pub healthy_streak: u64,
+    pub distressed_buckets: u64,
+    pub episode: u64,
+    pub episode_started_tick: u64,
+    pub next_recovery_tick: u64,
+    pub revived_actors: u64,
+    pub episode_grants_cents: u128,
+    pub total_grants_cents: u128,
+    pub constrained_grants: u64,
+}
+
+#[table(accessor = bucket_health, public)]
+#[derive(Clone, Debug, PartialEq)]
+pub struct BucketHealth {
+    #[primary_key]
+    pub bucket: u8,
+    pub illiquid_epochs: u64,
+    pub distressed: bool,
+}
+
+/// Sparse recovery bookkeeping, without changing the existing actor encoding.
+#[table(accessor = actor_recovery)]
+#[derive(Clone, Debug, PartialEq)]
+pub struct ActorRecovery {
+    #[primary_key]
+    pub actor_id: u64,
+    pub exit_started_tick: u64,
+    pub last_episode: u64,
+    pub grants_cents: u64,
+}
+
 #[table(accessor = human_trader)]
 #[derive(Clone)]
 pub struct HumanTrader {

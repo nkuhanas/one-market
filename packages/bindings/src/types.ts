@@ -10,6 +10,14 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+export const ActorRecovery = __t.object("ActorRecovery", {
+  actorId: __t.u64(),
+  exitStartedTick: __t.u64(),
+  lastEpisode: __t.u64(),
+  grantsCents: __t.u64(),
+});
+export type ActorRecovery = __Infer<typeof ActorRecovery>;
+
 export const ActorSample = __t.object("ActorSample", {
   actorId: __t.u64(),
   status: __t.string(),
@@ -92,6 +100,13 @@ export const BenchmarkResult = __t.object("BenchmarkResult", {
 });
 export type BenchmarkResult = __Infer<typeof BenchmarkResult>;
 
+export const BucketHealth = __t.object("BucketHealth", {
+  bucket: __t.u8(),
+  illiquidEpochs: __t.u64(),
+  distressed: __t.bool(),
+});
+export type BucketHealth = __Infer<typeof BucketHealth>;
+
 export const BucketManifest = __t.object("BucketManifest", {
   bucket: __t.u8(),
   actorCount: __t.u64(),
@@ -143,6 +158,25 @@ export const HumanTrader = __t.object("HumanTrader", {
   completedOrders: __t.u64(),
 });
 export type HumanTrader = __Infer<typeof HumanTrader>;
+
+export const MarketDynamics = __t.object("MarketDynamics", {
+  id: __t.u8(),
+  referencePriceCents: __t.u64(),
+  sentimentBps: __t.i64(),
+  mode: __t.string(),
+  floorStreak: __t.u64(),
+  illiquidStreak: __t.u64(),
+  healthyStreak: __t.u64(),
+  distressedBuckets: __t.u64(),
+  episode: __t.u64(),
+  episodeStartedTick: __t.u64(),
+  nextRecoveryTick: __t.u64(),
+  revivedActors: __t.u64(),
+  episodeGrantsCents: __t.u128(),
+  totalGrantsCents: __t.u128(),
+  constrainedGrants: __t.u64(),
+});
+export type MarketDynamics = __Infer<typeof MarketDynamics>;
 
 export const MarketState = __t.object("MarketState", {
   id: __t.u8(),

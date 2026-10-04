@@ -10,17 +10,23 @@ import { EmptyState } from './value';
 
 function Row({ entry }: { entry: ActivityEntry }) {
   const human = entry.participantType === 'HUMAN';
-  if (entry.eventKind === 'WIPED') {
+  if (entry.eventKind !== 'FILLED') {
+    const wiped = entry.eventKind === 'WIPED';
+    const label = {
+      WIPED: 'Wiped — drawdown limit',
+      COOLDOWN: 'Cooldown — shares sold',
+      RECAPITALIZED: 'Recapitalized',
+      REVIVED: 'Revived — shares retained',
+      UNKNOWN: 'Lifecycle update',
+    }[entry.eventKind];
     return (
-      <li className="row row-wiped">
+      <li className={`row${wiped ? ' row-wiped' : ''}`}>
         <span className="row-tick mono">{formatCount(entry.logicalTick)}</span>
         <span className="row-who">
           {human ? 'Human' : 'Actor'}{' '}
           <span className="mono">{entry.participantId}</span>
         </span>
-        {/* Section 12 fixes this wording, and it must not imply that the
-            actor's shares have finished liquidating. */}
-        <span className="row-kind kind-wiped">Wiped — drawdown limit</span>
+        <span className={`row-kind${wiped ? ' kind-wiped' : ''}`}>{label}</span>
         <span className="row-detail mono">
           {formatSignedUsd(entry.lifetimePnlCents)} lifetime
         </span>
@@ -59,8 +65,8 @@ export const ActivityFeed = memo(function ActivityFeed({
       {activity.length === 0 ? (
         <EmptyState
           compact
-          title="No trades yet"
-          body="Fills and drawdown wipeouts appear here as soon as an auction clears."
+          title="No activity yet"
+          body="Fills, drawdown wipeouts, and actor recovery events appear here as the simulation advances."
         />
       ) : (
         <ol className="rows">

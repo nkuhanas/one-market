@@ -226,13 +226,21 @@ signal = momentum_weight × momentum
 
 Signal magnitude determines conviction and sizing. Buys must be affordable at their limit price; sells must be covered by owned shares. Version the policy, sizing, limit-price, and noise rules in the benchmark configuration.
 
-The market-recovery policy uses the magnitude of the stored mean-reversion
-weight so reversion is restoring, while momentum, crowd and news responses
-remain heterogeneous. Active limit prices use an actor-specific reservation
-price anchored partway toward the initial-price reference. Buy limits round up
-to integer cents; sell limits round down. Freeze the anchor strength and exact
-formula in the workload configuration. This changes submitted orders, never
-the traded price directly, and introduces no synthetic counterparty.
+The dynamics/revival policy uses the magnitude of the stored mean-reversion
+weight, scaled to 10% of its former signal contribution. Each actor has a seeded
+private valuation within ±20% of a persistent shared reservation reference,
+revised on staggered 200–1,000-tick horizons. Quotes move at most 5% of the gap
+toward that private valuation, not a universal permanent $100 destination.
+Shared sentiment has a seeded target bounded to ±50 bps, renewed every 400
+ticks and smoothed once per 20-tick epoch; it slowly moves the reservation
+reference and adds heterogeneous directional pressure. News retains its signed
+actor response plus a 10% common component. Freeze all integer formulas in
+`config/v02.json` and `docs/implementation-decisions.md`.
+
+The shared reference/sentiment are authoritative persisted state, distinct from
+the last traded price. Buy limits round up to integer cents; sell limits round
+down. All changes affect submitted orders, never the traded price directly,
+and introduce no synthetic counterparty.
 
 ---
 
@@ -372,11 +380,45 @@ exiting; no buyers means no instant liquidation. If it has no shares remaining,
 it enters cooldown and records the cooldown start tick. Elapsed time alone
 never discards inventory or moves an actor into cooldown.
 
-Recovery is conditional on executable counterparties. Because auctions contain
-only the current due bucket plus accepted human orders, an entirely exiting
-bucket cannot autonomously recover without a buyer. Do not promise universal
-recovery, manufacture fills, or hide the stalled population. Policy regressions
-must distinguish this illiquidity from an integer-rounding penny-price trap.
+An inventory-retaining exception handles prolonged market distress. A price
+at or below 10 cents for 600 completed ticks, or zero volume with at most 10%
+ACTIVE actors for 600 ticks, opens a recovery episode. Each due bucket also
+tracks this zero-volume/low-participation condition for 30 consecutive visits
+so healthy buckets cannot mask a stranded one. A normal flat price with healthy
+trading is not distress. Ticks and human orders continue throughout.
+
+During recovery, actors that have remained EXITING for at least 600 ticks can
+return directly to ACTIVE with cash and all unsold shares intact. This transition
+is `REVIVED — INVENTORY RETAINED`, not completed liquidation or cooldown.
+The actor's rank in its sorted bucket modulo 20 selects its cohort; epoch modulo
+20 selects the due cohort. Each eligible actor therefore receives a turn within
+400 completed ticks, provided recovery remains open. An episode lasts up to
+1,200 ticks; a 1,200-tick backoff prevents immediate repeats. It may close early
+only after a full cohort cycle and 400 healthy ticks (price above 20 cents,
+positive volume, at least 50% ACTIVE, and no distressed bucket).
+
+Revival grants target equity rather than cash alone:
+
+```text
+desired_grant = max(0, 10,000,000 - (cash_cents + shares × price_cents))
+grant = min(desired_grant, remaining_actor_cap, remaining_episode_budget,
+            remaining_world_revival_budget)
+```
+
+An actor revives at most once per episode. Its lifetime revival grant cap is
+10,000,000 cents; each episode may grant 25% of the initial actor-population
+bankroll, and lifetime revival grants may total at most 100% of that bankroll.
+All grants enter the existing accounting and grant-adjusted lifetime P&L.
+Reset only the per-life equity peak. Exhausting a budget still permits zero-grant
+reactivation; valuable retained shares do not imply spendable cash. Ordinary
+fully-liquidated recapitalizations below are separate from these revival caps.
+
+Recovery restores trading eligibility, not guaranteed fills or a higher price.
+Executable buyers and sellers are still required. A penny price may persist
+even after activity resumes; do not invent a rebound or hide that counterexample.
+Sparse private actor recovery records persist exit timing, last supported
+episode and lifetime revival grants. Timers use completed ticks, so runtime
+pause/stall recovery remains an explicit owner operation.
 
 After 20 logical ticks have elapsed, its next due bucket update grants only enough cash to restore its bankroll to `$100,000`:
 
@@ -524,6 +566,15 @@ chaos_active
 Publish cumulative activity counters and document the configured rate window. Compute displayed rates from counter deltas divided by **actual elapsed time**. Twenty completed ticks cannot be assumed to equal one elapsed second. Define whether each rate includes autonomous actors, humans, or both.
 
 `PricePoint` carries `logical_tick`, `recorded_at`, `price_cents`, and `matched_share_volume`. Public activity carries an ID, tick, timestamp, participant type/public identifier, event kind, side where relevant, quantity, and price in cents for fills. Wipeout activity uses `WIPED — DRAWDOWN LIMIT`, signed lifetime P&L, and a wipeout count; it must not imply completed share liquidation before it happens.
+
+The bounded public `market_dynamics` singleton exposes reservation reference,
+sentiment, distress/recovery/backoff mode, streaks, episode, revived count,
+granted cash and constrained-grant count; `bucket_health` contains 20 rows.
+They supplement, not replace, `MarketState`. Lifecycle events (`COOLDOWN`,
+`RECAPITALIZED`, `REVIVED — INVENTORY RETAINED`) must never render as fills.
+The default observer workload remains the six configured subscriptions; operator
+health queries may inspect the additional bounded tables without subscribing
+to private actor records.
 
 `NewsEvent` carries an ID, headline, direction, `severity_bps`, `confidence_bps`, `start_tick`, and `end_tick`. A public actor sample may expose limited presentation fields for 64 actors without making the full `ActorState` table queryable.
 

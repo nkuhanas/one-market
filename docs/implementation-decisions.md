@@ -15,11 +15,12 @@ qualified workload hash. The compiled module and Rust harness share the pure
 - Actors use SplitMix64 derivation, indexed buckets, and integer weighted signals.
   Quantity is capped at 10 shares and by available balances and risk budget.
   Noise and tie-breaking derive from the recorded seed, actor/order ID, and tick.
-- `one-market-v02-market-recovery-2` replaces the original pricing/liquidation
+- `one-market-v02-dynamics-revival-1` retains the protected liquidation
   rules. Exiting actors offer at most `liquidation_max_quantity = 10` shares,
   with reserve `ceil(previous_price * (10000 - liquidation_discount_bps) / 10000)`;
   `liquidation_discount_bps = 500`. Clamp to the configured price range. They
-  still require real completed liquidation before cooldown and grants.
+  still require real completed liquidation before ordinary cooldown grants.
+  A separate budgeted distress revival can retain unsold inventory.
 - Tick phases: mark and check risk at the previous traded price; perform lifecycle
   or active policy; gather human reservations; clear; settle; mark at the new
   traded price; persist every due actor exactly once; commit evidence and feeds.
@@ -68,17 +69,23 @@ values at shifts 0, 12, 24 and 36, minus 1,000. Conviction is
 uniform statistical distribution, define the reproducible population.
 
 At each active due step, compute integer basis-point momentum from the previous
-two traded prices, reversion from current price toward the initial price, prior
-auction quantity imbalance, and active news direction × severity × confidence.
-Signal is `(momentum_weight * momentum + abs(reversion_weight) * reversion -
-contrarian_weight * imbalance + news_weight * news) / 1000`, then add noise
+two traded prices, reversion toward the actor's private valuation, prior auction
+quantity imbalance, and active news direction × severity × confidence.
+`horizon = 200 * (1 + mix(actor_id) % 5)`; revision is
+`(tick + mix(actor_id) % horizon) / horizon`, using a u128 intermediate.
+`bias = mix(seed xor mix(actor_id) xor mix(revision)) % 4001 - 2000`.
+Private fair value is `clamp(shared_reference * (10000 + bias) / 10000)`.
+Reversion is `(fair - previous_price) * 10000 / previous_price`.
+Signal is `(momentum_weight * momentum + abs(reversion_weight) * reversion *
+1000 / 10000 - contrarian_weight * imbalance + news_weight * news) / 1000`,
+plus `(sentiment + news * 1000 / 10000) * (1000 + news_weight / 2) / 1000`, then noise
 `mix(seed xor mix(actor_id) xor mix(logical_tick)) % 2001 - 1000`.
 Signed division truncates toward zero. Absolute signal below conviction passes.
 Positive signal buys; negative signal sells.
 
 For quotes, `anchor_bps = min(abs(reversion_weight), 1000) *
-quote_reversion_bps / 1000`, where `quote_reversion_bps = 2500`.
-The reservation price is `previous_price + (initial_price - previous_price) *
+quote_reversion_bps / 1000`, where `quote_reversion_bps = 500`.
+The reservation price is `previous_price + (fair - previous_price) *
 anchor_bps / 10000`, using signed division truncated toward zero. This retains
 existing stored weights/identities while treating mean reversion as restoring.
 Limit allowance is `clamp(abs(signal) / 10, 1, 500)` bps around this reservation
@@ -94,11 +101,29 @@ The acceptance allocator stays monotonic across explicit world resets, as do
 run/event IDs and the per-identity deduplication watermark. Recorded IDs and
 actual accepted human timing are inputs; repeats need not have identical fills.
 
+At each epoch boundary, sentiment target is
+`mix(seed xor mix(tick / 400) xor 0x6d6f6f64) % 101 - 50`.
+Move sentiment one fourth of the target difference, using its sign for a
+nonzero difference that would truncate to zero. Reference drift is sentiment
+divided by 20 bps. Move the reference by that proportion, with a one-cent
+signed step if nonzero drift would truncate to zero, and clamp to permitted
+prices. Neither value returns automatically to $100. Both are persisted in
+`market_dynamics`, updated once per tick together with health/recovery state.
+
 The price remains the result of the unchanged auction and actual settlement.
-There is no forced recovery price, invisible buyer, liquidation timeout, peak
-decay, or share deletion. An entirely exiting fixed bucket still lacks autonomous
-buyers; see the retained model counterexample in the
-[market-recovery delta](../deltas/market-recovery_2026-10-03_22-05-19_EST.md).
+There is no forced recovery price, invisible buyer, continuous peak decay or
+share deletion. See SPEC §9 for the frozen distress thresholds, cohort timing,
+inventory-retaining revival and explicit grant caps. `actor_recovery` is sparse
+and private; `bucket_health` has exactly 20 rows. Reads/updates stay within the
+due bucket. Revival skips policy in its transition tick, like ordinary
+recapitalization. Existing actor/market/runtime row layouts remain unchanged.
+
+For actors already EXITING during upgrade, the first new-policy bucket visit
+starts a conservative exit timer. Subsequent ACTIVE→EXITING transitions reset
+that timer without discarding the actor's grant history. Episode eligibility
+is once per actor, even for zero-grant revivals. Bounded eligibility restoration
+does not guarantee cash, fills, or departure from the penny floor; the native
+no-cash/exhausted-budget fixture deliberately retains that counterexample.
 
 ## Workload upgrades
 
@@ -110,6 +135,10 @@ FAILED run without advancing the tick. An owner may explicitly call
 That continuation stays FAILED/non-qualifying, retains its original run hashes,
 and records the adopted workload hash in its failure reason. It is not a new
 measurement. Only a fresh world/run can qualify the new workload.
+Explicit adoption seeds missing dynamics from the current traded price and
+creates missing bucket-health rows, preserving existing dynamics on repeated
+recovery/restart. Ordinary publication alone never backfills or resets actors.
+The original failure reason is retained when appending recovery evidence.
 
 The actor sample is the first 64 IDs. Public activity chooses at most one event
 per tick: the first lifecycle transition in actor-ID order, otherwise the first

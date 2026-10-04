@@ -253,6 +253,8 @@ export class Cloud {
       skipped_slots: run?.skipped_slots ?? 0n,
       qualification: run?.qualification ?? false,
       build_hash: run?.build_hash ?? null,
+      configuration_hash: m.configuration_hash,
+      run_configuration_hash: run?.configuration_hash ?? null,
     };
   }
 }

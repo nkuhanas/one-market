@@ -4,6 +4,7 @@ mod lifecycle;
 #[cfg(test)]
 mod market_regressions;
 mod qualification;
+mod revival;
 mod runtime;
 mod schema;
 mod setup;
@@ -78,6 +79,7 @@ pub fn init(ctx: &ReducerContext) {
         identity: ctx.sender(),
     });
     ctx.db.market_state().insert(fresh_market(ctx.timestamp, 0));
+    revival::ensure(ctx, config().initial_price_cents);
     ctx.db.runtime_config().insert(RuntimeConfig {
         id: 0,
         phase: "EMPTY".into(),

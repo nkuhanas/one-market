@@ -66,7 +66,8 @@ export interface ActivityEntry {
   readonly logicalTick: bigint;
   readonly participantType: 'ACTOR' | 'HUMAN';
   readonly participantId: string;
-  readonly eventKind: 'FILLED' | 'WIPED';
+  readonly eventKind:
+    'FILLED' | 'WIPED' | 'COOLDOWN' | 'RECAPITALIZED' | 'REVIVED' | 'UNKNOWN';
   readonly side: OrderSide | '';
   readonly quantity: bigint;
   readonly priceCents: bigint;
@@ -132,8 +133,12 @@ export function asParticipant(value: string): 'ACTOR' | 'HUMAN' {
   return value === 'HUMAN' ? 'HUMAN' : 'ACTOR';
 }
 
-export function asEventKind(value: string): 'FILLED' | 'WIPED' {
-  return value === 'WIPED' ? 'WIPED' : 'FILLED';
+export function asEventKind(value: string): ActivityEntry['eventKind'] {
+  if (value === 'WIPED' || value === 'WIPED — DRAWDOWN LIMIT') return 'WIPED';
+  if (value === 'REVIVED — INVENTORY RETAINED') return 'REVIVED';
+  if (value === 'FILLED' || value === 'COOLDOWN' || value === 'RECAPITALIZED')
+    return value;
+  return 'UNKNOWN';
 }
 
 export function asSide(value: string): OrderSide | '' {

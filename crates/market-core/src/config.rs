@@ -22,10 +22,31 @@ pub struct Config {
     pub slippage_bps: u64,
     pub actor_max_quantity: u64,
     pub quote_reversion_bps: u64,
+    pub signal_reversion_bps: u64,
+    pub valuation_spread_bps: u64,
+    pub valuation_horizon_ticks: u64,
+    pub sentiment_max_bps: u64,
+    pub sentiment_interval_ticks: u64,
+    pub sentiment_smoothing_epochs: u64,
+    pub reference_step_divisor: u64,
+    pub shared_news_weight_bps: u64,
     pub liquidation_max_quantity: u64,
     pub liquidation_discount_bps: u64,
     pub drawdown_bps: u64,
     pub cooldown_ticks: u64,
+    pub revival_enabled: bool,
+    pub revival_floor_cents: u64,
+    pub revival_distress_ticks: u64,
+    pub revival_low_active_bps: u64,
+    pub revival_healthy_active_bps: u64,
+    pub revival_healthy_ticks: u64,
+    pub revival_exit_wait_ticks: u64,
+    pub revival_cohort_epochs: u64,
+    pub revival_window_ticks: u64,
+    pub revival_backoff_ticks: u64,
+    pub revival_actor_cap_cents: u64,
+    pub revival_episode_budget_bps: u64,
+    pub revival_total_budget_bps: u64,
     pub price_retention: u64,
     pub activity_retention: u64,
     pub activity_interval_us: u64,
@@ -76,6 +97,22 @@ pub fn workload_hash(population: u64, seed: u64, profile: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn frozen_revival_defaults_have_time_for_a_full_eligible_cohort_cycle() {
+        let c = config();
+        assert_eq!(c.buckets, 20);
+        assert!(c.revival_cohort_epochs > 0);
+        assert!(
+            c.revival_window_ticks
+                >= c.revival_exit_wait_ticks + c.revival_cohort_epochs * u64::from(c.buckets)
+        );
+        assert!(c.revival_low_active_bps < c.revival_healthy_active_bps);
+        assert!(c.revival_healthy_active_bps <= 10_000);
+        assert!(c.revival_floor_cents >= c.min_price_cents);
+        assert!(c.revival_episode_budget_bps <= c.revival_total_budget_bps);
+        assert!(c.revival_actor_cap_cents <= c.bankroll_cents);
+    }
 
     #[test]
     fn recovery_workload_cannot_reuse_old_or_different_run_qualification() {

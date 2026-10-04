@@ -25,7 +25,8 @@ pub fn weights(seed: u64, id: u64) -> Weights {
 #[derive(Clone, Copy)]
 pub struct Signals {
     pub momentum_bps: i64,
-    pub reversion_bps: i64,
+    pub reference_price_cents: u64,
+    pub sentiment_bps: i64,
     pub imbalance_bps: i64,
     pub news_bps: i64,
 }
@@ -42,12 +43,34 @@ pub fn decide(
     price: u64,
     c: &Config,
 ) -> Result<Option<(bool, u64, u64)>> {
+    // Stateless private valuations: different actors revise on different,
+    // staggered horizons. The common reference itself is persistent state.
+    let horizon = c
+        .valuation_horizon_ticks
+        .checked_mul(1 + mix(actor) % 5)
+        .filter(|x| *x > 0)
+        .ok_or("invalid valuation horizon")?;
+    let revision = (u128::from(tick) + u128::from(mix(actor) % horizon)) / u128::from(horizon);
+    let spread = c.valuation_spread_bps.min(9999);
+    let bias = (mix(seed
+        ^ mix(actor)
+        ^ mix(u64::try_from(revision).map_err(|_| "valuation revision overflow")?))
+        % (2 * spread + 1)) as i128
+        - i128::from(spread);
+    let fair = (u128::from(s.reference_price_cents) * (10_000 + bias) as u128 / 10_000)
+        .clamp(u128::from(c.min_price_cents), u128::from(c.max_price_cents));
+    let reversion = (fair as i128 - i128::from(price)) * 10_000 / i128::from(price);
     let noise = (mix(seed ^ mix(actor) ^ mix(tick)) % 2001) as i128 - 1000;
     let signal = (i128::from(w.momentum) * i128::from(s.momentum_bps)
-        + i128::from(w.reversion.unsigned_abs()) * i128::from(s.reversion_bps)
+        + i128::from(w.reversion.unsigned_abs()) * reversion * i128::from(c.signal_reversion_bps)
+            / 10_000
         - i128::from(w.contrarian) * i128::from(s.imbalance_bps)
         + i128::from(w.news) * i128::from(s.news_bps))
         / 1000
+        + (i128::from(s.sentiment_bps)
+            + i128::from(s.news_bps) * i128::from(c.shared_news_weight_bps) / 10_000)
+            * (1000 + i128::from(w.news) / 2)
+            / 1000
         + noise;
     if signal.unsigned_abs() < u128::from(w.conviction) {
         return Ok(None);
@@ -64,8 +87,8 @@ pub fn decide(
     let anchor_bps = u128::from(w.reversion.unsigned_abs().min(1000))
         * u128::from(c.quote_reversion_bps.min(10_000))
         / 1000;
-    let reference = i128::from(price)
-        + (i128::from(c.initial_price_cents) - i128::from(price)) * anchor_bps as i128 / 10_000;
+    let reference =
+        i128::from(price) + (fair as i128 - i128::from(price)) * anchor_bps as i128 / 10_000;
     let reference = u128::try_from(reference).map_err(|_| "negative reservation price")?;
     let scaled_limit = reference * scaled;
     let limit = u64::try_from(
@@ -149,7 +172,8 @@ mod tests {
         let c = config();
         let s = Signals {
             momentum_bps: 0,
-            reversion_bps: 0,
+            reference_price_cents: 10_000,
+            sentiment_bps: 0,
             imbalance_bps: 0,
             news_bps: 10_000,
         };
@@ -173,7 +197,8 @@ mod tests {
         let c = config();
         let s = Signals {
             momentum_bps: 0,
-            reversion_bps: 99_990_000,
+            reference_price_cents: 10_000,
+            sentiment_bps: 0,
             imbalance_bps: 0,
             news_bps: -8000,
         };
@@ -244,7 +269,8 @@ mod tests {
             for reversion in [i32::MIN, -1000, 0, 1000, i32::MAX] {
                 let s = Signals {
                     momentum_bps: 0,
-                    reversion_bps: 10000,
+                    reference_price_cents: 10_000,
+                    sentiment_bps: 0,
                     imbalance_bps: 0,
                     news_bps: 10000,
                 };
@@ -260,7 +286,8 @@ mod tests {
         }
         let s = Signals {
             momentum_bps: 0,
-            reversion_bps: 10000,
+            reference_price_cents: 10_000,
+            sentiment_bps: 0,
             imbalance_bps: 0,
             news_bps: 10000,
         };
