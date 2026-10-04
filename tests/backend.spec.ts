@@ -477,6 +477,121 @@ test.describe
     ).toBe(BigInt(due.length - 2) * 10000000n);
   });
 
+  test('liquidation is quantity-bounded and rejects a below-reserve buyer', async () => {
+    const target = [...owner.db.actorState.iter()][0];
+    for (
+      let step = 0;
+      Number(row().logicalTick % 20n) !== target.bucket && step < 20;
+      step++
+    ) {
+      const before = row().logicalTick;
+      await owner.reducers.benchmarkStep({});
+      await expect.poll(() => row().logicalTick).toBe(before + 1n);
+    }
+    const due = [...owner.db.actorState.iter()].filter(
+      (a) => a.bucket === target.bucket,
+    );
+    for (const a of due) {
+      await owner.reducers.testActorFixture({
+        actorId: a.actorId,
+        status: a.actorId === target.actorId ? 'EXITING' : 'ACTIVE',
+        cashCents: 10000000n,
+        shares: a.actorId === target.actorId ? 500n : 0n,
+        cooldownStartedTick: undefined,
+      });
+    }
+    const price = row().priceCents;
+    const reserve = (price * 9500n + 9999n) / 10000n;
+    await alice.reducers.placeOrder({
+      clientOrderId: 201n,
+      side: 'BUY',
+      quantity: 100n,
+      limitPriceCents: 1n,
+    });
+    let tick = row().logicalTick;
+    await owner.reducers.benchmarkStep({});
+    await expect.poll(() => row().logicalTick).toBe(tick + 1n);
+    expect(owner.db.actorState.actorId.find(target.actorId)!.shares).toBe(500n);
+    expect(row().priceCents).toBe(price);
+    await expect
+      .poll(
+        () =>
+          [...alice.db.myRecentFills.iter()].find(
+            (r) => r.clientOrderId === 201n,
+          )?.filledQuantity,
+      )
+      .toBe(0n);
+    for (let step = 0; step < 19; step++) {
+      tick = row().logicalTick;
+      await owner.reducers.benchmarkStep({});
+      await expect.poll(() => row().logicalTick).toBe(tick + 1n);
+    }
+    const secondPrice = row().priceCents;
+    const secondReserve = (secondPrice * 9500n + 9999n) / 10000n;
+    // Other buckets may trade between attempts; compute this auction's reserve.
+    // A different funded identity avoids the real-time 200 ms rate limit while
+    // manually stepping the simulation faster than wall time.
+    await bob.reducers.placeOrder({
+      clientOrderId: 202n,
+      side: 'BUY',
+      quantity: 100n,
+      limitPriceCents: secondPrice,
+    });
+    tick = row().logicalTick;
+    await owner.reducers.benchmarkStep({});
+    await expect.poll(() => row().logicalTick).toBe(tick + 1n);
+    await expect
+      .poll(
+        () =>
+          [...bob.db.myRecentFills.iter()].find((r) => r.clientOrderId === 202n)
+            ?.filledQuantity,
+      )
+      .toBe(10n);
+    const actor = owner.db.actorState.actorId.find(target.actorId)!;
+    expect(actor.shares).toBe(490n);
+    expect(actor.status.tag).toBe('Exiting');
+    expect(row().priceCents).toBeGreaterThanOrEqual(secondReserve);
+    expect(reserve).toBeGreaterThan(1n);
+  });
+
+  test('a changed workload stops before actor writes and requires explicit non-qualifying recovery', async () => {
+    const configurationHash = row().configurationHash;
+    const runHash = '1'.repeat(64);
+    await expect(alice.reducers.testStaleConfiguration({})).rejects.toThrow();
+    await owner.reducers.testStaleConfiguration({});
+    await expect.poll(() => row().configurationHash).toBe('0'.repeat(64));
+    const tick = row().logicalTick;
+    const rows = [...owner.db.actorState.iter()]
+      .map(
+        (a) =>
+          `${a.actorId}:${a.shares}:${a.cashCents}:${a.lastStepTick.value}`,
+      )
+      .sort();
+    await owner.reducers.benchmarkStep({});
+    await expect
+      .poll(() => owner.db.runRecord.runId.find(1n)!.failureReason)
+      .toContain('workload configuration changed');
+    expect(row().logicalTick).toBe(tick);
+    expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+    expect(
+      [...owner.db.actorState.iter()]
+        .map(
+          (a) =>
+            `${a.actorId}:${a.shares}:${a.cashCents}:${a.lastStepTick.value}`,
+        )
+        .sort(),
+    ).toEqual(rows);
+    await owner.reducers.recoverSimulation({});
+    await expect.poll(() => row().configurationHash).toBe(configurationHash);
+    await expect.poll(() => row().logicalTick).toBeGreaterThan(tick);
+    expect(owner.db.runRecord.runId.find(1n)!.status).toBe('FAILED');
+    expect(owner.db.runRecord.runId.find(1n)!.configurationHash).toBe(runHash);
+    expect(owner.db.runRecord.runId.find(1n)!.failureReason).toContain(
+      'authorized non-qualifying recovery after workload change',
+    );
+    await pause();
+  });
+
   test('qualification publication requires admin and three verified fresh runs', async () => {
     await expect(
       alice.reducers.publishBenchmarkResult({

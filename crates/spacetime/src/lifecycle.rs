@@ -158,11 +158,12 @@ mod tests {
             (0, Some("WIPED — DRAWDOWN LIMIT"))
         );
         assert_eq!(a.status, ActorStatus::Exiting);
+        let (_, quantity, limit) = policy::liquidation(a.shares, 10, &c).unwrap().unwrap();
         let sell = Order {
             key: 1,
             buy: false,
-            quantity: a.shares,
-            limit: 1,
+            quantity,
+            limit,
         };
         let frozen = clear(std::slice::from_ref(&sell), 10, 1).unwrap();
         assert_eq!((frozen.price, frozen.volume), (10, 0));

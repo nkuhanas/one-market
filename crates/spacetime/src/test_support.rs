@@ -25,6 +25,26 @@ pub fn test_set_fault(ctx: &ReducerContext, fail_after_writes: bool) -> Result<(
     Ok(())
 }
 
+#[reducer]
+pub fn test_stale_configuration(ctx: &ReducerContext) -> Result<()> {
+    admin(ctx)?;
+    if runtime(ctx)?.enabled {
+        return Err("pause before fixture setup".into());
+    }
+    let mut market = crate::market(ctx)?;
+    market.configuration_hash = "0".repeat(64);
+    ctx.db.market_state().id().update(market);
+    let mut run = ctx
+        .db
+        .run_record()
+        .run_id()
+        .find(runtime(ctx)?.run_id)
+        .ok_or("run missing")?;
+    run.configuration_hash = "1".repeat(64);
+    ctx.db.run_record().run_id().update(run);
+    Ok(())
+}
+
 pub fn check_fault(ctx: &ReducerContext) -> Result<()> {
     if ctx
         .db

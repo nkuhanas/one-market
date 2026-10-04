@@ -15,6 +15,11 @@ qualified workload hash. The compiled module and Rust harness share the pure
 - Actors use SplitMix64 derivation, indexed buckets, and integer weighted signals.
   Quantity is capped at 10 shares and by available balances and risk budget.
   Noise and tie-breaking derive from the recorded seed, actor/order ID, and tick.
+- `one-market-v02-market-recovery-2` replaces the original pricing/liquidation
+  rules. Exiting actors offer at most `liquidation_max_quantity = 10` shares,
+  with reserve `ceil(previous_price * (10000 - liquidation_discount_bps) / 10000)`;
+  `liquidation_discount_bps = 500`. Clamp to the configured price range. They
+  still require real completed liquidation before cooldown and grants.
 - Tick phases: mark and check risk at the previous traded price; perform lifecycle
   or active policy; gather human reservations; clear; settle; mark at the new
   traded price; persist every due actor exactly once; commit evidence and feeds.
@@ -65,14 +70,22 @@ uniform statistical distribution, define the reproducible population.
 At each active due step, compute integer basis-point momentum from the previous
 two traded prices, reversion from current price toward the initial price, prior
 auction quantity imbalance, and active news direction × severity × confidence.
-Signal is `(momentum_weight * momentum + reversion_weight * reversion -
+Signal is `(momentum_weight * momentum + abs(reversion_weight) * reversion -
 contrarian_weight * imbalance + news_weight * news) / 1000`, then add noise
 `mix(seed xor mix(actor_id) xor mix(logical_tick)) % 2001 - 1000`.
 Signed division truncates toward zero. Absolute signal below conviction passes.
 Positive signal buys; negative signal sells.
 
-Limit allowance is `clamp(abs(signal) / 10, 1, 500)` bps around the prior traded
-price, clamped to permitted prices. Desired quantity is
+For quotes, `anchor_bps = min(abs(reversion_weight), 1000) *
+quote_reversion_bps / 1000`, where `quote_reversion_bps = 2500`.
+The reservation price is `previous_price + (initial_price - previous_price) *
+anchor_bps / 10000`, using signed division truncated toward zero. This retains
+existing stored weights/identities while treating mean reversion as restoring.
+Limit allowance is `clamp(abs(signal) / 10, 1, 500)` bps around this reservation
+price. Buy multiplication/division rounds **up**; sells round down. Clamp both
+to permitted prices. Thus even an unanchored penny buy can quote two cents;
+funded heterogeneous anchored bids support price discovery beyond the floor.
+Desired quantity is
 `clamp(abs(signal) / 100, 1, actor_max_quantity)` and is further capped by
 `marked_equity * risk_tolerance / 10000 / limit` and affordable cash or owned
 shares. Auction ties sort by `mix(mix(seed xor tick) xor order_key)`, then key;
@@ -80,6 +93,23 @@ actor keys are `2 * actor_id`, human keys are `2 * acceptance_sequence + 1`.
 The acceptance allocator stays monotonic across explicit world resets, as do
 run/event IDs and the per-identity deduplication watermark. Recorded IDs and
 actual accepted human timing are inputs; repeats need not have identical fills.
+
+The price remains the result of the unchanged auction and actual settlement.
+There is no forced recovery price, invisible buyer, liquidation timeout, peak
+decay, or share deletion. An entirely exiting fixed bucket still lacks autonomous
+buyers; see the retained model counterexample in the
+[market-recovery delta](../deltas/market-recovery_2026-10-03_22-05-19_EST.md).
+
+## Workload upgrades
+
+An ordinary non-destructive publish does not rewrite actor rows or erase old
+evidence. Before a tick writes actors, compare the world's configuration hash
+with the compiled configuration. A mismatch commits a stopped scheduler and a
+FAILED run without advancing the tick. An owner may explicitly call
+`recover_simulation` to adopt the new configuration without resetting inventory.
+That continuation stays FAILED/non-qualifying, retains its original run hashes,
+and records the adopted workload hash in its failure reason. It is not a new
+measurement. Only a fresh world/run can qualify the new workload.
 
 The actor sample is the first 64 IDs. Public activity chooses at most one event
 per tick: the first lifecycle transition in actor-ID order, otherwise the first

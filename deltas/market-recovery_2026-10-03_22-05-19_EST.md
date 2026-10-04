@@ -89,4 +89,14 @@ the merge result below; circle back if a meaningful safety gate fails.
 
 ## Implementation results
 
-Pending.
+The first model test exposed a separate pre-existing limitation: one-tick
+auctions only include the due fixed bucket. An entirely EXITING bucket has no
+autonomous buyers, even if another bucket is healthy. A synthetic seven-survivor
+200-actor world escaped the penny but ended with only 14 active actors after
+40 simulated minutes. This failed recovery expectation is retained as an
+explicit no-fabricated-recovery characterization. Recovery tests additionally
+cover distressed inventories with funded buyers in every bucket, as observed
+at 375k. Cross-bucket resting orders or lifecycle escape would require another
+workload/architecture decision; this delta does not claim universal recovery.
+
+Remaining verification pending.

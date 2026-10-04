@@ -46,6 +46,15 @@ failed higher candidate, before/after measurements and reproduction commands.
 This is not a Maincloud result or a universal platform limit; local startup
 still uses 200 actors.
 
+375,000 actors is now the accepted local working baseline, supported by
+exploratory runs, not six fresh confirmations. The market-recovery policy is a
+new versioned workload; the historical 325k qualification does not qualify it.
+See the [recovery delta](deltas/market-recovery_2026-10-03_22-05-19_EST.md) for
+bounded liquidation, price discovery, verification, and counterparty limitations.
+When publishing new workload rules over an existing world, the scheduler stops
+before applying them. Explicit owner `recover_simulation` adopts the rules while
+preserving balances and marking the continuation non-qualifying; no reset occurs.
+
 ## Development
 
 | Command                       | Purpose                                                                           |
@@ -151,6 +160,7 @@ shared. See [CONTRIBUTING.md](CONTRIBUTING.md) for development and commit rules,
 and [AGENTS.md](AGENTS.md) for coding-agent guidance.
 
 Remaining parameter choices are frozen in [config/v02.json](config/v02.json) and
-[implementation decisions](docs/implementation-decisions.md). `SPEC.md` is
-unchanged. Maincloud publication and qualification require a selected development
+[implementation decisions](docs/implementation-decisions.md). The approved
+market-recovery delta updates the corresponding specification rules. Maincloud
+publication and qualification require a selected development
 database and explicit credentials; they are not part of ordinary local startup.
