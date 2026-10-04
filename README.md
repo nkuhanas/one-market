@@ -203,8 +203,9 @@ CADENCE=10hz POPULATION=375000 WARMUP_SECONDS=10 MEASUREMENT_SECONDS=30 ./script
 
 Each invocation creates its own fresh local database. `CADENCE` is also supported
 by the qualification scripts; it never changes the existing live world.
-At 10 Hz, CHAOS starts at 120 target seconds and lasts 1,200 logical ticks
-(120 seconds when cadence holds); use a longer probe to include its aftermath.
+At 10 Hz, benchmark CHAOS starts at 120 target seconds and lasts 60 wall-clock
+seconds; use a longer probe to include its aftermath. Public CHAOS also expires
+after one minute, including while paused; repeated clicks do not extend it.
 At 5 Hz, each actor steps every four target seconds. See the capacity worklog for
 the tested populations, windows and workload limits; availability is not qualification.
 

@@ -37,6 +37,7 @@ import {
 import AdoptWorkloadPausedReducer from "./adopt_workload_paused_reducer";
 import AuthorizeReaderReducer from "./authorize_reader_reducer";
 import BenchmarkStepReducer from "./benchmark_step_reducer";
+import ClearChaosReducer from "./clear_chaos_reducer";
 import ContinueTimedRunReducer from "./continue_timed_run_reducer";
 import EnterMarketReducer from "./enter_market_reducer";
 import InitializeBatchReducer from "./initialize_batch_reducer";
@@ -219,6 +220,7 @@ const reducersSchema = __reducers(
   __reducerSchema("adopt_workload_paused", AdoptWorkloadPausedReducer),
   __reducerSchema("authorize_reader", AuthorizeReaderReducer),
   __reducerSchema("benchmark_step", BenchmarkStepReducer),
+  __reducerSchema("clear_chaos", ClearChaosReducer),
   __reducerSchema("continue_timed_run", ContinueTimedRunReducer),
   __reducerSchema("enter_market", EnterMarketReducer),
   __reducerSchema("initialize_batch", InitializeBatchReducer),

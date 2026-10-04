@@ -117,6 +117,19 @@ pub struct TimedRunStop {
     pub generation: u64,
 }
 
+/// At most one durable shock deadline, independent of simulation pause/cadence.
+#[table(accessor = chaos_expiry, scheduled(crate::expire_chaos))]
+#[derive(Clone)]
+pub struct ChaosExpiry {
+    #[primary_key]
+    #[auto_inc]
+    pub scheduled_id: u64,
+    pub scheduled_at: ScheduleAt,
+    pub news_id: u64,
+    pub started_at: Timestamp,
+    pub deadline: Timestamp,
+}
+
 /// Private storage encoding only; public samples retain their string status.
 #[derive(SpacetimeType, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ActorStatus {

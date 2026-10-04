@@ -12,6 +12,17 @@ qualified workload hash. The compiled module and Rust harness share the pure
 
 ## Frozen baseline rules
 
+- `one-market-v02-chaos-wall-clock-1` replaces the 1,200-tick shock with a
+  60-second SDK-timestamp deadline at every cadence. The private, bounded
+  `chaos_expiry` schedule survives restarts and expires even while the simulation
+  is paused. Tick evaluation also clears overdue shocks before using their news
+  signal. Public repeated clicks do not extend it. Owner-only `clear_chaos`
+  cancels only the shock; actors, accounts, price, clock and tick schedule remain
+  intact. Stale callbacks cannot end a newer event. News `end_tick` is initially
+  a cadence-based estimate, then the actual ending logical tick; the frontend
+  uses `market_state.chaos_active`, not tick arithmetic. Pre-upgrade events retain
+  their old logical semantics until expiry or explicit owner clear; deployment
+  clears the existing production shock without resetting the world.
 - `one-market-v02-actor-endowment-5k-1` separates actor/human bankrolls. Actors
   start with $2,500 cash and 25 shares at $100 ($5,000 total). Fully liquidated
   cooldowns top up cash to $5,000; inventory-retaining revival targets $5,000
@@ -79,7 +90,7 @@ qualified workload hash. The compiled module and Rust harness share the pure
   records. Rates use cumulative counters and actual SDK timestamp intervals.
 - Qualification uses 30 s warm-up, 180 s measurement, ten production-subscription
   viewers, five fixed-timeline offered human orders/sec, and three fresh worlds
-  per profile. CHAOS begins at intended slot 1,200 for 1,200 logical ticks.
+  per profile. CHAOS begins at intended slot 1,200 for 60 wall-clock seconds.
   The actor count will be modest; it is a baseline, not a maximum-capacity claim.
 
 ## Isolation and clients

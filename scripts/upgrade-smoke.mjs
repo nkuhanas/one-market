@@ -302,8 +302,55 @@ if (phase === 'prepare') {
   console.log(
     'Persisted 5 Hz timed stop survived server recreation/republish and stopped without an external pause.',
   );
+} else if (phase === 'chaos-prepare') {
+  const before = await cloud.snapshot();
+  assert.equal(before.runtime.enabled, false);
+  await cloud.call('trigger_chaos');
+  const [expiry] = await cloud.query('SELECT * FROM chaos_expiry');
+  assert.ok(expiry);
+  assert.equal(expiry.deadline[0] - expiry.started_at[0], 60_000_000n);
+  console.log(
+    encode({
+      expiry,
+      tick: before.market.logical_tick,
+      accounts: await fingerprints([
+        'actor_state',
+        'actor_state_compact',
+        'human_trader',
+        'grant_accounting',
+      ]),
+    }),
+  );
+} else if (phase === 'chaos-restart') {
+  const expected = JSON.parse(process.env.UPGRADE_CHAOS);
+  const until = performance.now() + 65_000;
+  for (;;) {
+    const snapshot = await cloud.snapshot();
+    assert.equal(snapshot.runtime.enabled, false);
+    assert.equal(snapshot.market.logical_tick.toString(), expected.tick);
+    assert.equal((await cloud.query('SELECT * FROM tick_schedule')).length, 0);
+    const timers = await cloud.query('SELECT * FROM chaos_expiry');
+    if (!snapshot.market.chaos_active) {
+      assert.equal(timers.length, 0);
+      assert.equal(snapshot.runtime.chaos_signal_bps, 0n);
+      break;
+    }
+    if (timers.length) assert.equal(encode(timers[0]), encode(expected.expiry));
+    assert.ok(
+      performance.now() < until,
+      'CHAOS deadline did not expire after restart',
+    );
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  assert.deepEqual(
+    await fingerprints(Object.keys(expected.accounts)),
+    expected.accounts,
+  );
+  console.log(
+    'CHAOS kept its original 60-second deadline across restart/republish and expired while paused without changing actor/account state.',
+  );
 } else {
   throw new Error(
-    'Choose prepare, adopt, restart, timed-prepare or timed-restart',
+    'Choose prepare, adopt, restart, timed-prepare, timed-restart, chaos-prepare or chaos-restart',
   );
 }

@@ -89,6 +89,7 @@ test.describe
       'SELECT * FROM run_cadence',
       'SELECT * FROM timed_run_stop',
       'SELECT * FROM news_event',
+      'SELECT * FROM chaos_expiry',
     ]);
     for (const client of [alice, bob]) {
       await subscribe(client, [
@@ -1274,7 +1275,15 @@ test.describe
         .sort((a, b) => Number(a.id - b.id))
         .at(-1)!;
       expect(shock.startTick).toBe(stopped.logicalTick);
-      expect(shock.endTick - shock.startTick).toBe(1200n);
+      expect(shock.endTick - shock.startTick).toBe(
+        60000000n / owner.db.cadenceState.id.find(0)!.tickIntervalUs,
+      );
+      const expiry = [...owner.db.chaosExpiry.iter()][0];
+      expect(expiry.newsId).toBe(shock.id);
+      expect(
+        expiry.deadline.microsSinceUnixEpoch -
+          expiry.startedAt.microsSinceUnixEpoch,
+      ).toBe(60000000n);
       await Promise.all([
         viewer.reducers.triggerChaos({}),
         alice.reducers.triggerChaos({}),
@@ -1282,6 +1291,7 @@ test.describe
       ]);
       expect([...owner.db.newsEvent.iter()]).toHaveLength(events + 1);
       expect(owner.db.newsEvent.id.find(shock.id)).toEqual(shock);
+      expect([...owner.db.chaosExpiry.iter()]).toEqual([expiry]);
       expect(actorRows(owner)).toEqual(actors);
       await assertRemainsPaused(stopped, readServer, readCache);
       for (const action of [
@@ -1290,22 +1300,65 @@ test.describe
         () => viewer.reducers.benchmarkStep({}),
         () => viewer.reducers.setCadenceProfile({ profile: '4hz' }),
         () => viewer.reducers.resetMarket({ confirmation: 'RESET WORLD' }),
+        () => viewer.reducers.clearChaos({}),
+        () => viewer.reducers.expireChaos({ scheduled: expiry }),
+        () => owner.reducers.expireChaos({ scheduled: expiry }),
       ])
         await expect(action()).rejects.toThrow();
-      // LOCAL test-only manual stepping verifies the logical expiry boundary.
+      // Logical progress alone must not consume a wall-clock minute.
       await owner.reducers.testStepMany({ count: 600n });
       await owner.reducers.testStepMany({ count: 600n });
       await owner.reducers.benchmarkStep({});
+      expect(row().chaosActive).toBe(true);
+      const beforeClear = await readServer();
+      await expect.poll(readCache).toEqual(beforeClear);
+      const preservedActors = actorRows(owner);
+      await owner.reducers.clearChaos({});
       await expect.poll(() => row().chaosActive).toBe(false);
+      expect([...owner.db.chaosExpiry.iter()]).toHaveLength(0);
+      expect(owner.db.runtimeConfig.id.find(0)!.chaosSignalBps).toBe(0n);
+      expect(actorRows(owner)).toEqual(preservedActors);
+      await assertRemainsPaused(beforeClear, readServer, readCache);
       await viewer.reducers.triggerChaos({});
       await expect
         .poll(() => [...owner.db.newsEvent.iter()].length)
         .toBe(events + 2);
       expect(owner.db.runtimeConfig.id.find(0)!.enabled).toBe(false);
       expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+      expect([...owner.db.chaosExpiry.iter()][0].scheduledId).not.toBe(
+        expiry.scheduledId,
+      );
     } finally {
       viewer.disconnect();
     }
+  });
+
+  test('CHAOS expires after one real minute while paused without changing actors or ticks', async () => {
+    test.setTimeout(75000);
+    const stopped = await readServer();
+    await expect.poll(readCache).toEqual(stopped);
+    const actors = actorRows(owner);
+    const expiry = [...owner.db.chaosExpiry.iter()][0];
+    expect(expiry).toBeDefined();
+    expect(row().chaosActive).toBe(true);
+    await expect
+      .poll(() => row().chaosActive, {
+        timeout: 65000,
+        intervals: [250, 500],
+      })
+      .toBe(false);
+    expect(Date.now() * 1000).toBeGreaterThanOrEqual(
+      Number(expiry.deadline.microsSinceUnixEpoch),
+    );
+    expect([...owner.db.chaosExpiry.iter()]).toHaveLength(0);
+    expect(owner.db.runtimeConfig.id.find(0)!.chaosSignalBps).toBe(0n);
+    expect(owner.db.newsEvent.id.find(expiry.newsId)!.endTick).toBe(
+      stopped.logicalTick,
+    );
+    expect(actorRows(owner)).toEqual(actors);
+    await assertRemainsPaused(stopped, readServer, readCache);
+    await alice.reducers.triggerChaos({});
+    await expect.poll(() => row().chaosActive).toBe(true);
   });
 
   test('paused workload adoption verifies the expected hash and preserves actors and old evidence', async () => {
@@ -1376,6 +1429,7 @@ test.describe
   test('reset clears both actor representations after paused configuration changes', async () => {
     // Reset must remove BOTH physical representations, using bounded batches.
     await owner.reducers.resetMarket({ confirmation: 'RESET WORLD' });
+    await expect.poll(() => [...owner.db.chaosExpiry.iter()].length).toBe(0);
     while (owner.db.runtimeConfig.id.find(0)!.phase !== 'EMPTY') {
       await owner.reducers.resetBatch({});
       await new Promise((resolve) => setTimeout(resolve, 20));

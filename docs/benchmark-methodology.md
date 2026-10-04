@@ -58,7 +58,8 @@ silently counted as successful offers.
 
 NORMAL and CHAOS share population, seed, policies, queries, human script and
 timing. CHAOS alone inserts the versioned negative shock at intended slot 1,200,
-lasting 1,200 logical ticks with 8,000 bps severity and 10,000 bps confidence.
+lasting 60 wall-clock seconds with 8,000 bps severity and 10,000 bps confidence.
+This versioned duration does not qualify historical workloads under the new hash.
 Neither profile guarantees a crash or a liquid market. Without actual buyers,
 price freezes and exits remain incomplete.
 
