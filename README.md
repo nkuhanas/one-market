@@ -180,6 +180,12 @@ durations stay in logical ticks, so they slow down too. Human rate limits and
 benchmark measurement windows remain wall-clock based. The frontend reads the
 server's cadence and uses actual timestamps for chart minute ranges.
 
+Recorded operating presets are **375k at 20 Hz, 750k at 10 Hz, and 1M at 5 Hz**.
+See [operating presets](docs/operating-presets.md) and their machine-readable
+[record](config/operating-presets.json) for evidence limits. They are local
+starting points, not Maincloud qualification; recording them does not apply
+settings, resize a world, or alter the default startup population.
+
 For local, non-qualifying capacity exploration:
 
 ```sh
