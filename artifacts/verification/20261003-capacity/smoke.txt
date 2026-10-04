@@ -1,0 +1,314 @@
+time="2026-10-03T16:12:26-07:00" level=warning msg="Docker Compose requires buildx plugin to be installed"
+ Image one-market-spacetime:2.10.1 Building 
+ Image one-market-web:24.21.0 Building 
+ Image one-market-web:24.21.0 Building 
+ Image one-market-spacetime:2.10.1 Building 
+Sending build context to Docker daemon  524.4kBSending build context to Docker daemon  524.4kBSending build context to Docker daemon  1.573MBSending build context to Docker daemon  1.573MBSending build context to Docker daemon  2.622MBSending build context to Docker daemon  2.622MBSending build context to Docker daemon  3.671MBSending build context to Docker daemon  3.671MBSending build context to Docker daemon   4.72MBSending build context to Docker daemon   4.72MBSending build context to Docker daemon  5.768MBSending build context to Docker daemon  5.768MBSending build context to Docker daemon  6.817MBSending build context to Docker daemon  6.817MBSending build context to Docker daemon   8.39MBSending build context to Docker daemon   8.39MBSending build context to Docker daemon  9.439MBSending build context to Docker daemon  9.439MBSending build context to Docker daemon     10MB
+Sending build context to Docker daemon     10MB
+Step 1/4 : FROM node:24.21.0-bookworm-slim
+Step 1/5 : FROM clockworklabs/spacetime:v2.10.1@sha256:5231fa24bc8eaa28b2a3c6a4725f1d31e6a868e2e9b311c8efa1ddc314466014
+ ---> 0e0ff40c39bc
+Step 2/4 : RUN mkdir -p /workspace/node_modules /workspace/apps/web/node_modules       /workspace/packages/bindings/node_modules     && chmod 1777 /workspace/node_modules /workspace/apps/web/node_modules       /workspace/packages/bindings/node_modules
+ ---> 5231fa24bc8e
+Step 2/5 : USER root
+ ---> Using cache
+ ---> d9ad682fd84d
+Step 3/4 : WORKDIR /workspace
+ ---> Using cache
+ ---> c29c9d212932
+Step 3/5 : RUN rustup toolchain install 1.93.0 --profile minimal       --component rustfmt --component clippy --target wasm32-unknown-unknown     && mkdir -p /data /state /cache/cargo /workspace/target     && chmod 1777 /data /state /cache/cargo /workspace/target
+ ---> Using cache
+ ---> 6c688f7e5c34
+Step 4/4 : LABEL com.docker.compose.image.builder=classic
+ ---> Using cache
+ ---> cabbc6ff0208
+Step 4/5 : WORKDIR /workspace
+ ---> Using cache
+ ---> 482e767f85db
+ ---> Using cache
+ ---> e210b0cbc8b9
+Step 5/5 : LABEL com.docker.compose.image.builder=classic
+Successfully built 482e767f85db
+Successfully tagged one-market-web:24.21.0
+ Image one-market-web:24.21.0 Built 
+ Image one-market-web:24.21.0 Built 
+ ---> Using cache
+ ---> 7486060c3734
+Successfully built 7486060c3734
+Successfully tagged one-market-spacetime:2.10.1
+ Image one-market-spacetime:2.10.1 Built 
+ Image one-market-spacetime:2.10.1 Built 
+ Container one-market-db-1 Running 
+ Container one-market-db-1 Waiting 
+ Container one-market-db-1 Healthy 
+ Container one-market-web-run-df9e85ca5e57 Creating 
+ Container one-market-web-run-df9e85ca5e57 Created 
+
+added 132 packages in 2s
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+ Container one-market-db-1 Running 
+ Container one-market-db-1 Waiting 
+ Container one-market-db-1 Healthy 
+ Container one-market-tools-run-ab115ab90bdf Creating 
+ Container one-market-tools-run-ab115ab90bdf Created 
+    Finished `release` profile [optimized] target(s) in 0.03s
+Optimising module with wasm-opt...
+Build finished successfully.
+You are about to publish to a non-local server: db
+Skipping confirmation due to --yes
+Uploading to http://db:3000 => http://db:3000
+Checking for breaking changes...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0m[1m[34mDatabase Migration Plan[0m
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+Publishing module...
+Updated database with name: one-market-v02-fixed-local, identity: c20064fa7b3144cf64190e5eb4bcced256e72c71ab9139573af8f9d2d56d1290
+ Container one-market-tools-run-7eee6428e88b Creating 
+ Container one-market-tools-run-7eee6428e88b Created 
+Generating TypeScript module bindings for module crates/spacetime
+    Finished `release` profile [optimized] target(s) in 0.03s
+Optimising module with wasm-opt...
+Build finished successfully.
+Skipping private tables during codegen: actor_state, admin_allowlist, benchmark_reader, bucket_manifest, connection_state, detailed_benchmark_receipts, grant_accounting, human_order_receipt, human_trader, order_watermark, pending_human_order, run_record, runtime_config, tick_schedule, validated_run.
+Creating directory packages/bindings/src/types
+Creating directory packages/bindings/src/types
+Generate finished successfully.
+ Container one-market-tools-run-4b43c6dff31e Creating 
+ Container one-market-tools-run-4b43c6dff31e Created 
+Generating Rust module bindings for module spacetimedb
+Skipping build. Instead we are inspecting target/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+Writing file crates/benchmark/src/bindings/actor_sample_table.rs
+Writing file crates/benchmark/src/bindings/actor_state_table.rs
+Writing file crates/benchmark/src/bindings/admin_allowlist_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_reader_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_result_table.rs
+Writing file crates/benchmark/src/bindings/bucket_manifest_table.rs
+Writing file crates/benchmark/src/bindings/connection_state_table.rs
+Writing file crates/benchmark/src/bindings/detailed_benchmark_receipts_table.rs
+Writing file crates/benchmark/src/bindings/grant_accounting_table.rs
+Writing file crates/benchmark/src/bindings/human_order_receipt_table.rs
+Writing file crates/benchmark/src/bindings/human_trader_table.rs
+Writing file crates/benchmark/src/bindings/market_state_table.rs
+Writing file crates/benchmark/src/bindings/news_event_table.rs
+Writing file crates/benchmark/src/bindings/order_watermark_table.rs
+Writing file crates/benchmark/src/bindings/pending_human_order_table.rs
+Writing file crates/benchmark/src/bindings/price_point_table.rs
+Writing file crates/benchmark/src/bindings/public_activity_table.rs
+Writing file crates/benchmark/src/bindings/run_record_table.rs
+Writing file crates/benchmark/src/bindings/runtime_config_table.rs
+Writing file crates/benchmark/src/bindings/tick_schedule_table.rs
+Writing file crates/benchmark/src/bindings/validated_run_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_latest_receipt_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_runs_table.rs
+Writing file crates/benchmark/src/bindings/my_pending_order_table.rs
+Writing file crates/benchmark/src/bindings/my_recent_fills_table.rs
+Writing file crates/benchmark/src/bindings/my_trader_table.rs
+Writing file crates/benchmark/src/bindings/price_point_type.rs
+Writing file crates/benchmark/src/bindings/benchmark_reader_type.rs
+Writing file crates/benchmark/src/bindings/public_activity_type.rs
+Writing file crates/benchmark/src/bindings/actor_status_type.rs
+Writing file crates/benchmark/src/bindings/news_event_type.rs
+Writing file crates/benchmark/src/bindings/optional_tick_type.rs
+Writing file crates/benchmark/src/bindings/benchmark_result_type.rs
+Writing file crates/benchmark/src/bindings/tick_schedule_type.rs
+Writing file crates/benchmark/src/bindings/admin_allowlist_type.rs
+Writing file crates/benchmark/src/bindings/pending_human_order_type.rs
+Writing file crates/benchmark/src/bindings/order_watermark_type.rs
+Writing file crates/benchmark/src/bindings/actor_state_type.rs
+Writing file crates/benchmark/src/bindings/market_state_type.rs
+Writing file crates/benchmark/src/bindings/runtime_config_type.rs
+Writing file crates/benchmark/src/bindings/bucket_manifest_type.rs
+Writing file crates/benchmark/src/bindings/human_trader_type.rs
+Writing file crates/benchmark/src/bindings/connection_state_type.rs
+Writing file crates/benchmark/src/bindings/actor_sample_type.rs
+Writing file crates/benchmark/src/bindings/run_record_type.rs
+Writing file crates/benchmark/src/bindings/human_order_receipt_type.rs
+Writing file crates/benchmark/src/bindings/validated_run_type.rs
+Writing file crates/benchmark/src/bindings/tick_receipt_type.rs
+Writing file crates/benchmark/src/bindings/grant_accounting_type.rs
+Writing file crates/benchmark/src/bindings/authorize_reader_reducer.rs
+Writing file crates/benchmark/src/bindings/benchmark_step_reducer.rs
+Writing file crates/benchmark/src/bindings/connected_reducer.rs
+Writing file crates/benchmark/src/bindings/disconnected_reducer.rs
+Writing file crates/benchmark/src/bindings/enter_market_reducer.rs
+Writing file crates/benchmark/src/bindings/initialize_batch_reducer.rs
+Writing file crates/benchmark/src/bindings/pause_simulation_reducer.rs
+Writing file crates/benchmark/src/bindings/ping_reducer.rs
+Writing file crates/benchmark/src/bindings/place_order_reducer.rs
+Writing file crates/benchmark/src/bindings/publish_benchmark_result_reducer.rs
+Writing file crates/benchmark/src/bindings/recover_simulation_reducer.rs
+Writing file crates/benchmark/src/bindings/reset_batch_reducer.rs
+Writing file crates/benchmark/src/bindings/reset_market_reducer.rs
+Writing file crates/benchmark/src/bindings/set_actor_population_reducer.rs
+Writing file crates/benchmark/src/bindings/simulation_tick_reducer.rs
+Writing file crates/benchmark/src/bindings/start_run_reducer.rs
+Writing file crates/benchmark/src/bindings/trigger_chaos_reducer.rs
+Writing file crates/benchmark/src/bindings/validate_run_reducer.rs
+Writing file crates/benchmark/src/bindings/mod.rs
+Generate finished successfully.
+ Container one-market-tools-run-fe1698465756 Creating 
+ Container one-market-tools-run-fe1698465756 Created 
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+World ready: 200 actors. Existing runs and pause state are preserved.
+ Container one-market-web-1 Running 
+ Container one-market-web-1 Waiting 
+ Container one-market-web-1 Healthy 
+One Market is ready at http://127.0.0.1:5173
+ Container one-market-tools-run-281f9f387efc Creating 
+ Container one-market-tools-run-281f9f387efc Created 
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+ Container one-market-tools-run-51dfa4a30b7d Creating 
+ Container one-market-tools-run-51dfa4a30b7d Created 
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+ Container one-market-db-1 Recreate 
+ Container one-market-db-1 Recreated 
+ Container one-market-db-1 Starting 
+ Container one-market-db-1 Started 
+ Container one-market-db-1 Waiting 
+ Container one-market-db-1 Healthy 
+ Container one-market-db-1 Running 
+ Container one-market-db-1 Waiting 
+ Container one-market-db-1 Healthy 
+ Container one-market-tools-run-3ddc0a7877c5 Creating 
+ Container one-market-tools-run-3ddc0a7877c5 Created 
+    Finished `release` profile [optimized] target(s) in 0.03s
+Optimising module with wasm-opt...
+Build finished successfully.
+You are about to publish to a non-local server: db
+Skipping confirmation due to --yes
+Uploading to http://db:3000 => http://db:3000
+Checking for breaking changes...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0m[1m[34mDatabase Migration Plan[0m
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+Publishing module...
+Updated database with name: one-market-v02-fixed-local, identity: c20064fa7b3144cf64190e5eb4bcced256e72c71ab9139573af8f9d2d56d1290
+ Container one-market-tools-run-967d6c38d145 Creating 
+ Container one-market-tools-run-967d6c38d145 Created 
+Generating TypeScript module bindings for module crates/spacetime
+    Finished `release` profile [optimized] target(s) in 0.03s
+Optimising module with wasm-opt...
+Build finished successfully.
+Skipping private tables during codegen: actor_state, admin_allowlist, benchmark_reader, bucket_manifest, connection_state, detailed_benchmark_receipts, grant_accounting, human_order_receipt, human_trader, order_watermark, pending_human_order, run_record, runtime_config, tick_schedule, validated_run.
+Creating directory packages/bindings/src/types
+Creating directory packages/bindings/src/types
+Generate finished successfully.
+ Container one-market-tools-run-ef2e35690f69 Creating 
+ Container one-market-tools-run-ef2e35690f69 Created 
+Generating Rust module bindings for module spacetimedb
+Skipping build. Instead we are inspecting target/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+Writing file crates/benchmark/src/bindings/actor_sample_table.rs
+Writing file crates/benchmark/src/bindings/actor_state_table.rs
+Writing file crates/benchmark/src/bindings/admin_allowlist_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_reader_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_result_table.rs
+Writing file crates/benchmark/src/bindings/bucket_manifest_table.rs
+Writing file crates/benchmark/src/bindings/connection_state_table.rs
+Writing file crates/benchmark/src/bindings/detailed_benchmark_receipts_table.rs
+Writing file crates/benchmark/src/bindings/grant_accounting_table.rs
+Writing file crates/benchmark/src/bindings/human_order_receipt_table.rs
+Writing file crates/benchmark/src/bindings/human_trader_table.rs
+Writing file crates/benchmark/src/bindings/market_state_table.rs
+Writing file crates/benchmark/src/bindings/news_event_table.rs
+Writing file crates/benchmark/src/bindings/order_watermark_table.rs
+Writing file crates/benchmark/src/bindings/pending_human_order_table.rs
+Writing file crates/benchmark/src/bindings/price_point_table.rs
+Writing file crates/benchmark/src/bindings/public_activity_table.rs
+Writing file crates/benchmark/src/bindings/run_record_table.rs
+Writing file crates/benchmark/src/bindings/runtime_config_table.rs
+Writing file crates/benchmark/src/bindings/tick_schedule_table.rs
+Writing file crates/benchmark/src/bindings/validated_run_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_latest_receipt_table.rs
+Writing file crates/benchmark/src/bindings/benchmark_runs_table.rs
+Writing file crates/benchmark/src/bindings/my_pending_order_table.rs
+Writing file crates/benchmark/src/bindings/my_recent_fills_table.rs
+Writing file crates/benchmark/src/bindings/my_trader_table.rs
+Writing file crates/benchmark/src/bindings/human_order_receipt_type.rs
+Writing file crates/benchmark/src/bindings/public_activity_type.rs
+Writing file crates/benchmark/src/bindings/market_state_type.rs
+Writing file crates/benchmark/src/bindings/actor_sample_type.rs
+Writing file crates/benchmark/src/bindings/bucket_manifest_type.rs
+Writing file crates/benchmark/src/bindings/benchmark_result_type.rs
+Writing file crates/benchmark/src/bindings/benchmark_reader_type.rs
+Writing file crates/benchmark/src/bindings/connection_state_type.rs
+Writing file crates/benchmark/src/bindings/validated_run_type.rs
+Writing file crates/benchmark/src/bindings/grant_accounting_type.rs
+Writing file crates/benchmark/src/bindings/news_event_type.rs
+Writing file crates/benchmark/src/bindings/runtime_config_type.rs
+Writing file crates/benchmark/src/bindings/human_trader_type.rs
+Writing file crates/benchmark/src/bindings/actor_state_type.rs
+Writing file crates/benchmark/src/bindings/run_record_type.rs
+Writing file crates/benchmark/src/bindings/optional_tick_type.rs
+Writing file crates/benchmark/src/bindings/tick_schedule_type.rs
+Writing file crates/benchmark/src/bindings/order_watermark_type.rs
+Writing file crates/benchmark/src/bindings/price_point_type.rs
+Writing file crates/benchmark/src/bindings/tick_receipt_type.rs
+Writing file crates/benchmark/src/bindings/admin_allowlist_type.rs
+Writing file crates/benchmark/src/bindings/actor_status_type.rs
+Writing file crates/benchmark/src/bindings/pending_human_order_type.rs
+Writing file crates/benchmark/src/bindings/authorize_reader_reducer.rs
+Writing file crates/benchmark/src/bindings/benchmark_step_reducer.rs
+Writing file crates/benchmark/src/bindings/connected_reducer.rs
+Writing file crates/benchmark/src/bindings/disconnected_reducer.rs
+Writing file crates/benchmark/src/bindings/enter_market_reducer.rs
+Writing file crates/benchmark/src/bindings/initialize_batch_reducer.rs
+Writing file crates/benchmark/src/bindings/pause_simulation_reducer.rs
+Writing file crates/benchmark/src/bindings/ping_reducer.rs
+Writing file crates/benchmark/src/bindings/place_order_reducer.rs
+Writing file crates/benchmark/src/bindings/publish_benchmark_result_reducer.rs
+Writing file crates/benchmark/src/bindings/recover_simulation_reducer.rs
+Writing file crates/benchmark/src/bindings/reset_batch_reducer.rs
+Writing file crates/benchmark/src/bindings/reset_market_reducer.rs
+Writing file crates/benchmark/src/bindings/set_actor_population_reducer.rs
+Writing file crates/benchmark/src/bindings/simulation_tick_reducer.rs
+Writing file crates/benchmark/src/bindings/start_run_reducer.rs
+Writing file crates/benchmark/src/bindings/trigger_chaos_reducer.rs
+Writing file crates/benchmark/src/bindings/validate_run_reducer.rs
+Writing file crates/benchmark/src/bindings/mod.rs
+Generate finished successfully.
+ Container one-market-tools-run-860af0981077 Creating 
+ Container one-market-tools-run-860af0981077 Created 
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+ Container one-market-tools-run-4606119d7372 Creating 
+ Container one-market-tools-run-4606119d7372 Created 
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+ Container one-market-web-run-02f2d22cc037 Creating 
+ Container one-market-web-run-02f2d22cc037 Created 
+Persistent tick and single scheduler verified after recreation and republish.
+ Container one-market-browser-web-1 Starting 
+ Container one-market-browser-web-1 Started 
+ Container one-market-browser-web-1 Waiting 
+ Container one-market-browser-web-1 Healthy 
+ Container one-market-browser-tests-run-d7a0c5c87f8d Creating 
+ Container one-market-browser-tests-run-d7a0c5c87f8d Created 
+
+> one-market@0.1.0 test:integration
+> playwright test
+
+
+Running 2 tests using 1 worker
+
+  ✓  1 tests/integration.spec.ts:14:1 › independent browsers share a live tick and can call the runtime (780ms)
+  ✓  2 tests/integration.spec.ts:48:1 › reports a dropped connection and reconnects to live state (228ms)
+
+  2 passed (1.4s)
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+ Container one-market-browser-web-1 Stopping 
+ Container one-market-browser-web-1 Stopped 

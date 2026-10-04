@@ -1,0 +1,18 @@
+{
+  "artifact_hashes": [
+    "3e602a3c4c49979ffc2e69beca99d484a120e34131dd2f4789ff2a542730bc81"
+  ],
+  "build_hash": "863462dde83f39137100f91d946623a4f133643ac9975a78779f9d1349762ecd",
+  "configuration_hash": "524aecfa92eda4fa84a8e7ca9eceffd43021d2ab8ad9e1036e329a909c3384c3",
+  "environment": "LOCAL",
+  "measurement_seconds": 20,
+  "mode": "EXPLORE",
+  "population": 50000,
+  "profile": "NORMAL",
+  "repeats": 1,
+  "run_ids": [
+    1
+  ],
+  "status": "EXPLORE_PASS",
+  "warmup_seconds": 5
+}

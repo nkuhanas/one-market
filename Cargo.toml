@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/spacetime"]
+members = ["crates/spacetime", "crates/market-core", "crates/benchmark"]
 resolver = "2"
 
 [workspace.package]
@@ -9,6 +9,10 @@ publish = false
 
 [workspace.dependencies]
 spacetimedb = "=2.10.1"
+one-market-core = { path = "crates/market-core" }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.151"
+blake3 = "=1.8.7"
 
 [profile.release]
 lto = true

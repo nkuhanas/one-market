@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+database="$(database_name)"
+call() {
+  compose run --rm --no-deps tools spacetime --root-dir /state call \
+    --server http://db:3000 --no-config "$database" "$@"
+}
+snapshot() {
+  compose run --rm --no-deps tools spacetime --root-dir /state sql \
+    --server http://db:3000 --no-config --format json "$database" \
+    'SELECT phase, initialized, target_population, run_id FROM runtime_config' |
+    docker run --rm -i node:24.21.0-bookworm-slim node -e \
+      'let s="";process.stdin.on("data",c=>s+=c).on("end",()=>console.log(JSON.parse(s)[0].rows[0].join(" ")));'
+}
+read -r phase initialized population run_id < <(snapshot)
+if [[ "$phase" == EMPTY ]]; then
+  call set_actor_population 200 20261003
+  phase=INITIALIZING
+fi
+while [[ "$phase" == INITIALIZING ]]; do
+  call initialize_batch 500
+  read -r phase initialized population run_id < <(snapshot)
+done
+if [[ "$phase" != READY ]]; then
+  printf 'World is %s; finish the explicit reset/setup operation before starting.\n' "$phase" >&2
+  exit 1
+fi
+if [[ "$run_id" == 0 ]]; then
+  module_hash="$(compose run --rm --no-deps tools sha256sum target/wasm32-unknown-unknown/release/one_market_spacetime.wasm | cut -d ' ' -f 1)"
+  call start_run '"NORMAL"' "\"$module_hash\"" false
+fi
+printf 'World ready: %s actors. Existing runs and pause state are preserved.\n' "$population"

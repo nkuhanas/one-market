@@ -34,17 +34,63 @@ import {
 } from "spacetimedb";
 
 // Import all reducer arg schemas
+import AuthorizeReaderReducer from "./authorize_reader_reducer";
+import BenchmarkStepReducer from "./benchmark_step_reducer";
+import EnterMarketReducer from "./enter_market_reducer";
+import InitializeBatchReducer from "./initialize_batch_reducer";
+import PauseSimulationReducer from "./pause_simulation_reducer";
 import PingReducer from "./ping_reducer";
+import PlaceOrderReducer from "./place_order_reducer";
+import PublishBenchmarkResultReducer from "./publish_benchmark_result_reducer";
+import RecoverSimulationReducer from "./recover_simulation_reducer";
+import ResetBatchReducer from "./reset_batch_reducer";
+import ResetMarketReducer from "./reset_market_reducer";
+import SetActorPopulationReducer from "./set_actor_population_reducer";
+import StartRunReducer from "./start_run_reducer";
+import TriggerChaosReducer from "./trigger_chaos_reducer";
+import ValidateRunReducer from "./validate_run_reducer";
 
 // Import all procedure arg schemas
 
 // Import all table schema definitions
+import ActorSampleRow from "./actor_sample_table";
+import BenchmarkLatestReceiptRow from "./benchmark_latest_receipt_table";
+import BenchmarkResultRow from "./benchmark_result_table";
+import BenchmarkRunsRow from "./benchmark_runs_table";
 import MarketStateRow from "./market_state_table";
+import MyPendingOrderRow from "./my_pending_order_table";
+import MyRecentFillsRow from "./my_recent_fills_table";
+import MyTraderRow from "./my_trader_table";
+import NewsEventRow from "./news_event_table";
+import PricePointRow from "./price_point_table";
+import PublicActivityRow from "./public_activity_table";
 
 /** Type-only namespace exports for generated type groups. */
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
+  actorSample: __table({
+    name: 'actor_sample',
+    indexes: [
+      { accessor: 'actor_id', name: 'actor_sample_actor_id_idx_btree', algorithm: 'btree', columns: [
+        'actorId',
+      ] },
+    ],
+    constraints: [
+      { name: 'actor_sample_actor_id_key', constraint: 'unique', columns: ['actorId'] },
+    ],
+  }, ActorSampleRow),
+  benchmarkResult: __table({
+    name: 'benchmark_result',
+    indexes: [
+      { accessor: 'id', name: 'benchmark_result_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'benchmark_result_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, BenchmarkResultRow),
   marketState: __table({
     name: 'market_state',
     indexes: [
@@ -56,11 +102,93 @@ const tablesSchema = __schema({
       { name: 'market_state_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, MarketStateRow),
+  newsEvent: __table({
+    name: 'news_event',
+    indexes: [
+      { accessor: 'id', name: 'news_event_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'news_event_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, NewsEventRow),
+  pricePoint: __table({
+    name: 'price_point',
+    indexes: [
+      { accessor: 'logical_tick', name: 'price_point_logical_tick_idx_btree', algorithm: 'btree', columns: [
+        'logicalTick',
+      ] },
+    ],
+    constraints: [
+      { name: 'price_point_logical_tick_key', constraint: 'unique', columns: ['logicalTick'] },
+    ],
+  }, PricePointRow),
+  publicActivity: __table({
+    name: 'public_activity',
+    indexes: [
+      { accessor: 'id', name: 'public_activity_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'public_activity_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, PublicActivityRow),
+  benchmarkLatestReceipt: __table({
+    name: 'benchmark_latest_receipt',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, BenchmarkLatestReceiptRow),
+  benchmarkRuns: __table({
+    name: 'benchmark_runs',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, BenchmarkRunsRow),
+  myPendingOrder: __table({
+    name: 'my_pending_order',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyPendingOrderRow),
+  myRecentFills: __table({
+    name: 'my_recent_fills',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyRecentFillsRow),
+  myTrader: __table({
+    name: 'my_trader',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyTraderRow),
 });
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
+  __reducerSchema("authorize_reader", AuthorizeReaderReducer),
+  __reducerSchema("benchmark_step", BenchmarkStepReducer),
+  __reducerSchema("enter_market", EnterMarketReducer),
+  __reducerSchema("initialize_batch", InitializeBatchReducer),
+  __reducerSchema("pause_simulation", PauseSimulationReducer),
   __reducerSchema("ping", PingReducer),
+  __reducerSchema("place_order", PlaceOrderReducer),
+  __reducerSchema("publish_benchmark_result", PublishBenchmarkResultReducer),
+  __reducerSchema("recover_simulation", RecoverSimulationReducer),
+  __reducerSchema("reset_batch", ResetBatchReducer),
+  __reducerSchema("reset_market", ResetMarketReducer),
+  __reducerSchema("set_actor_population", SetActorPopulationReducer),
+  __reducerSchema("start_run", StartRunReducer),
+  __reducerSchema("trigger_chaos", TriggerChaosReducer),
+  __reducerSchema("validate_run", ValidateRunReducer),
 );
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */
@@ -69,8 +197,28 @@ const proceduresSchema = __procedures(
 
 type __SchemaWithTableAccessorAliases = Omit<typeof tablesSchema.schemaType, "tables"> & {
   tables: typeof tablesSchema.schemaType.tables & {
+    /** @deprecated Use `actorSample` instead. This alias will be removed in the next major version. */
+    readonly "actor_sample": Omit<typeof tablesSchema.schemaType.tables["actorSample"], "accessorName"> & { readonly accessorName: "actor_sample" };
+    /** @deprecated Use `benchmarkResult` instead. This alias will be removed in the next major version. */
+    readonly "benchmark_result": Omit<typeof tablesSchema.schemaType.tables["benchmarkResult"], "accessorName"> & { readonly accessorName: "benchmark_result" };
     /** @deprecated Use `marketState` instead. This alias will be removed in the next major version. */
     readonly "market_state": Omit<typeof tablesSchema.schemaType.tables["marketState"], "accessorName"> & { readonly accessorName: "market_state" };
+    /** @deprecated Use `newsEvent` instead. This alias will be removed in the next major version. */
+    readonly "news_event": Omit<typeof tablesSchema.schemaType.tables["newsEvent"], "accessorName"> & { readonly accessorName: "news_event" };
+    /** @deprecated Use `pricePoint` instead. This alias will be removed in the next major version. */
+    readonly "price_point": Omit<typeof tablesSchema.schemaType.tables["pricePoint"], "accessorName"> & { readonly accessorName: "price_point" };
+    /** @deprecated Use `publicActivity` instead. This alias will be removed in the next major version. */
+    readonly "public_activity": Omit<typeof tablesSchema.schemaType.tables["publicActivity"], "accessorName"> & { readonly accessorName: "public_activity" };
+    /** @deprecated Use `benchmarkLatestReceipt` instead. This alias will be removed in the next major version. */
+    readonly "benchmark_latest_receipt": Omit<typeof tablesSchema.schemaType.tables["benchmarkLatestReceipt"], "accessorName"> & { readonly accessorName: "benchmark_latest_receipt" };
+    /** @deprecated Use `benchmarkRuns` instead. This alias will be removed in the next major version. */
+    readonly "benchmark_runs": Omit<typeof tablesSchema.schemaType.tables["benchmarkRuns"], "accessorName"> & { readonly accessorName: "benchmark_runs" };
+    /** @deprecated Use `myPendingOrder` instead. This alias will be removed in the next major version. */
+    readonly "my_pending_order": Omit<typeof tablesSchema.schemaType.tables["myPendingOrder"], "accessorName"> & { readonly accessorName: "my_pending_order" };
+    /** @deprecated Use `myRecentFills` instead. This alias will be removed in the next major version. */
+    readonly "my_recent_fills": Omit<typeof tablesSchema.schemaType.tables["myRecentFills"], "accessorName"> & { readonly accessorName: "my_recent_fills" };
+    /** @deprecated Use `myTrader` instead. This alias will be removed in the next major version. */
+    readonly "my_trader": Omit<typeof tablesSchema.schemaType.tables["myTrader"], "accessorName"> & { readonly accessorName: "my_trader" };
   };
 };
 
@@ -89,7 +237,17 @@ const REMOTE_MODULE = {
 >;
 
 const tableAccessorAliases = {
+  "actor_sample": "actorSample",
+  "benchmark_result": "benchmarkResult",
   "market_state": "marketState",
+  "news_event": "newsEvent",
+  "price_point": "pricePoint",
+  "public_activity": "publicActivity",
+  "benchmark_latest_receipt": "benchmarkLatestReceipt",
+  "benchmark_runs": "benchmarkRuns",
+  "my_pending_order": "myPendingOrder",
+  "my_recent_fills": "myRecentFills",
+  "my_trader": "myTrader",
 } as const;
 
 function __withTableAccessorAliases<T extends object>(target: T, freeze = false): T {
@@ -110,14 +268,54 @@ function __withTableAccessorAliases<T extends object>(target: T, freeze = false)
 
 type __DbViewBase = __DbConnectionImpl<typeof REMOTE_MODULE>["db"];
 export type DbView = __DbViewBase & {
+  /** @deprecated Use `actorSample` instead. This alias will be removed in the next major version. */
+  readonly "actor_sample": __DbViewBase["actorSample"];
+  /** @deprecated Use `benchmarkResult` instead. This alias will be removed in the next major version. */
+  readonly "benchmark_result": __DbViewBase["benchmarkResult"];
   /** @deprecated Use `marketState` instead. This alias will be removed in the next major version. */
   readonly "market_state": __DbViewBase["marketState"];
+  /** @deprecated Use `newsEvent` instead. This alias will be removed in the next major version. */
+  readonly "news_event": __DbViewBase["newsEvent"];
+  /** @deprecated Use `pricePoint` instead. This alias will be removed in the next major version. */
+  readonly "price_point": __DbViewBase["pricePoint"];
+  /** @deprecated Use `publicActivity` instead. This alias will be removed in the next major version. */
+  readonly "public_activity": __DbViewBase["publicActivity"];
+  /** @deprecated Use `benchmarkLatestReceipt` instead. This alias will be removed in the next major version. */
+  readonly "benchmark_latest_receipt": __DbViewBase["benchmarkLatestReceipt"];
+  /** @deprecated Use `benchmarkRuns` instead. This alias will be removed in the next major version. */
+  readonly "benchmark_runs": __DbViewBase["benchmarkRuns"];
+  /** @deprecated Use `myPendingOrder` instead. This alias will be removed in the next major version. */
+  readonly "my_pending_order": __DbViewBase["myPendingOrder"];
+  /** @deprecated Use `myRecentFills` instead. This alias will be removed in the next major version. */
+  readonly "my_recent_fills": __DbViewBase["myRecentFills"];
+  /** @deprecated Use `myTrader` instead. This alias will be removed in the next major version. */
+  readonly "my_trader": __DbViewBase["myTrader"];
 };
 
 type __TablesBase = __QueryBuilder<typeof tablesSchema.schemaType>;
 export type Tables = __TablesBase & {
+  /** @deprecated Use `actorSample` instead. This alias will be removed in the next major version. */
+  readonly "actor_sample": __TablesBase["actorSample"];
+  /** @deprecated Use `benchmarkResult` instead. This alias will be removed in the next major version. */
+  readonly "benchmark_result": __TablesBase["benchmarkResult"];
   /** @deprecated Use `marketState` instead. This alias will be removed in the next major version. */
   readonly "market_state": __TablesBase["marketState"];
+  /** @deprecated Use `newsEvent` instead. This alias will be removed in the next major version. */
+  readonly "news_event": __TablesBase["newsEvent"];
+  /** @deprecated Use `pricePoint` instead. This alias will be removed in the next major version. */
+  readonly "price_point": __TablesBase["pricePoint"];
+  /** @deprecated Use `publicActivity` instead. This alias will be removed in the next major version. */
+  readonly "public_activity": __TablesBase["publicActivity"];
+  /** @deprecated Use `benchmarkLatestReceipt` instead. This alias will be removed in the next major version. */
+  readonly "benchmark_latest_receipt": __TablesBase["benchmarkLatestReceipt"];
+  /** @deprecated Use `benchmarkRuns` instead. This alias will be removed in the next major version. */
+  readonly "benchmark_runs": __TablesBase["benchmarkRuns"];
+  /** @deprecated Use `myPendingOrder` instead. This alias will be removed in the next major version. */
+  readonly "my_pending_order": __TablesBase["myPendingOrder"];
+  /** @deprecated Use `myRecentFills` instead. This alias will be removed in the next major version. */
+  readonly "my_recent_fills": __TablesBase["myRecentFills"];
+  /** @deprecated Use `myTrader` instead. This alias will be removed in the next major version. */
+  readonly "my_trader": __TablesBase["myTrader"];
 };
 
 /** The tables available in this remote SpacetimeDB module. Each table reference doubles as a query builder. */

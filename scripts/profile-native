@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+# Optional Linux host profiler; the app and harness still run inside Docker.
+# Capture only the first 15 seconds after the harness starts offering load,
+# excluding population initialization, reset, and post-run full-row auditing.
+command -v perf >/dev/null || { printf 'Linux perf is required for native profiling\n' >&2; exit 1; }
+if [[ "${WARMUP_SECONDS:-5}" -lt 5 || "${MEASUREMENT_SECONDS:-20}" -lt 20 ]]; then
+  printf 'Native capture requires at least 5s warmup + 20s measurement\n' >&2
+  exit 1
+fi
+compose up -d --wait db
+server_pid="$(docker inspect "$(compose ps -q db)" --format '{{.State.Pid}}')"
+trace="artifacts/profiling/$(date -u +%Y%m%dT%H%M%SZ)-$$"
+mkdir -p "$trace"
+result=0
+"$REPO_ROOT/scripts/explore" 2>&1 | tee "$trace/probe.log" | (
+  profiler_pid=''
+  while IFS= read -r line; do
+    printf '%s\n' "$line"
+    if [[ "$line" == '  offered 0/'* && -z "$profiler_pid" ]]; then
+      (
+        date -u --iso-8601=ns > "$trace/capture-start.txt"
+        perf record -F 199 -g -p "$server_pid" -o "$trace/perf.data" -- sleep 15
+        date -u --iso-8601=ns > "$trace/capture-end.txt"
+      ) &
+      profiler_pid=$!
+    fi
+  done
+  [[ -n "$profiler_pid" ]] || { printf 'No offered-load start observed\n' >&2; exit 1; }
+  wait "$profiler_pid"
+) || result=$?
+if [[ -f "$trace/capture-end.txt" ]]; then
+  perf report -i "$trace/perf.data" --stdio --no-children -g none \
+    --percent-limit 0.1 --sort dso,symbol --field-separator '|' \
+    | sed -E 's/ +\|/|/g' > "$trace/native-symbols.txt"
+fi
+printf 'Native profile: %s\n' "$trace"
+if [[ "$EUID" == 0 ]]; then chown -R "$LOCAL_UID:$LOCAL_GID" "$trace"; fi
+exit "$result"

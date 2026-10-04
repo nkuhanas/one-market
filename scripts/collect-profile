@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+# Read only: retain diagnostic logs from an already stopped exploratory world.
+database="${1:?database required}"
+output="${2:?repository-relative output directory required}"
+mkdir -p "$output"
+compose run --rm --no-deps tools spacetime --root-dir /state logs \
+  --server http://db:3000 --format json "$database" > "$output/tick-profile.jsonl"
+compose run --rm --no-deps web node scripts/report-capacity.mjs "$output/tick-profile.jsonl"

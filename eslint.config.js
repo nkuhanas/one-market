@@ -7,6 +7,8 @@ export default tseslint.config(
     ignores: [
       '**/dist/**',
       'packages/bindings/src/**',
+      'tests/private-bindings/**',
+      'artifacts/**',
       'playwright-report/**',
       'test-results/**',
     ],
@@ -18,4 +20,8 @@ export default tseslint.config(
     languageOptions: { globals: globals.browser },
   },
   { files: ['*.js'], languageOptions: { globals: globals.node } },
+  {
+    files: ['tests/**/*.ts', '*playwright.config.ts'],
+    languageOptions: { globals: globals.node },
+  },
 );

@@ -1,0 +1,25 @@
+ Container one-market-tools-run-adb14f3f1dde Creating 
+ Container one-market-tools-run-adb14f3f1dde Created 
+   Compiling one-market-benchmark v0.1.0 (/workspace/crates/benchmark)
+    Finished `release` profile [optimized] target(s) in 10.76s
+     Running unittests src/main.rs (target/release/deps/one_market_benchmark-9fb59878b738a6c5)
+
+running 1 test
+
+thread 'runner::archive_tests::qualification_archive_matches_raw_evidence' (56) panicked at crates/benchmark/src/runner/archive_tests.rs:62:9:
+assertion `left == right` failed: CHAOS summary is not qualified
+  left: String("NOT_QUALIFIED")
+ right: "PASSED"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Verified NORMAL: all three raw artifacts, hashes, CSVs and server readbacks agree.
+test runner::archive_tests::qualification_archive_matches_raw_evidence ... FAILED
+
+failures:
+
+failures:
+    runner::archive_tests::qualification_archive_matches_raw_evidence
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.10s
+
+error: test failed, to rerun pass `-p one-market-benchmark --bin one-market-benchmark`
+

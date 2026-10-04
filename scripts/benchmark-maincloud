@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+: "${MAINCLOUD_SERVER:?Set the selected HTTPS Maincloud server URL}"
+: "${MAINCLOUD_DATABASE:?Set the selected empty development database}"
+: "${SPACETIMEDB_TOKEN:?Supply the authorized Maincloud publishing token}"
+[[ "${CONFIRM_MAINCLOUD:-}" == benchmark ]] || { printf 'Set CONFIRM_MAINCLOUD=benchmark for the selected empty development database.\n' >&2; exit 1; }
+[[ "$MAINCLOUD_SERVER" == https://* ]] || { printf 'Maincloud requires HTTPS.\n' >&2; exit 1; }
+profile="${PROFILE:-NORMAL}"
+case "$profile" in NORMAL|CHAOS) ;; *) printf 'PROFILE must be NORMAL or CHAOS\n' >&2; exit 1;; esac
+# Always bounded: exactly three 30s+180s runs. The runner refuses nonempty worlds.
+# Publish separately using publish-maincloud; this script does not deploy.
+compose run --rm --no-deps tools cargo build --locked --release -p one-market-benchmark
+module_hash="$(compose run --rm --no-deps tools sha256sum target/wasm32-unknown-unknown/release/one_market_spacetime.wasm | cut -d ' ' -f 1)"
+stamp="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+compose run --rm --no-deps -e SPACETIMEDB_TOKEN -e OBSERVED_RUNTIME_VERSION tools target/release/one-market-benchmark \
+  --uri "$MAINCLOUD_SERVER" --database "$MAINCLOUD_DATABASE" --authorized-maincloud yes \
+  --build-hash "$module_hash" --population "${POPULATION:-200}" --profile "$profile" \
+  --environment MAINCLOUD --output "artifacts/maincloud/$stamp/${profile,,}"

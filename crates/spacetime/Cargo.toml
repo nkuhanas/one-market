@@ -7,5 +7,10 @@ publish.workspace = true
 [lib]
 crate-type = ["cdylib"]
 
+[features]
+test-support = []
+profile-ticks = []
+
 [dependencies]
 spacetimedb.workspace = true
+one-market-core.workspace = true
