@@ -13,9 +13,9 @@ import { PriceChart, type RangeId } from './components/price-chart';
 import { SystemStatus } from './components/system-status';
 import { Metric } from './components/value';
 import { formatCount } from './lib/units';
-import { cadenceLabel, live, pending } from './market/contract';
+import { live, pending } from './market/contract';
 import { useScrollReveal } from './lib/use-reveal';
-import { useFillRate } from './market/use-fill-rate';
+import { useRates } from './market/use-rates';
 import { useOneMarket } from './market/use-one-market';
 
 export function App() {
@@ -27,7 +27,33 @@ export function App() {
   // A rate has to come from the change in a counter over elapsed time. The
   // cumulative total is not a rate, and the runtime does not publish the
   // counter's value at the window start, so this browser measures it itself.
-  const fillRate = useFillRate(snapshot?.cumulativeOrdersFilled);
+  const rates = useRates(
+    snapshot
+      ? {
+          stepped: snapshot.cumulativeActorSteps,
+          decided: snapshot.cumulativePolicyEvaluations,
+          submitted: snapshot.cumulativeOrdersSubmitted,
+          filled: snapshot.cumulativeOrdersFilled,
+          volume: snapshot.cumulativeMatchedShareVolume,
+        }
+      : undefined,
+  );
+  const fillRate = rates.filled;
+
+  const perSecond = (value?: number) =>
+    value === undefined
+      ? '—'
+      : value.toLocaleString('en-US', {
+          maximumFractionDigits: value < 10 ? 1 : 0,
+        });
+
+  const chartStats = [
+    { label: 'Agents stepped / sec', value: perSecond(rates.stepped) },
+    { label: 'Agents that acted / sec', value: perSecond(rates.decided) },
+    { label: 'Orders placed / sec', value: perSecond(rates.submitted) },
+    { label: 'Orders filled / sec', value: perSecond(rates.filled) },
+    { label: 'Shares traded / sec', value: perSecond(rates.volume) },
+  ];
 
   return (
     <div className={`app ${market.shock ? 'app-chaos' : ''}`}>
@@ -56,6 +82,7 @@ export function App() {
             samples={market.priceHistory}
             range={range}
             onRange={setRange}
+            stats={chartStats}
           />
           <OrderPanel
             snapshot={snapshot}
@@ -154,11 +181,6 @@ export function App() {
           onReconnect={market.reconnect}
         />
       </main>
-
-      <footer className="foot">
-        <span>One Market · one persistent synthetic world</span>
-        <span>All money is synthetic. {cadenceLabel(market.cadence)}.</span>
-      </footer>
     </div>
   );
 }

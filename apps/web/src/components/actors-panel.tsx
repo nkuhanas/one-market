@@ -17,13 +17,24 @@ export const ActorsPanel = memo(function ActorsPanel({
   actors: readonly ActorRow[];
   actorCount?: bigint;
 }) {
+  // A leaderboard, not the order the sample happened to arrive in. Richest
+  // first, with ties broken by id so the list cannot flicker between equal
+  // agents while the sample refreshes.
+  const ranked = [...actors].sort((a, b) =>
+    a.markedEquityCents === b.markedEquityCents
+      ? Number(a.actorId - b.actorId)
+      : b.markedEquityCents > a.markedEquityCents
+        ? 1
+        : -1,
+  );
+
   return (
     <section className="panel" id="actors">
       <div className="panel-head">
         <h2>Autonomous agents</h2>
         <span className="panel-note">
           {actors.length > 0 && actorCount !== undefined
-            ? `Sample of ${actors.length} from the population`
+            ? `Top ${Math.min(actors.length, 40)} of a ${actors.length} agent sample`
             : 'Public sample'}
         </span>
       </div>
@@ -36,8 +47,9 @@ export const ActorsPanel = memo(function ActorsPanel({
         />
       ) : (
         <ol className="rows">
-          {actors.slice(0, 40).map((actor) => (
+          {ranked.slice(0, 40).map((actor, index) => (
             <li key={String(actor.actorId)} className="row row-actor">
+              <span className="rank mono">{index + 1}</span>
               <AgentAvatar
                 id={String(actor.actorId)}
                 dead={actor.status !== 'ACTIVE'}

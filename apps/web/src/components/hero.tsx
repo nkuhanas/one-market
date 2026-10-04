@@ -78,7 +78,13 @@ export function Hero({
         <h1>One Market</h1>
       </div>
 
-      <p className="hero-tagline">Thousands of autonomous minds. One price.</p>
+      {/* The population is stated from the live row rather than asserted, so
+          the line is exact in whatever world this page is pointed at. */}
+      <p className="hero-tagline">
+        {snapshot && snapshot.actorCount > 0n
+          ? `${formatCount(snapshot.actorCount)} autonomous minds. One price.`
+          : 'Autonomous minds. One price.'}
+      </p>
 
       <p className="hero-lede">
         A single synthetic market, shared by everyone who opens this page.

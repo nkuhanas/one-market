@@ -26,17 +26,12 @@ export function MarketHeader({ snapshot }: { snapshot?: MarketSnapshot }) {
         <strong className={`price tone-${tone || 'neutral'}`}>
           {snapshot ? formatUsd(snapshot.priceCents) : '—'}
         </strong>
-        {moveBps !== undefined && moveBps !== 0 && (
-          <span className={`market-move chip-move tone-${tone}`}>
-            {formatSignedPercent(moveBps)}
-          </span>
-        )}
-        {moveBps === 0 && (
-          <span className="market-move">Unchanged on the last clearing</span>
-        )}
-        {moveBps !== undefined && moveBps !== 0 && (
-          <span className="market-move">on the last clearing</span>
-        )}
+        {/* Always the same two elements. Swapping different markup in and out
+            as the move crossed zero resized this block many times a second. */}
+        <span className={`market-move chip-move tone-${tone || 'neutral'}`}>
+          {moveBps === undefined ? '—' : formatSignedPercent(moveBps)}
+        </span>
+        <span className="market-move">on the last clearing</span>
       </div>
     </section>
   );
