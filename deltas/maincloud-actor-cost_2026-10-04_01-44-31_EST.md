@@ -81,3 +81,92 @@ market state, connected clients and diagnostic instrumentation.
 - Upgrade smoke passed old-world preservation, explicit workload adoption,
   restart/republish and durable 5 Hz deadline stopping. SPEC and all frontend
   source files remain unchanged in this branch.
+
+## Production result — 2026-10-04 06:53–06:57 UTC
+
+Published source `8fca9ff3c9b2eb4f7b765b4e5c711c471b77a254` non-destructively.
+Paused aggregate/run rows, manifests and five representative private actor rows
+were identical before/after publication. No initialization, reset, cadence
+switch, human order or synthetic viewer was issued. Four connected identities
+were present throughout the recorded samples, as in the previous observation.
+
+The 180-second diagnostic run was segment 3, at the original 1M population and
+seed 20261003, continuing logical tick 669. Deadline: **06:56:36.418142 UTC**.
+It stopped automatically at tick **1,374**, observed paused at 06:56:36.822 UTC.
+No fallback pause was needed; no tick started at/after the deadline. Both
+schedule tables were empty, and subsequent authoritative reads stayed still.
+
+| Production observation    |   Previous |  Candidate |
+| ------------------------- | ---------: | ---------: |
+| Window                    |      180 s |      180 s |
+| Committed ticks           |        669 |        705 |
+| Effective Hz              |      3.717 |      3.917 |
+| Skipped application slots |        230 |        194 |
+| Mean start-to-start gap   | 269.153 ms | 255.336 ms |
+| P50 start-to-start gap    | 262.460 ms | 246.764 ms |
+| P99 start-to-start gap    | 717.396 ms | 718.140 ms |
+| P99 start lateness        | 600.456 ms | 624.647 ms |
+
+Observed throughput increased **5.38%**, with **15.65% fewer skipped slots**.
+Tails did not improve; this still fails to sustain 5 Hz. Do not label the result
+a qualification or controlled A/B: the candidate continued a later market state,
+the earlier run had no diagnostic timers, and host conditions were not isolated.
+The workload hash is unchanged; every receipt matches its bucket manifest,
+membership digest, contiguous logical tick and expected update count.
+The candidate performed **35,250,171 actor updates**, or **195,834/sec**.
+
+### Where the server time goes
+
+Thirty-six rotating-bucket samples from host-backed timers:
+
+| Instrumented phase                         |       Mean |
+| ------------------------------------------ | ---------: |
+| Indexed actor selection and sorting        |  40.446 ms |
+| Coverage, policy and lifecycle preparation |  39.483 ms |
+| Auction                                    |   8.044 ms |
+| Actor settlement and final writes          |  56.375 ms |
+| Whole instrumented tick body               | 144.895 ms |
+
+The body timer starts after initial configuration/market reads and ends before
+transaction commit. It includes host calls made inside the reducer; it is not
+pure WASM CPU time. Matched sampled receipt intervals averaged 261.243 ms,
+leaving **116.348 ms outside the instrumented body** (median 102.413 ms).
+That residual includes uninstrumented entry/return, host transaction work,
+replication/subscriptions, scheduling/queueing and possibly idle time. We cannot
+separate those components with these logs and did not obtain Maincloud's
+per-database host transaction/CPU metrics.
+
+Nine long start gaps of 717–804 ms recur roughly every 82 ticks. One is captured
+directly by the paired sample: tick 1,031's body was about 143.522 ms, while the
+following start gap was 718.140 ms, leaving 574.618 ms outside that span. This
+localizes that stall beyond the measured actor loop; it does **not** prove a
+snapshot, disk flush, log rotation, throttling or replication cause.
+
+The next performance target is actor row read/write and the host transaction
+path, not just more policy micro-optimizations. A carefully migrated hot/cold
+layout could reduce rewritten payload; it needs its own preservation tests and
+measurement, because added lookups can cancel the gain. Request platform-side
+commit/replication/queue traces for the recurring stalls. Holding 5 Hz still
+requires roughly 22% less average end-to-end tick time from this observation,
+plus tail headroom. No further optimization or cadence experiment was started.
+
+### Market and final state
+
+- All 1,000,000 actors remained active at every recorded aggregate sample and
+  at the end; no recovery episodes or recapitalization grants occurred.
+- Price ranged **$94.43–$106.70**, ending **$99.25**. Zero penny-floor ticks and
+  zero zero-volume ticks in all 705 retained price points.
+- Replaced the diagnostic module with the verified ordinary candidate
+  `a271baa73792444602106614fe2b8b3e05b25a025edcef1145e874828dae58fc` while paused;
+  verified the same aggregate/run/sample rows survived. The run record correctly
+  retains the diagnostic build hash it measured, not the later deployed hash.
+- Final world: READY, 1M actors, selected 5 Hz, `enabled=false`, zero schedules,
+  tick 1,374. Segment 3 remains FAILED/non-qualifying for missed slots. Original
+  segment 2 and its receipts remain retained, with its original failure reason.
+
+Raw receipts, timing logs/CSV, baseline receipts, summaries, paired timing
+analysis, preservation confirmations and SHA-256 manifest are retained under
+[`artifacts/maincloud/20261004-actor-cost/`](../artifacts/maincloud/20261004-actor-cost/).
+Private actor/account snapshots and credentials are not committed. Code and
+evidence are on local branch `perf/maincloud-actor-cost`; this task did not push
+or merge a PR or redeploy Vercel. The latest main frontend remains compatible.

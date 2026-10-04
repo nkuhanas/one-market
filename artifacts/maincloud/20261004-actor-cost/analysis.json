@@ -1,0 +1,252 @@
+{
+  "receipt_coverage_and_membership_verified": true,
+  "preserved_manifests": true,
+  "unchanged_workload_hash": true,
+  "connected_identity_count": [
+    "4"
+  ],
+  "matched_profile_intervals": 36,
+  "body_us": {
+    "count": 36,
+    "mean": 144895.18750000003,
+    "min": 141118.176,
+    "p50": 143892.861,
+    "p99": 155344.477,
+    "max": 155344.477
+  },
+  "paired_next_start_gap_us": {
+    "count": 36,
+    "mean": 261243.16666666666,
+    "min": 242234,
+    "p50": 246052,
+    "p99": 718140,
+    "max": 718140
+  },
+  "outside_instrumented_body_us": {
+    "count": 36,
+    "mean": 116347.97916666667,
+    "min": 100679.62100000001,
+    "p50": 102413.01999999999,
+    "p99": 574618.42,
+    "max": 574618.42
+  },
+  "interpretation": "Outside-body duration is NOT isolated commit time or CPU time. Includes uninstrumented reducer entry/return, host transaction/replication/subscription processing, scheduling, queueing and possible idle time. Phase timers include host calls inside the reducer.",
+  "paired": [
+    {
+      "logical_tick": "673",
+      "body_us": 152176.033,
+      "next_start_gap_us": 258188,
+      "outside_body_us": 106011.967
+    },
+    {
+      "logical_tick": "694",
+      "body_us": 155344.477,
+      "next_start_gap_us": 264526,
+      "outside_body_us": 109181.52299999999
+    },
+    {
+      "logical_tick": "715",
+      "body_us": 143469.462,
+      "next_start_gap_us": 244215,
+      "outside_body_us": 100745.538
+    },
+    {
+      "logical_tick": "736",
+      "body_us": 145203.783,
+      "next_start_gap_us": 247990,
+      "outside_body_us": 102786.217
+    },
+    {
+      "logical_tick": "757",
+      "body_us": 149208.669,
+      "next_start_gap_us": 253839,
+      "outside_body_us": 104630.331
+    },
+    {
+      "logical_tick": "778",
+      "body_us": 144805.543,
+      "next_start_gap_us": 249276,
+      "outside_body_us": 104470.457
+    },
+    {
+      "logical_tick": "799",
+      "body_us": 143892.861,
+      "next_start_gap_us": 246785,
+      "outside_body_us": 102892.139
+    },
+    {
+      "logical_tick": "800",
+      "body_us": 144541.662,
+      "next_start_gap_us": 247154,
+      "outside_body_us": 102612.33799999999
+    },
+    {
+      "logical_tick": "821",
+      "body_us": 148331.94700000001,
+      "next_start_gap_us": 253248,
+      "outside_body_us": 104916.05299999999
+    },
+    {
+      "logical_tick": "842",
+      "body_us": 143252.661,
+      "next_start_gap_us": 244829,
+      "outside_body_us": 101576.339
+    },
+    {
+      "logical_tick": "863",
+      "body_us": 143456.7,
+      "next_start_gap_us": 245179,
+      "outside_body_us": 101722.29999999999
+    },
+    {
+      "logical_tick": "884",
+      "body_us": 143044.90000000002,
+      "next_start_gap_us": 245396,
+      "outside_body_us": 102351.09999999998
+    },
+    {
+      "logical_tick": "905",
+      "body_us": 143205.98,
+      "next_start_gap_us": 245619,
+      "outside_body_us": 102413.01999999999
+    },
+    {
+      "logical_tick": "926",
+      "body_us": 142301.739,
+      "next_start_gap_us": 243586,
+      "outside_body_us": 101284.261
+    },
+    {
+      "logical_tick": "947",
+      "body_us": 144443.94199999998,
+      "next_start_gap_us": 248281,
+      "outside_body_us": 103837.05800000002
+    },
+    {
+      "logical_tick": "968",
+      "body_us": 143942.421,
+      "next_start_gap_us": 246585,
+      "outside_body_us": 102642.579
+    },
+    {
+      "logical_tick": "989",
+      "body_us": 144618.742,
+      "next_start_gap_us": 245784,
+      "outside_body_us": 101165.258
+    },
+    {
+      "logical_tick": "1010",
+      "body_us": 143902.581,
+      "next_start_gap_us": 246052,
+      "outside_body_us": 102149.419
+    },
+    {
+      "logical_tick": "1031",
+      "body_us": 143521.58,
+      "next_start_gap_us": 718140,
+      "outside_body_us": 574618.42
+    },
+    {
+      "logical_tick": "1052",
+      "body_us": 144273.94100000002,
+      "next_start_gap_us": 257249,
+      "outside_body_us": 112975.05899999998
+    },
+    {
+      "logical_tick": "1073",
+      "body_us": 144199.581,
+      "next_start_gap_us": 245537,
+      "outside_body_us": 101337.419
+    },
+    {
+      "logical_tick": "1094",
+      "body_us": 143736.82,
+      "next_start_gap_us": 246249,
+      "outside_body_us": 102512.18
+    },
+    {
+      "logical_tick": "1115",
+      "body_us": 143240.379,
+      "next_start_gap_us": 243920,
+      "outside_body_us": 100679.62100000001
+    },
+    {
+      "logical_tick": "1136",
+      "body_us": 143652.66,
+      "next_start_gap_us": 246003,
+      "outside_body_us": 102350.34
+    },
+    {
+      "logical_tick": "1157",
+      "body_us": 142761.739,
+      "next_start_gap_us": 244941,
+      "outside_body_us": 102179.261
+    },
+    {
+      "logical_tick": "1178",
+      "body_us": 143127.419,
+      "next_start_gap_us": 244972,
+      "outside_body_us": 101844.581
+    },
+    {
+      "logical_tick": "1199",
+      "body_us": 148159.105,
+      "next_start_gap_us": 253811,
+      "outside_body_us": 105651.89499999999
+    },
+    {
+      "logical_tick": "1200",
+      "body_us": 149413.707,
+      "next_start_gap_us": 255289,
+      "outside_body_us": 105875.293
+    },
+    {
+      "logical_tick": "1221",
+      "body_us": 144731.741,
+      "next_start_gap_us": 249278,
+      "outside_body_us": 104546.25899999999
+    },
+    {
+      "logical_tick": "1242",
+      "body_us": 143634.579,
+      "next_start_gap_us": 245227,
+      "outside_body_us": 101592.421
+    },
+    {
+      "logical_tick": "1263",
+      "body_us": 143525.019,
+      "next_start_gap_us": 245414,
+      "outside_body_us": 101888.981
+    },
+    {
+      "logical_tick": "1284",
+      "body_us": 141118.176,
+      "next_start_gap_us": 242234,
+      "outside_body_us": 101115.824
+    },
+    {
+      "logical_tick": "1305",
+      "body_us": 142752.33800000002,
+      "next_start_gap_us": 244881,
+      "outside_body_us": 102128.66199999998
+    },
+    {
+      "logical_tick": "1326",
+      "body_us": 146940.26400000002,
+      "next_start_gap_us": 251227,
+      "outside_body_us": 104286.73599999998
+    },
+    {
+      "logical_tick": "1347",
+      "body_us": 143647.41900000002,
+      "next_start_gap_us": 245812,
+      "outside_body_us": 102164.58099999998
+    },
+    {
+      "logical_tick": "1368",
+      "body_us": 144646.18,
+      "next_start_gap_us": 248038,
+      "outside_body_us": 103391.82
+    }
+  ]
+}
