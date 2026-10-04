@@ -1117,3 +1117,58 @@ button.ghost:hover {
     transition-duration: 0ms !important;
   }
 }
+
+/* Position and fills ------------------------------------------------------- */
+
+.position {
+  display: grid;
+  gap: 5px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border-radius: 8px;
+  font-size: 12.5px;
+}
+
+.position > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.position > div > span:first-child {
+  color: var(--text-3);
+}
+
+.fills h3 {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+
+.fills ol {
+  display: grid;
+}
+
+.fills li {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 5px 0;
+  font-size: 12.5px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.fills li:last-child {
+  border-bottom: 0;
+}
+
+.fills li .mono:nth-of-type(2) {
+  text-align: right;
+}
+
+.fill-status {
+  color: var(--text-3);
+  font-size: 11.5px;
+}

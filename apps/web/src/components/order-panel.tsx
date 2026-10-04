@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { formatShares, formatUsd } from '../lib/units';
+import { useRef, useState } from 'react';
+import { formatShares, formatSignedUsd, formatUsd } from '../lib/units';
 import type {
+  FillReceipt,
   MarketSnapshot,
   OrderSide,
   Pending,
@@ -8,7 +9,7 @@ import type {
   Trader,
 } from '../market/contract';
 
-const SLIPPAGE_CHOICES = [50n, 100n, 250n];
+const SLIPPAGE_CHOICES = [100n, 250n, 500n];
 
 /**
  * Human order entry (SPEC.md sections 8 and 13).
@@ -22,6 +23,7 @@ export function OrderPanel({
   snapshot,
   trader,
   pendingOrder,
+  fills,
   connected,
   onEnter,
   onPlace,
@@ -29,6 +31,7 @@ export function OrderPanel({
   snapshot?: MarketSnapshot;
   trader: Pending<Trader>;
   pendingOrder?: PendingOrder;
+  fills: readonly FillReceipt[];
   connected: boolean;
   onEnter: () => Promise<void>;
   onPlace: (args: {
@@ -39,7 +42,7 @@ export function OrderPanel({
 }) {
   const [side, setSide] = useState<OrderSide>('BUY');
   const [quantity, setQuantity] = useState('25');
-  const [slippageBps, setSlippageBps] = useState(100n);
+  const [slippageBps, setSlippageBps] = useState(250n);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -52,6 +55,13 @@ export function OrderPanel({
       ? (price * (10_000n + slippageBps)) / 10_000n
       : (price * (10_000n - slippageBps)) / 10_000n;
   const estimate = shares * limitPriceCents;
+
+  const resolvedKey = fills[0]?.key;
+  const lastSeen = useRef(resolvedKey);
+  if (resolvedKey !== lastSeen.current) {
+    lastSeen.current = resolvedKey;
+    if (message) setMessage('');
+  }
 
   const blocked =
     !connected || busy || shares <= 0n || price === 0n || Boolean(pendingOrder);
@@ -183,6 +193,50 @@ export function OrderPanel({
             </p>
           )}
         </>
+      )}
+
+      {joined && (
+        <div className="position">
+          <div>
+            <span>Position</span>
+            <span className="mono">{formatShares(trader.value.shares)} sh</span>
+          </div>
+          <div>
+            <span>Profit and loss</span>
+            <span
+              className={`mono ${trader.value.pnlCents < 0n ? 'tone-down' : 'tone-up'}`}
+            >
+              {formatSignedUsd(trader.value.pnlCents)}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {joined && fills.length > 0 && (
+        <div className="fills">
+          <h3>Your fills</h3>
+          <ol>
+            {fills.slice(0, 5).map((fill) => (
+              <li key={fill.key}>
+                <span className={fill.buy ? 'tone-up' : 'tone-down'}>
+                  {fill.buy ? 'Buy' : 'Sell'}
+                </span>
+                <span className="mono">
+                  {formatShares(fill.filledQuantity)}/
+                  {formatShares(fill.requestedQuantity)}
+                </span>
+                <span className="mono">{formatUsd(fill.priceCents)}</span>
+                <span className="fill-status">
+                  {fill.filledQuantity === 0n
+                    ? 'no counterparty at your price'
+                    : fill.filledQuantity < fill.requestedQuantity
+                      ? 'partly filled'
+                      : 'filled'}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
       )}
 
       {message && <p className="order-message">{message}</p>}

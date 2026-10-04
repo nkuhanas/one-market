@@ -42,6 +42,7 @@ export function App() {
             snapshot={snapshot}
             trader={market.trader}
             pendingOrder={market.pendingOrder}
+            fills={market.fills}
             connected={market.status === 'Connected'}
             onEnter={market.enterMarket}
             onPlace={market.placeOrder}
