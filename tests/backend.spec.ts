@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { ScheduleAt } from 'spacetimedb';
+import { openOrderedWebSocket } from '@one-market/transport';
 import { DbConnection } from './private-bindings';
 import {
   assertRemainsPaused,
@@ -27,6 +28,8 @@ let bob: DbConnection;
 async function connect(auth?: string): Promise<DbConnection> {
   return new Promise((resolve, reject) => {
     DbConnection.builder()
+      .withWSFn(openOrderedWebSocket)
+      .withCompression('gzip')
       .withUri(process.env.BACKEND_URI!)
       .withDatabaseName(database)
       .withConfirmedReads(true)

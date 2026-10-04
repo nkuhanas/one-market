@@ -5,7 +5,8 @@
   "private": true,
   "workspaces": [
     "apps/web",
-    "packages/bindings"
+    "packages/bindings",
+    "packages/transport"
   ],
   "engines": {
     "node": ">=24 <25"

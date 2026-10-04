@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DbConnection } from '@one-market/bindings';
+import { openOrderedWebSocket } from '@one-market/transport';
 import type { MarketState } from '@one-market/bindings/types';
 import {
   PRICE_HISTORY_TICKS,
@@ -71,6 +72,9 @@ export function useLiveMarket(): MarketView {
     };
 
     const conn = DbConnection.builder()
+      .withWSFn(openOrderedWebSocket)
+      .withCompression('gzip')
+      .withConfirmedReads(true)
       .withUri(import.meta.env.VITE_SPACETIMEDB_HOST || 'http://localhost:3000')
       .withDatabaseName(
         import.meta.env.VITE_SPACETIMEDB_DATABASE || 'one-market-local',

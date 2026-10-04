@@ -424,3 +424,20 @@ an explicitly documented test-only uncompressed transport workaround. No SDK
 patch, dependency upgrade, compression change, or frontend transport change has
 been made. Independent optimization experiments and final qualification remain
 pending; the existing 325k result is unchanged.
+
+# Shared transport extension (2026-10-04 UTC)
+
+The user authorized extending PR #3 to fix production client ordering, not just
+disable compression in tests. `@one-market/transport` serializes raw frames
+before decompression for both TypeScript clients through `withWSFn`. It keeps
+gzip, confirmed reads, token exchange, and SpacetimeDB 2.10.1. The frontend
+change is connection lifecycle only; visual design and runtime semantics are
+unchanged. Closing cancels queued work, and corrupt frames fail closed.
+
+Local validation of this checkpoint passed `scripts/check`, all 33 backend and
+transport tests, and all three browser smoke tests, including mixed gzip/plain
+wire ordering. Smoke used the fresh `one-market-v02-delta-smoke` world and
+verified persistent tick plus one scheduler after restart and republish. Logs:
+`artifacts/verification/20261004-actor-capacity/{check-transport,backend-transport-1,smoke-transport}.txt`.
+The pinned-SDK reproduction remains as negative evidence. Clean CI is still a
+required gate; a local pass alone does not close the reported CI failures.

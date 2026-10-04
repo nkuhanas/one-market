@@ -1,6 +1,6 @@
 # Delta: actor-capacity optimizations and pause-test reliability
 
-- Status: implementation incomplete; CI fails in draft
+- Status: implementation in progress; transport extension authorized in draft
   [PR #3](https://github.com/nkuhanas/one-market/pull/3). Not merged.
 - Created: 2026-10-03 20:57:22 EST (UTC-05:00, fixed standard time, not EDT).
 - Local base: merged `main` at `64de1e6020b0718bf0bf16bc29f202e2b2720a56`.
@@ -364,9 +364,25 @@ is not yet proven. No dependency, application transport, or compression setting
 has been changed. The server pause implementation remains unchanged.
 
 Per the request to circle back if the PR is not clean, do not merge this PR.
-The scope decision to bring back is whether to address ordering in the shared
+The scope decision brought back was whether to address ordering in the shared
 client transport (with corresponding browser and transport regression coverage)
 or explicitly use uncompressed connections only in the backend harness while
 leaving the production SDK transport issue documented and unresolved. Neither
 choice may bypass authoritative assertions, weaken load, or change qualification
 criteria. Runtime optimizations and final six-run qualification remain pending.
+
+### Authorized extension: shared ordered transport
+
+The user replied “extend the pr”, authorizing the shared client fix in this PR.
+The implementation uses a small `packages/transport` workspace through the
+public SDK `withWSFn` hook for both frontend and backend TypeScript clients.
+Raw frames are queued before decoding, retaining gzip, confirmed reads, token
+exchange, and the pinned dependencies. Closing cancels pending decoding;
+malformed frames close the connection instead of skipping a transaction.
+Browser and Node ordering/lifecycle regressions accompany the fix. There are
+no visual, runtime pause-semantic, workload, or SPEC changes.
+
+The direct-index candidate has also built successfully with unchanged generated
+bindings and all 24 pre-transport backend tests passing; independent performance
+measurement is still pending. The PR remains draft until the remaining
+experiments, qualification, and final CI checks have been reviewed.
