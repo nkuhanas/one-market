@@ -76,6 +76,12 @@ versions, or qualification gates.
   710 price points ranged from 9,941 to 10,053 cents, with trading at every
   point and no one-cent floor hits. This is a startup observation, not a
   capacity qualification or guarantee of long-term market behavior.
+- Longer observation did expose missed cadence: tick 2,491 had five skipped
+  slots, and tick 3,130 had seven. The evidence remains `FAILED` with reason
+  `missed application slots`; the simulation remains enabled, with one
+  schedule, 100,000 active actors and ongoing trading. No reset, recovery,
+  cadence change or reduction in population was made to hide this. Repeating
+  the initialization command preserved run 1 and its single schedule.
 - Anonymous queries for private runtime/actor tables were rejected (HTTP 400);
   an invalid, non-mutating population-control probe was rejected with
   `admin authorization required` (HTTP 530). Owner checks passed.
@@ -88,6 +94,9 @@ versions, or qualification gates.
   Only the two public connection variables were changed: production and
   this branch's preview. The hosted deployment must be rebuilt and verified
   against the final merged commit; credentials are not in Git or frontend code.
+  The branch preview built successfully, but browser access requires Vercel
+  SSO. Deployment protection was left intact; the public production domain
+  will receive real-browser verification after the CI-gated merge.
 - Docker `check` passed, including 9 deployment-helper tests, actual Compose
   local/cloud isolation, lint/typecheck/build, Rust tests (25 passed, one
   archive-only test ignored), formatting, Clippy and binding freshness.

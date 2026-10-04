@@ -95,5 +95,11 @@ prices, skipped slots and failure evidence separately. Local 375k results do
 not establish cloud capacity; the fixed-workload qualification harness is a
 separate, explicitly authorized operation.
 
+`run_status=FAILED` with `failure_reason="missed application slots"` is evidence
+of missed cadence, not necessarily a stopped simulation. Check `enabled`,
+advancing `logical_tick` and `scheduled_ticks` separately. The initial cloud
+run did record missed slots; do not reset it or present its population as a
+qualified 20 Hz result.
+
 References: [Maincloud](https://spacetimedb.com/docs/how-to/deploy/maincloud/),
 [initialization lifecycle](https://spacetimedb.com/docs/functions/reducers/lifecycle/).
