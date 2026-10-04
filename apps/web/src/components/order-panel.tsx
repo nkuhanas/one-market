@@ -101,7 +101,7 @@ export function OrderPanel({
         <div className="order-join">
           <p>
             Enter with a synthetic bankroll and trade in the same auction as the
-            autonomous actors.
+            autonomous agents.
           </p>
           <button
             type="button"
@@ -239,7 +239,9 @@ export function OrderPanel({
         </div>
       )}
 
-      {message && <p className="order-message">{message}</p>}
+      <p className="order-message" aria-live="polite" aria-atomic="true">
+        {message}
+      </p>
       <p className="order-note">
         Orders join the next tick&apos;s auction and clear at one price. An
         accepted order is not a guaranteed fill.

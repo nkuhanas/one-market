@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { centsToDollars, formatCount, formatUsd } from '../lib/units';
 import { priceWindow, type PriceSample } from '../market/contract';
 import { EmptyState } from './value';
@@ -37,6 +37,7 @@ export const PriceChart = memo(function PriceChart({
   range: RangeId;
   onRange: (id: RangeId) => void;
 }) {
+  const [cursor, setCursor] = useState<number>();
   const window = RANGES.find((r) => r.id === range)!.seconds;
   const scoped = useMemo(() => priceWindow(samples, window), [samples, window]);
 
@@ -54,23 +55,28 @@ export const PriceChart = memo(function PriceChart({
     const pad = (high - low || Math.max(high, 1)) * 0.15;
     const floor = low - pad;
     const ceil = high + pad;
+    const elapsed =
+      drawn[drawn.length - 1].recordedAtUs - drawn[0].recordedAtUs;
+    const positions = drawn.map((sample, i) =>
+      elapsed > 0n
+        ? (Number(
+            ((sample.recordedAtUs - drawn[0].recordedAtUs) * 1_000_000n) /
+              elapsed,
+          ) /
+            1_000_000) *
+          VIEW_W
+        : (i / (values.length - 1)) * VIEW_W,
+    );
     const pts = values.map((v, i) => {
-      const elapsed =
-        drawn[drawn.length - 1].recordedAtUs - drawn[0].recordedAtUs;
-      const x =
-        elapsed > 0n
-          ? (Number(
-              ((drawn[i].recordedAtUs - drawn[0].recordedAtUs) * 1_000_000n) /
-                elapsed,
-            ) /
-              1_000_000) *
-            VIEW_W
-          : (i / (values.length - 1)) * VIEW_W;
+      const x = positions[i];
       const y = VIEW_H - ((v - floor) / (ceil - floor)) * VIEW_H;
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     });
     const line = `M${pts.join(' L')}`;
     return {
+      drawn,
+      values,
+      positions,
       line,
       area: `${line} L${VIEW_W},${VIEW_H} L0,${VIEW_H} Z`,
       flat,
@@ -111,16 +117,69 @@ export const PriceChart = memo(function PriceChart({
       {plot ? (
         <>
           <div className="chart-body">
-            <svg
-              viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-              preserveAspectRatio="none"
+            <div
+              className="plot"
               role="img"
-              aria-label={`Price from ${formatUsd(plot.first.priceCents)} to ${formatUsd(plot.last.priceCents)} across ${scoped.length} ticks`}
-              className={plot.flat ? 'flat' : plot.rising ? 'up' : 'down'}
+              tabIndex={0}
+              aria-label={`Price from ${formatUsd(plot.first.priceCents)} to ${formatUsd(plot.last.priceCents)} across ${scoped.length} ticks, ${plot.flat ? 'unchanged' : plot.rising ? 'rising' : 'falling'}`}
+              onMouseLeave={() => setCursor(undefined)}
+              onBlur={() => setCursor(undefined)}
+              onMouseMove={(event) => {
+                const box = event.currentTarget.getBoundingClientRect();
+                const x = ((event.clientX - box.left) / box.width) * VIEW_W;
+                setCursor(
+                  plot.positions.reduce(
+                    (best, at, index) =>
+                      Math.abs(at - x) < Math.abs(plot.positions[best] - x)
+                        ? index
+                        : best,
+                    0,
+                  ),
+                );
+              }}
+              onKeyDown={(event) => {
+                if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')
+                  return;
+                event.preventDefault();
+                const step = event.key === 'ArrowLeft' ? -1 : 1;
+                setCursor((current) => {
+                  const base = current ?? plot.drawn.length - 1;
+                  return Math.min(
+                    plot.drawn.length - 1,
+                    Math.max(0, base + step),
+                  );
+                });
+              }}
             >
-              <path className="chart-area" d={plot.area} />
-              <path className="chart-line" d={plot.line} />
-            </svg>
+              <svg
+                viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+                preserveAspectRatio="none"
+                aria-hidden="true"
+                className={plot.flat ? 'flat' : plot.rising ? 'up' : 'down'}
+              >
+                <path className="chart-area" d={plot.area} />
+                <path className="chart-line" d={plot.line} />
+              </svg>
+              {cursor !== undefined && plot.drawn[cursor] && (
+                <div
+                  className="crosshair"
+                  style={{
+                    left: `${(plot.positions[cursor] / VIEW_W) * 100}%`,
+                  }}
+                  aria-hidden="true"
+                />
+              )}
+              {cursor !== undefined && plot.drawn[cursor] && (
+                <p className="readout" aria-live="polite" aria-atomic="true">
+                  <span className="mono">
+                    {formatUsd(plot.drawn[cursor].priceCents)}
+                  </span>
+                  <span>
+                    tick {formatCount(plot.drawn[cursor].logicalTick)}
+                  </span>
+                </p>
+              )}
+            </div>
             <div className="chart-scale">
               <span>{formatUsd(BigInt(Math.round(plot.high * 100)))}</span>
               <span>{formatUsd(BigInt(Math.round(plot.low * 100)))}</span>

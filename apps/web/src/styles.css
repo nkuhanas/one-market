@@ -5,61 +5,72 @@
  * page is built as a single market's terminal: identity and price first, the
  * chart as the centrepiece, and the runtime's own diagnostics deliberately last.
  *
- * Surfaces step rather than repeat, and borders are used only where two
- * surfaces genuinely meet. Amber carries the exchange-tape lineage and is
- * reserved for identity, the live signal and the simulation clock; green and
- * red are reserved for market direction so they keep their meaning. Nothing
- * that reports a price or a position is ever amber.
+ * Cards sit on a near-neutral black with soft, low-alpha borders and generous
+ * padding, in the register of a modern market product rather than a dense
+ * terminal.
+ *
+ * Blue is identity and system only: the wordmark, the live signal, the clock
+ * and the primary call to action. Green and red are reserved for market
+ * direction, so nothing that reports a price or a position is ever blue. Two
+ * blues carry it, because one cannot do both jobs accessibly: --accent is
+ * bright enough to read as text on dark, --accent-solid is deep enough to carry
+ * white text on a filled button.
  */
 
 @font-face {
-  font-family: 'Plex Sans';
-  src: url('/fonts/plex-sans-400.woff2') format('woff2');
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-400.woff2') format('woff2');
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Plex Sans';
-  src: url('/fonts/plex-sans-600.woff2') format('woff2');
-  font-weight: 600;
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-500.woff2') format('woff2');
+  font-weight: 500;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Plex Mono';
-  src: url('/fonts/plex-mono-400.woff2') format('woff2');
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-700.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Red Hat Mono';
+  src: url('/fonts/rhm-400.woff2') format('woff2');
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Plex Mono';
-  src: url('/fonts/plex-mono-500.woff2') format('woff2');
+  font-family: 'Red Hat Mono';
+  src: url('/fonts/rhm-500.woff2') format('woff2');
   font-weight: 500;
   font-display: swap;
 }
 
 :root {
-  --bg: #08090b;
-  --surface: #101215;
-  --surface-2: #171a1f;
-  --surface-3: #21252c;
-  --line: #262b33;
-  --line-soft: #1b1f25;
+  --bg: #0d0e12;
+  --surface: #16181f;
+  --surface-2: #1c1f28;
+  --surface-3: #252934;
+  --line: rgb(255 255 255 / 0.09);
+  --line-soft: rgb(255 255 255 / 0.06);
 
-  --text: #f0f2f5;
-  --text-2: #9ba3ad;
-  --text-3: #6b737d;
+  --text: #ffffff;
+  --text-2: #a8aeb9;
+  --text-3: #8f96a3;
 
-  --accent: #ffb020;
-  --accent-dim: #a86f08;
-  --accent-ink: #1a1203;
+  --accent: #22c2e8;
+  --accent-solid: #12b3d9;
+  --accent-dim: #0b6b85;
+  --accent-ink: #06161b;
   --up: #22c55e;
-  --down: #ff4d4d;
+  --down: #ff5a5a;
 
-  --sans:
-    'Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --mono: 'Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono: 'Red Hat Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --radius: 10px;
+  --radius: 14px;
   color-scheme: dark;
 }
 
@@ -69,10 +80,46 @@
   box-sizing: border-box;
 }
 
-html,
+html {
+  background: var(--bg);
+}
+
+/*
+ * Atmosphere, drawn from the mark's own gradient rather than a generic wash:
+ * cyan where the page begins, mint trailing off to the right, and a cool
+ * settling tone at the foot. Fixed, so it behaves like a ground the content
+ * moves over rather than a panel that scrolls with it.
+ *
+ * It lives on the body because a background set on both html and body stops
+ * the body propagating to the canvas, which leaves it painting over anything
+ * sitting behind it.
+ */
 body {
   margin: 0;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(
+      62% 46% at 6% 10%,
+      rgb(34 194 232 / 0.22) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      52% 38% at 96% 2%,
+      rgb(118 244 188 / 0.14) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      64% 36% at 84% 46%,
+      rgb(18 179 217 / 0.1) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      100% 46% at 46% 100%,
+      rgb(34 194 232 / 0.09) 0%,
+      transparent 62%
+    );
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: var(--text);
   font-family: var(--sans);
   font-size: 15px;
@@ -111,6 +158,18 @@ input {
   border-radius: 4px;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 .mono {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
@@ -134,17 +193,18 @@ input {
 }
 
 .app {
+  position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 main {
-  width: min(1480px, 100%);
+  width: min(1440px, 100%);
   margin: 0 auto;
-  padding: 20px 24px 40px;
+  padding: 24px 24px 48px;
   display: grid;
-  gap: 20px;
+  gap: 24px;
   align-content: start;
   flex: 1;
 }
@@ -159,8 +219,8 @@ main {
   align-items: center;
   gap: 28px;
   padding: 0 24px;
-  height: 56px;
-  background: rgb(8 9 11 / 0.9);
+  height: 60px;
+  background: rgb(13 14 18 / 0.88);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line-soft);
 }
@@ -168,19 +228,21 @@ main {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  color: var(--accent);
+  gap: 10px;
+  color: var(--text);
   text-decoration: none;
-  font-weight: 600;
-  font-size: 15px;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.02em;
 }
 
 .brand-mark {
-  width: 15px;
-  height: 15px;
-  border-radius: 3px;
-  background: linear-gradient(145deg, var(--accent), var(--accent-dim));
+  height: 26px;
+}
+
+.brand-mark {
+  width: auto;
+  display: block;
 }
 
 .nav {
@@ -192,9 +254,12 @@ main {
 .nav a {
   color: var(--text-2);
   text-decoration: none;
-  font-size: 13.5px;
-  padding: 6px 11px;
-  border-radius: 6px;
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
 }
 
 .nav a:hover {
@@ -238,10 +303,10 @@ main {
 @keyframes pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgb(255 176 32 / 0.5);
+    box-shadow: 0 0 0 0 rgb(34 194 232 / 0.5);
   }
   60% {
-    box-shadow: 0 0 0 5px rgb(255 176 32 / 0);
+    box-shadow: 0 0 0 5px rgb(34 194 232 / 0);
   }
 }
 
@@ -256,7 +321,19 @@ main {
   color: var(--text-3);
 }
 
-.header-tick .mono {
+.header-tick .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mono {
   color: var(--text);
   font-size: 13px;
 }
@@ -266,43 +343,37 @@ main {
 .market-header {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 10px 2px 2px;
+  gap: 16px 24px;
+  padding: 20px 2px 0;
+  border-top: 1px solid var(--line-soft);
 }
 
-.market-identity h1 {
+.market-identity h2 {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  font-size: 34px;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
 }
 
 .market-kind {
   font-size: 12px;
   font-weight: 400;
   color: var(--accent);
-  border: 1px solid rgb(255 176 32 / 0.32);
-  background: rgb(255 176 32 / 0.09);
+  border: 1px solid rgb(34 194 232 / 0.32);
+  background: rgb(34 194 232 / 0.1);
   padding: 3px 9px;
   border-radius: 999px;
   letter-spacing: 0;
 }
 
-.market-line {
-  margin-top: 8px;
-  font-size: 16px;
-  color: var(--text);
-}
-
 .market-sub {
-  margin-top: 4px;
-  font-size: 13.5px;
+  margin-top: 2px;
+  font-size: 12.5px;
   color: var(--text-3);
-  max-width: 62ch;
 }
 
 .market-price {
@@ -319,7 +390,7 @@ main {
 .price {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
-  font-size: 46px;
+  font-size: 34px;
   font-weight: 500;
   letter-spacing: -0.035em;
   line-height: 1.05;
@@ -345,14 +416,14 @@ main {
 }
 
 .market-move.tone-down {
-  background: rgb(255 77 77 / 0.12);
+  background: rgb(255 90 90 / 0.12);
 }
 
 /* Trading row -------------------------------------------------------------- */
 
 .trading {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 340px);
   gap: 20px;
   align-items: start;
 }
@@ -366,9 +437,9 @@ main {
 }
 
 .chart-card {
-  padding: 18px 20px 14px;
+  padding: 20px 22px 16px;
   display: grid;
-  gap: 16px;
+  gap: 18px;
 }
 
 .chart-head {
@@ -382,7 +453,7 @@ main {
 .panel-head h2,
 .order-head h2 {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.005em;
 }
 
@@ -428,7 +499,7 @@ main {
 
 .chart-body svg {
   width: 100%;
-  height: clamp(200px, 30vh, 300px);
+  height: clamp(240px, 36vh, 380px);
   display: block;
   overflow: visible;
 }
@@ -443,7 +514,7 @@ main {
 }
 
 .chart-area {
-  fill: rgb(255 176 32 / 0.07);
+  fill: rgb(34 194 232 / 0.08);
   stroke: none;
 }
 
@@ -457,7 +528,7 @@ svg.down .chart-line {
   stroke: var(--down);
 }
 svg.down .chart-area {
-  fill: rgb(255 77 77 / 0.08);
+  fill: rgb(255 90 90 / 0.08);
 }
 svg.flat .chart-line {
   stroke: var(--text-3);
@@ -489,7 +560,7 @@ svg.flat .chart-area {
 /* Order panel -------------------------------------------------------------- */
 
 .order {
-  padding: 16px;
+  padding: 18px;
   display: grid;
   gap: 12px;
   position: sticky;
@@ -544,13 +615,13 @@ svg.flat .chart-area {
 .side-buy.side-on {
   background: rgb(34 197 94 / 0.16);
   color: var(--up);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .side-sell.side-on {
-  background: rgb(255 77 77 / 0.16);
+  background: rgb(255 90 90 / 0.16);
   color: var(--down);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .field {
@@ -568,11 +639,11 @@ svg.flat .chart-area {
 .field input {
   background: var(--surface-2);
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: 10px;
+  padding: 12px 14px;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
-  font-size: 16px;
+  font-size: 17px;
   width: 100%;
 }
 
@@ -629,13 +700,13 @@ svg.flat .chart-area {
 }
 
 button.primary {
-  background: var(--accent);
+  background: var(--accent-solid);
   color: var(--accent-ink);
   border: 0;
-  border-radius: 8px;
-  padding: 11px;
-  font-weight: 600;
-  font-size: 14px;
+  border-radius: 10px;
+  padding: 13px;
+  font-weight: 700;
+  font-size: 15px;
   cursor: pointer;
   width: 100%;
 }
@@ -669,23 +740,25 @@ button.primary:disabled {
 
 .order-message {
   color: var(--accent);
+  min-height: 1lh;
 }
 
 /* Metrics ------------------------------------------------------------------ */
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 1px;
-  background: var(--line-soft);
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+  gap: 12px;
+}
+
+.metric {
   border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
-  overflow: hidden;
+  border-radius: 12px;
 }
 
 .metric {
   background: var(--surface);
-  padding: 14px 16px 15px;
+  padding: 16px 18px 17px;
   display: grid;
   gap: 3px;
   align-content: start;
@@ -717,13 +790,13 @@ button.primary:disabled {
 
 .panels {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
   gap: 20px;
   align-items: start;
 }
 
 .panel {
-  padding: 16px 18px 14px;
+  padding: 18px 20px 16px;
   display: grid;
   gap: 12px;
 }
@@ -768,7 +841,19 @@ button.primary:disabled {
   color: var(--text-2);
 }
 
-.row-who .mono {
+.row-who .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mono {
   color: var(--text);
 }
 
@@ -780,8 +865,8 @@ button.primary:disabled {
 }
 .kind-wiped {
   color: var(--down);
-  border: 1px solid rgb(255 77 77 / 0.35);
-  background: rgb(255 77 77 / 0.1);
+  border: 1px solid rgb(255 90 90 / 0.35);
+  background: rgb(255 90 90 / 0.1);
   border-radius: 5px;
   padding: 1px 7px;
   font-size: 11.5px;
@@ -806,8 +891,8 @@ button.primary:disabled {
 
 .status-exiting {
   color: var(--down);
-  border-color: rgb(255 77 77 / 0.3);
-  background: rgb(255 77 77 / 0.1);
+  border-color: rgb(255 90 90 / 0.3);
+  background: rgb(255 90 90 / 0.1);
 }
 
 .status-cooldown {
@@ -832,7 +917,7 @@ button.primary:disabled {
 
 .empty-title {
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .empty-body {
@@ -851,11 +936,11 @@ button.primary:disabled {
 .chaos {
   padding: 14px 18px;
   border-radius: var(--radius);
-  border: 1px solid rgb(255 77 77 / 0.35);
+  border: 1px solid rgb(255 90 90 / 0.35);
   background: linear-gradient(
     96deg,
-    rgb(255 77 77 / 0.14),
-    rgb(255 77 77 / 0.03)
+    rgb(255 90 90 / 0.14),
+    rgb(255 90 90 / 0.03)
   );
   display: grid;
   gap: 4px;
@@ -872,7 +957,7 @@ button.primary:disabled {
 
 .chaos-tag {
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--down);
   letter-spacing: 0.02em;
 }
@@ -883,7 +968,7 @@ button.primary:disabled {
 
 .chaos-headline {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.015em;
   max-width: 54ch;
   text-wrap: balance;
@@ -1034,8 +1119,8 @@ button.ghost:hover {
   gap: 12px;
   padding: 10px 12px;
   border-radius: 8px;
-  background: rgb(255 77 77 / 0.1);
-  border: 1px solid rgb(255 77 77 / 0.25);
+  background: rgb(255 90 90 / 0.1);
+  border: 1px solid rgb(255 90 90 / 0.25);
   font-size: 13px;
 }
 
@@ -1061,6 +1146,14 @@ button.ghost:hover {
 }
 
 /* Responsive --------------------------------------------------------------- */
+
+/* The backdrop only bleeds past the gutter where there is a gutter to spare. */
+@media (min-width: 721px) {
+  .hero-backdrop {
+    inset: 0 -24px auto;
+    width: calc(100% + 48px);
+  }
+}
 
 @media (max-width: 1100px) {
   .trading {
@@ -1094,7 +1187,7 @@ button.ghost:hover {
     font-size: 38px;
   }
 
-  .market-identity h1 {
+  .market-identity h2 {
     font-size: 28px;
   }
 
@@ -1171,4 +1264,475 @@ button.ghost:hover {
 .fill-status {
   color: var(--text-3);
   font-size: 11.5px;
+}
+
+/* Chart cursor ------------------------------------------------------------- */
+
+.plot {
+  position: relative;
+  min-width: 0;
+}
+
+.plot:focus-visible {
+  outline-offset: 4px;
+}
+
+.crosshair {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--text-2);
+  pointer-events: none;
+}
+
+.readout {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--text-2);
+  pointer-events: none;
+}
+
+.readout .mono {
+  color: var(--text);
+  font-size: 13px;
+}
+
+/* Hero --------------------------------------------------------------------- */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  padding: 92px 0 72px;
+  display: grid;
+  gap: 20px;
+  justify-items: center;
+  text-align: center;
+  max-width: none;
+}
+
+/* The live price line stands in for the atmospheric image a marketing hero
+   usually carries. It is the product, so there is no reason to show a picture
+   of one instead. A scrim keeps the copy legible wherever the line crosses it. */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    46% 44% at 50% 44%,
+    rgb(13 14 18 / 0.82) 0%,
+    rgb(13 14 18 / 0.5) 55%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.hero-backdrop {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  z-index: -2;
+  opacity: 0.38;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 45%,
+    #000 78%,
+    transparent
+  );
+}
+
+.hero-backdrop-line {
+  fill: none;
+  stroke: var(--text-2);
+  stroke-width: 1.25;
+  vector-effect: non-scaling-stroke;
+}
+
+.hero-backdrop-area {
+  fill: rgb(168 174 185 / 0.07);
+}
+
+.hero-backdrop.up .hero-backdrop-line {
+  stroke: var(--up);
+}
+.hero-backdrop.up .hero-backdrop-area {
+  fill: rgb(34 197 94 / 0.08);
+}
+.hero-backdrop.down .hero-backdrop-line {
+  stroke: var(--down);
+}
+.hero-backdrop.down .hero-backdrop-area {
+  fill: rgb(255 90 90 / 0.08);
+}
+
+.hero-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.hero-flag::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+
+.hero-flag-on {
+  color: var(--accent);
+  border-color: rgb(34 194 232 / 0.35);
+}
+
+.hero-flag-on::before {
+  background: var(--accent);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+.hero-lockup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.hero-mark {
+  height: clamp(44px, 6vw, 68px);
+  width: auto;
+}
+
+.hero h1 {
+  font-size: clamp(3rem, 7.5vw, 5.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  font-weight: 700;
+}
+
+.hero-tagline {
+  font-size: clamp(1.25rem, 2.6vw, 1.875rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-top: -4px;
+}
+
+.hero-lede {
+  font-size: clamp(1rem, 1.5vw, 1.1875rem);
+  line-height: 1.55;
+  color: var(--text-2);
+  max-width: 58ch;
+}
+
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px 48px;
+  margin-top: 10px;
+}
+
+.hero-stats dt {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-bottom: 2px;
+}
+
+.hero-stats dd {
+  font-size: clamp(1.25rem, 2.4vw, 1.625rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.hero-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.hero-cta {
+  background: var(--text);
+  color: #06080c;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 15px 34px;
+  border-radius: 10px;
+  transition: filter 180ms ease;
+}
+
+.hero-cta:hover {
+  filter: brightness(0.92);
+}
+
+/* Explainer ---------------------------------------------------------------- */
+
+.explain {
+  display: grid;
+  gap: 24px;
+  padding-top: 16px;
+}
+
+.explain-head h2 {
+  font-size: clamp(1.5rem, 2.8vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.explain-head p {
+  margin-top: 8px;
+  color: var(--text-2);
+  max-width: 64ch;
+  font-size: 15px;
+}
+
+.marquee {
+  overflow: hidden;
+  /* The strip runs full bleed and fades at both edges, so cards arrive and
+     leave rather than appearing to be cut off. */
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 7%,
+    #000 93%,
+    transparent
+  );
+}
+
+.marquee-track {
+  display: flex;
+  gap: 14px;
+  width: max-content;
+  animation: marquee 44s linear infinite;
+}
+
+.marquee-paused {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* Half the track, plus half a gap, lands the duplicate exactly where the
+       original began. */
+    transform: translateX(calc(-50% - 7px));
+  }
+}
+
+.marquee-track li {
+  flex: 0 0 340px;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  padding: 24px 26px 26px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.marquee-index {
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.marquee-track h3 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.marquee-track p {
+  font-size: 13.5px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+button.marquee-toggle {
+  background: transparent;
+  border: 0;
+  color: var(--text-3);
+  font-size: 10px;
+  line-height: 1;
+  padding: 4px 6px;
+  cursor: pointer;
+  flex: none;
+}
+
+button.marquee-toggle:hover {
+  color: var(--text);
+}
+
+.explain-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+
+.explain-foot p {
+  max-width: 72ch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+
+  .marquee {
+    overflow-x: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-track {
+    transition: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .carousel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  button.carousel-arrow {
+    display: none;
+  }
+
+  .carousel-track li {
+    padding: 24px 22px 28px;
+  }
+}
+
+/* Chaos control ------------------------------------------------------------ */
+
+.chaos-control {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 14px;
+}
+
+.chaos-control h3 {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.chaos-control p {
+  font-size: 12.5px;
+  color: var(--text-3);
+  max-width: 62ch;
+  margin-top: 2px;
+}
+
+.chaos-control-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+button.danger {
+  background: rgb(255 90 90 / 0.14);
+  border: 1px solid rgb(255 90 90 / 0.4);
+  color: var(--down);
+  border-radius: 9px;
+  padding: 9px 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+button.danger:hover:not(:disabled) {
+  background: rgb(255 90 90 / 0.22);
+}
+
+button.danger:disabled {
+  color: var(--text-3);
+  border-color: var(--line);
+  background: transparent;
+  cursor: not-allowed;
+}
+
+.chaos-control-note {
+  font-size: 12px;
+  color: var(--accent);
+}
+
+/* Scroll reveal ------------------------------------------------------------ */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 380ms ease,
+    transform 380ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+[data-reveal].revealed {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+button.carousel-play {
+  background: transparent;
+  border: 0;
+  color: var(--text-3);
+  font-size: 10px;
+  line-height: 1;
+  padding: 4px 6px;
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+button.carousel-play:hover {
+  color: var(--text);
+}
+
+/* Cursor trail ------------------------------------------------------------- */
+
+.cursor-trail {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 40;
+  pointer-events: none;
 }
