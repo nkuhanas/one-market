@@ -47,6 +47,9 @@ const NOT_JOINED = 'Not trading yet';
  */
 const FEED_FLUSH_MS = 250;
 
+/** How many lifecycle events this browser keeps after watching them arrive. */
+const LIFECYCLE_RETAINED = 60;
+
 function toSnapshot(row: MarketState): MarketSnapshot {
   return {
     logicalTick: row.logicalTick,
@@ -158,6 +161,8 @@ export interface OneMarket {
   readonly snapshot?: MarketSnapshot;
   readonly priceHistory: readonly PriceSample[];
   readonly activity: readonly ActivityEntry[];
+  /** Lifecycle events observed by this browser since it connected. */
+  readonly kills: readonly ActivityEntry[];
   readonly actors: readonly ActorRow[];
   readonly shock?: NewsShock;
   readonly capacity: Pending<CapacityResult>;
@@ -181,6 +186,7 @@ export function useOneMarket(): OneMarket {
   const [snapshot, setSnapshot] = useState<MarketSnapshot>();
   const [priceHistory, setPriceHistory] = useState<readonly PriceSample[]>([]);
   const [activity, setActivity] = useState<readonly ActivityEntry[]>([]);
+  const [kills, setKills] = useState<readonly ActivityEntry[]>([]);
   const [actors, setActors] = useState<readonly ActorRow[]>([]);
   const [shock, setShock] = useState<NewsShock>();
   const [capacity, setCapacity] = useState<Pending<CapacityResult>>(
@@ -205,6 +211,7 @@ export function useOneMarket(): OneMarket {
     setSnapshot(undefined);
     setPriceHistory([]);
     setActivity([]);
+    setKills([]);
     setActors([]);
     setShock(undefined);
 
@@ -272,6 +279,18 @@ export function useOneMarket(): OneMarket {
     };
     conn.db.marketState.onUpdate(onMarket);
 
+    // Lifecycle events are caught as they arrive rather than read back from the
+    // shared feed. That feed is capped at 500 entries and fills arrive in the
+    // hundreds per second, so a wipeout is flushed out of it within seconds and
+    // would almost never be visible to a reader that only polls.
+    const onActivity = (_ctx: unknown, row: PublicActivity) => {
+      if (disposed) return;
+      const entry = toActivity(row);
+      if (entry.eventKind === 'FILLED') return;
+      setKills((current) => [entry, ...current].slice(0, LIFECYCLE_RETAINED));
+    };
+    conn.db.publicActivity.onInsert(onActivity);
+
     function flush(db: DbConnection) {
       if (disposed) return;
       const points = [...db.db.pricePoint.iter()]
@@ -317,6 +336,7 @@ export function useOneMarket(): OneMarket {
       disposed = true;
       clearInterval(timer);
       conn.db.marketState.removeOnUpdate(onMarket);
+      conn.db.publicActivity.removeOnInsert(onActivity);
       conn.disconnect();
       connection.current = null;
     };
@@ -366,6 +386,7 @@ export function useOneMarket(): OneMarket {
     snapshot,
     priceHistory,
     activity,
+    kills,
     actors,
     shock,
     capacity,

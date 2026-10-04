@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { formatSignedUsd, formatUsd } from '../lib/units';
 import type { ActorRow } from '../market/contract';
+import { AgentAvatar } from './agent-avatar';
 import { EmptyState } from './value';
 
 const STATUS_COPY: Record<ActorRow['status'], string> = {
@@ -37,6 +38,10 @@ export const ActorsPanel = memo(function ActorsPanel({
         <ol className="rows">
           {actors.slice(0, 40).map((actor) => (
             <li key={String(actor.actorId)} className="row row-actor">
+              <AgentAvatar
+                id={String(actor.actorId)}
+                dead={actor.status !== 'ACTIVE'}
+              />
               <span className="row-tick mono">#{String(actor.actorId)}</span>
               <span className={`status status-${actor.status.toLowerCase()}`}>
                 {STATUS_COPY[actor.status]}

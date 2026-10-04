@@ -1706,3 +1706,42 @@ button.carousel-play:hover {
   z-index: 40;
   pointer-events: none;
 }
+
+/* Agent faces and the kill feed --------------------------------------------- */
+
+.avatar {
+  display: block;
+  flex: none;
+  border-radius: 7px;
+}
+
+.row-actor {
+  grid-template-columns: auto 56px minmax(0, 1fr) auto auto;
+}
+
+.row-kill {
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.2fr) auto auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.kind-revived {
+  color: var(--accent);
+}
+
+.row-deaths {
+  color: var(--text-3);
+  font-size: 11.5px;
+  min-width: 2.2rem;
+  text-align: right;
+}
+
+@media (max-width: 720px) {
+  .row-kill {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .row-kill .row-kind {
+    grid-column: 2 / -1;
+  }
+}
