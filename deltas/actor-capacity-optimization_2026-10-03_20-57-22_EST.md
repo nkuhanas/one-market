@@ -1,7 +1,8 @@
 # Delta: actor-capacity optimizations and pause-test reliability
 
-- Status: implementation in progress; transport extension authorized in draft
-  [PR #3](https://github.com/nkuhanas/one-market/pull/3). Not merged.
+- Status: implemented; direct index retained, digest experiment rejected;
+  transport and market-recovery extensions authorized. Merge status is tracked
+  in [PR #3](https://github.com/nkuhanas/one-market/pull/3).
 - Created: 2026-10-03 20:57:22 EST (UTC-05:00, fixed standard time, not EDT).
 - Local base: merged `main` at `64de1e6020b0718bf0bf16bc29f202e2b2720a56`.
 - Implementation base: upstream `main` revision
@@ -395,3 +396,19 @@ throughput gain, mixed tails, unchanged passing boundary). Its source, module,
 raw measurements and test-only equivalence fixtures are retained. Longer 375k
 NORMAL/CHAOS probes are next. The worklog has hashes, results, commands and paths.
 The PR remains draft until final qualification and CI have been reviewed.
+
+### Subsequent user decision: 375k baseline and market-recovery extension
+
+The 30+90s NORMAL and CHAOS probes at 375k both passed with zero skipped slots.
+The user explicitly waived six fresh confirmations and selected 375k as the
+working baseline, then requested investigation of market behavior. The partial
+confirmation was stopped deliberately; its data and cancellation record remain.
+Do not label 375k six-run-qualified or transfer old results to a changed workload.
+
+The investigation found a penny-price trap and liquidation backlog that also
+predate this optimization. The user requested a new delta, implementation, and
+safe branch merge, and approved changing the specification after being asked.
+The [market-recovery delta](market-recovery_2026-10-03_22-05-19_EST.md) records
+that separately authorized scope, superseding this delta's original exclusion
+of market-rule/specification edits. Transport, pause fencing and the retained
+direct index remain; the rejected digest change remains rejected.

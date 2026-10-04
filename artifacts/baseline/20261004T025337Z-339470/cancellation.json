@@ -1,0 +1,14 @@
+{
+  "status": "CANCELLED_BY_USER",
+  "qualified": false,
+  "database": "one-market-baseline-normal-20261004t025337z-339470",
+  "population": 375000,
+  "reason": "User waived six fresh confirmations and accepted 375k as the working baseline; switched to market-behavior diagnosis.",
+  "completed_confirmations": 0,
+  "committed_ticks_before_stop": 2087,
+  "skipped_slots_before_stop": 0,
+  "server_run_status_after_stop": "FAILED",
+  "server_failure_reason": "simulation paused",
+  "data_preserved": true,
+  "qualification_log": "../../verification/20261004-actor-capacity/qualification-375000.txt"
+}

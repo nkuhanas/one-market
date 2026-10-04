@@ -436,6 +436,16 @@ pub fn run(options: Options) -> Result<bool> {
             .run_id()
             .find(&expected_id)
             .ok_or("run missing")?;
+        let expected_workload = workload_hash(options.population, c.seed, &options.profile);
+        if record.configuration_hash != expected_workload {
+            // A preserved WASM must be paired with its own frozen workload.
+            // Do not label an old module's behavior with this harness's rules.
+            let _ = invoke!(owner, pause_simulation_then());
+            return Err(format!(
+                "module/harness workload mismatch: runtime {}, harness {}; stopped before offering load",
+                record.configuration_hash, expected_workload
+            ));
+        }
         let origin_us = record.origin.to_micros_since_unix_epoch();
         let now = Instant::now();
         let offset = origin_us - clock_us();

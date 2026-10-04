@@ -72,3 +72,21 @@ pub fn workload_hash(population: u64, seed: u64, profile: &str) -> String {
     hasher.update(profile.as_bytes());
     hasher.finalize().to_hex().to_string()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn recovery_workload_cannot_reuse_old_or_different_run_qualification() {
+        let normal = workload_hash(375_000, 20261003, "NORMAL");
+        assert_ne!(
+            normal,
+            "f63de483e5aa7a3a6d6bdfd812fb6c17bed72956956c5d61c8ba34978b5f9340"
+        );
+        assert_ne!(normal, workload_hash(325_000, 20261003, "NORMAL"));
+        assert_ne!(normal, workload_hash(375_000, 42, "NORMAL"));
+        assert_ne!(normal, workload_hash(375_000, 20261003, "CHAOS"));
+        assert_eq!(normal, workload_hash(375_000, 20261003, "NORMAL"));
+    }
+}

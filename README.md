@@ -35,11 +35,11 @@ population is not a capacity claim. Qualification uses separate fresh databases;
 see [benchmark methodology](docs/benchmark-methodology.md) and the
 [backend handoff](docs/backend-handoff.md) for measured evidence and limitations.
 
-On the capacity-optimization branch, private actor rows use a fixed-width schema.
+Private actor rows use a fixed-width schema.
 Existing baseline worlds are deliberately not migrated or deleted. To opt into
 a separate local world, set `SPACETIMEDB_DATABASE=one-market-v02-fixed-local`
 in your ignored `.env` (or export it) before the development commands. Public
-observer/human contracts are unchanged. The branch qualified **325,000 persistent
+observer/human contracts are unchanged. The historical fixed-row build qualified **325,000 persistent
 actors at 20 Hz locally for both NORMAL and CHAOS**, with three passing runs
 per profile. The [capacity worklog](docs/capacity-worklog.md) records the evidence,
 failed higher candidate, before/after measurements and reproduction commands.

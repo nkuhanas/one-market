@@ -1,0 +1,17 @@
+ Container one-market-db-1 Running
+ Container one-market-db-1 Waiting
+ Container one-market-db-1 Healthy
+ Container one-market-tools-run-ab1940a4d882 Creating
+ Container one-market-tools-run-ab1940a4d882 Created
+ Container one-market-tools-run-087eacdc77bc Creating
+ Container one-market-tools-run-087eacdc77bc Created
+(WASM) Skipping build. Instead we are publishing artifacts/builds/capacity-delta/direct-index.wasm
+You are about to publish to a non-local server: db
+Skipping confirmation due to --yes
+Uploading to http://db:3000 => http://db:3000
+Checking for breaking changes...
+Publishing module...
+Created new database with name: one-market-explore-200-normal-20261004t032723z-524324, identity: c2006c0a87350b31266fe9c7fc197f9c8c6e5c57cc9961fb63f6ea93f7b38009
+ Container one-market-tools-run-2e9ad523d842 Creating
+ Container one-market-tools-run-2e9ad523d842 Created
+Benchmark failed: module/harness workload mismatch: runtime f4da5a0f6b328dc010540322f3cf433944ed1c3147f76ebab3318a45be8a012c, harness 6271909bd728f2416d2c8b0972c75c3f5813f1c2b4903c512ed38d34ceccf7ec; stopped before offering load

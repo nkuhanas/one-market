@@ -1,7 +1,8 @@
 # Delta: recoverable market pricing and bounded liquidation
 
 - Created: 2026-10-03 22:05:19 EST (UTC-05:00, fixed standard time).
-- Status: implementation planned before code changes; verification pending.
+- Status: implemented; verification recorded below. Merge status is tracked in
+  [PR #3](https://github.com/nkuhanas/one-market/pull/3).
 - Branch: `perf/actor-capacity-delta`, extending PR #3 before a verified merge.
 - Authorization: user requested this delta, implementation, and a safe merge;
   subsequent “go ahead” approves the proposed spec revision and versioned rules.
@@ -99,4 +100,65 @@ cover distressed inventories with funded buyers in every bucket, as observed
 at 375k. Cross-bucket resting orders or lifecycle escape would require another
 workload/architecture decision; this delta does not claim universal recovery.
 
-Remaining verification pending.
+### Implemented and verified
+
+`423df72` committed this plan before implementation; `294aac9` implemented the
+market fix. Production WASM SHA-256 is
+`c1b23e38e9bcf821f88a2fb06b1fbc5c3659d3fb01c8dc2ba92a074a54f42e9c`, preserved
+with provenance under `artifacts/builds/market-recovery/`.
+
+- The six 40-minute deterministic NORMAL/repeated-CHAOS soaks (200 actors,
+  three seeds) had zero floor ticks and 199–200 actors active at completion.
+- Three distressed 1,000-actor fixtures, with funded buyers in each bucket,
+  recovered from one cent to $99.59/$100.39/$101.38 and all 1,000 ACTIVE after
+  20 simulated minutes. Conservation checks pass throughout. These are model
+  tests, not measurements of persistent runtime capacity.
+- Docker `check`, all 35 backend/transport tests, and all three browser tests
+  pass. Publishing old-to-new preserves all eight checked tables exactly;
+  real upgrade fencing/recovery preserves balances and original evidence.
+- `main` received frontend PR #4 during verification. Merge `d4f18d5` preserves
+  that interface and applies ordered transport in `use-one-market.ts`, retaining
+  upstream's removal of its predecessor. Full checks and browser/restart tests
+  were repeated against the combined tree without visual changes.
+- The harness records bounded market-health samples on its existing subscribed
+  market row; full lifecycle totals are read only after measurement stops.
+  A preflight guard also rejects a runtime/harness workload-hash mismatch rather
+  than labeling a historical module with new rules. A real old-module negative
+  test stopped before offered load at tick zero, with no scheduled ticks; a
+  matching module/harness 200-actor control passed (1+5 seconds). Final native
+  checks pass 25 tests, with one archive-only qualification test ignored.
+
+| 375k profile | Window   | Price range    | Final   | Floor / zero-volume ticks | Final active | P99 start lateness | Skips |
+| ------------ | -------- | -------------- | ------- | ------------------------- | ------------ | ------------------ | ----- |
+| NORMAL       | 30+90 s  | $99.62–$100.49 | $100.12 | 0 / 0                     | 375,000      | 17,922 µs          | 0     |
+| CHAOS        | 30+170 s | $98.68–$101.38 | $99.93  | 0 / 0                     | 375,000      | 19,733 µs          | 0     |
+
+Both pass the exploratory load/coverage/accounting gates. NORMAL measured
+33,750,000 actor updates; CHAOS measured 63,750,000. Neither had wipeouts or
+recapitalizations in these finite windows; targeted fixtures separately exercise
+the new liquidation behavior. CHAOS includes 1,600 post-shock ticks (80 seconds),
+trading between $99.60 and $100.47 with all actors active. The new restoring
+policy is intentionally a changed economic workload, not a like-for-like
+performance improvement or a promise that arbitrary markets cannot crash.
+
+Full artifacts:
+
+- `artifacts/exploration/20261004T031747Z-469269/375000-normal/`
+- `artifacts/exploration/20261004T032215Z-497039/375000-chaos/`
+- `artifacts/verification/20261004-market-recovery/verification.json`
+- `artifacts/verification/index-migration-20261004T031443Z-446741/result.txt`
+
+Reproduce with the corresponding compiled harness and preserved module:
+
+```sh
+POPULATION=375000 PROFILE=NORMAL WARMUP_SECONDS=30 MEASUREMENT_SECONDS=90 \
+  MODULE_WASM=artifacts/builds/market-recovery/market-recovery.wasm \
+  HARNESS_BIN=target/release/one-market-benchmark ./scripts/explore
+POPULATION=375000 PROFILE=CHAOS WARMUP_SECONDS=30 MEASUREMENT_SECONDS=170 \
+  MODULE_WASM=artifacts/builds/market-recovery/market-recovery.wasm \
+  HARNESS_BIN=target/release/one-market-benchmark ./scripts/explore
+```
+
+Build the native harness through Docker first; do not reuse a binary compiled
+for the old workload. These are one-off exploratory checks, not six fresh
+confirmations. Existing data, failed experiments and qualification gates remain.

@@ -562,3 +562,51 @@ unchanged from the fixed-row baseline.
 The next candidate is 375,000 actors, using longer 30+90s NORMAL and CHAOS probes
 before any full qualification. This is a measured-selection exercise above the
 350k short controls, not an assertion that 375k passes or is the platform ceiling.
+
+## 375k working baseline and market-recovery extension
+
+Both retained 30+90s direct-index probes passed the exploratory gates:
+NORMAL `artifacts/exploration/20261004T024844Z-317831/` (P99 23,487 µs) and
+CHAOS `artifacts/exploration/20261004T025049Z-327815/` (P99 16,055 µs).
+Each measured 33,750,000 actor updates with zero skips and valid accounting.
+The user then waived the planned six fresh confirmations and accepted 375k as
+the working baseline. The first confirmation was intentionally stopped after
+2,087 ticks; its incomplete archive and explicit cancellation record remain
+under `artifacts/baseline/20261004T025337Z-339470/`. This is not a qualification.
+
+Market-health inspection found NORMAL at $85.69–$108.53 with all 375k active,
+but CHAOS at $0.01 for its final 38.6 seconds, with 263,469 actors EXITING.
+The old qualified 325k CHAOS repeat 3 also reached the penny floor, so this is
+not an index regression. Runtime scheduling/conservation and healthy economic
+behavior are distinct properties.
+
+The user authorized a separate, timestamped
+[market-recovery delta](../deltas/market-recovery_2026-10-03_22-05-19_EST.md),
+implementation, explicit spec changes, and safe merge of this branch. Commit
+`294aac9` versions the pricing/liquidation rules, adds model/runtime regressions,
+and captures market-health traces using the harness's existing market-row
+subscription. No new viewer or full-population scan is added during measurement.
+The new workload cannot inherit historical qualification. The original auction,
+bucket coverage, persistence cadence, and three-confirmation gates remain intact.
+
+New-workload 375k exploratory verification passed:
+
+| Profile | Warm-up + measured | Measured actor updates | P99 lateness | Skips | Price range    | Final active |
+| ------- | ------------------ | ---------------------- | ------------ | ----- | -------------- | ------------ |
+| NORMAL  | 30 + 90 s          | 33,750,000             | 17,922 µs    | 0     | $99.62–$100.49 | 375,000      |
+| CHAOS   | 30 + 170 s         | 63,750,000             | 19,733 µs    | 0     | $98.68–$101.38 | 375,000      |
+
+Artifacts are `artifacts/exploration/20261004T031747Z-469269/375000-normal/`
+and `artifacts/exploration/20261004T032215Z-497039/375000-chaos/`. Both retained
+the fixed viewers/offered load and exact coverage, with valid accounting, zero
+floor ticks, zero zero-volume ticks, and no wipeouts in these windows. CHAOS
+contains 80 seconds after shock expiry, not merely its last two ticks. Market
+health and model/counterparty limitations are detailed in the recovery delta.
+The final module is `artifacts/builds/market-recovery/market-recovery.wasm`,
+SHA-256 `c1b23e38e9bcf821f88a2fb06b1fbc5c3659d3fb01c8dc2ba92a074a54f42e9c`.
+
+The workload-hash preflight was added to the harness after these probes; their
+recorded harness BLAKE3 remains `aeb7da36cf4df81a20d247237e7bd6b42e40cbc3ab23e99b9bf0225039521608`.
+That guard runs before offered load and does not change measured tick work.
+This policy change alters the economics; its timings are not presented as a
+controlled performance comparison with the older, distressed CHAOS workload.
