@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+local_name="$(SPACETIMEDB_DATABASE=one-market-config-local VITE_SPACETIMEDB_DATABASE=one-market-config-cloud database_name)"
+[[ "$local_name" == one-market-config-local ]] || { printf 'Cloud frontend redirected local publishing.\n' >&2; exit 1; }
+SPACETIMEDB_DATABASE=one-market-config-local \
+VITE_SPACETIMEDB_HOST=https://maincloud.spacetimedb.com \
+VITE_SPACETIMEDB_DATABASE=one-market-config-cloud compose --profile tests config --format json |
+  docker run --rm -i node:24.21.0-bookworm-slim node -e '
+    const assert = require("node:assert/strict");
+    let input = "";
+    process.stdin.on("data", part => input += part).on("end", () => {
+      const services = JSON.parse(input).services;
+      assert.equal(services.web.environment.VITE_SPACETIMEDB_DATABASE, "one-market-config-cloud");
+      assert.equal(services.web.environment.VITE_SPACETIMEDB_HOST, "https://maincloud.spacetimedb.com");
+      assert.equal(services["browser-web"].environment.VITE_SPACETIMEDB_DATABASE, "one-market-config-local");
+      assert.equal(services["browser-web"].environment.VITE_SPACETIMEDB_HOST, "http://db:3000");
+      console.log("Frontend cloud settings are isolated from local publish/test settings.");
+    });
+  '

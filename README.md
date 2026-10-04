@@ -90,13 +90,14 @@ Do not remove the identity volume independently of its database volume.
 Copy `.env.example` to `.env` to override defaults. Shell environment variables
 take precedence. `.env` is ignored by Git.
 
-| Variable                | Default                 | Purpose                               |
-| ----------------------- | ----------------------- | ------------------------------------- |
-| `WEB_PORT`              | `5173`                  | Host frontend port                    |
-| `DB_PORT`               | `3000`                  | Host database port                    |
-| `SPACETIMEDB_DATABASE`  | `one-market-v02-local`  | Local database name                   |
-| `VITE_SPACETIMEDB_HOST` | `http://localhost:3000` | Database URL reachable by the browser |
-| `COMPOSE_PROJECT_NAME`  | `one-market`            | Namespace for containers and volumes  |
+| Variable                    | Default                 | Purpose                               |
+| --------------------------- | ----------------------- | ------------------------------------- |
+| `WEB_PORT`                  | `5173`                  | Host frontend port                    |
+| `DB_PORT`                   | `3000`                  | Host database port                    |
+| `SPACETIMEDB_DATABASE`      | `one-market-v02-local`  | Local database name                   |
+| `VITE_SPACETIMEDB_HOST`     | `http://localhost:3000` | Database URL reachable by the browser |
+| `VITE_SPACETIMEDB_DATABASE` | Local database selector | Optional frontend-only database name  |
+| `COMPOSE_PROJECT_NAME`      | `one-market`            | Namespace for containers and volumes  |
 
 If you change `DB_PORT`, also change `VITE_SPACETIMEDB_HOST` to match it. Database
 and web ports bind to loopback by default. `VITE_*` values are public client
@@ -164,3 +165,8 @@ Remaining parameter choices are frozen in [config/v02.json](config/v02.json) and
 market-recovery delta updates the corresponding specification rules. Maincloud
 publication and qualification require a selected development
 database and explicit credentials; they are not part of ordinary local startup.
+
+See [Maincloud deployment](docs/maincloud-deployment.md) for fresh-name
+publication, bounded actor initialization, frontend configuration, and safe
+inspection/pause commands. The authenticated Docker CLI may be reused without
+putting publishing credentials in the frontend environment.

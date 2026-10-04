@@ -8,6 +8,8 @@ dist/
 spacetime.local.json
 playwright-report/
 test-results/
+.playwright-cli/
+output/playwright/
 .DS_Store
 *.log
 .aws/

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/maincloud-common.sh"
+
+cloud_node "${1:-status}"
