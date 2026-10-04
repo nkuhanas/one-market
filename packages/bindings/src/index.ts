@@ -36,6 +36,7 @@ import {
 // Import all reducer arg schemas
 import AuthorizeReaderReducer from "./authorize_reader_reducer";
 import BenchmarkStepReducer from "./benchmark_step_reducer";
+import ContinueTimedRunReducer from "./continue_timed_run_reducer";
 import EnterMarketReducer from "./enter_market_reducer";
 import InitializeBatchReducer from "./initialize_batch_reducer";
 import PauseSimulationReducer from "./pause_simulation_reducer";
@@ -215,6 +216,7 @@ const tablesSchema = __schema({
 const reducersSchema = __reducers(
   __reducerSchema("authorize_reader", AuthorizeReaderReducer),
   __reducerSchema("benchmark_step", BenchmarkStepReducer),
+  __reducerSchema("continue_timed_run", ContinueTimedRunReducer),
   __reducerSchema("enter_market", EnterMarketReducer),
   __reducerSchema("initialize_batch", InitializeBatchReducer),
   __reducerSchema("pause_simulation", PauseSimulationReducer),

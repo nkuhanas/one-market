@@ -8,6 +8,7 @@ import { type Infer as __Infer } from "spacetimedb";
 // Import all reducer arg schemas
 import AuthorizeReaderReducer from "../authorize_reader_reducer";
 import BenchmarkStepReducer from "../benchmark_step_reducer";
+import ContinueTimedRunReducer from "../continue_timed_run_reducer";
 import EnterMarketReducer from "../enter_market_reducer";
 import InitializeBatchReducer from "../initialize_batch_reducer";
 import PauseSimulationReducer from "../pause_simulation_reducer";
@@ -27,6 +28,7 @@ import ValidateRunReducer from "../validate_run_reducer";
 
 export type AuthorizeReaderParams = __Infer<typeof AuthorizeReaderReducer>;
 export type BenchmarkStepParams = __Infer<typeof BenchmarkStepReducer>;
+export type ContinueTimedRunParams = __Infer<typeof ContinueTimedRunReducer>;
 export type EnterMarketParams = __Infer<typeof EnterMarketReducer>;
 export type InitializeBatchParams = __Infer<typeof InitializeBatchReducer>;
 export type PauseSimulationParams = __Infer<typeof PauseSimulationReducer>;

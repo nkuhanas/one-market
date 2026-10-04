@@ -32,6 +32,7 @@ pub mod cadence_state_type;
 pub mod connected_reducer;
 pub mod connection_state_table;
 pub mod connection_state_type;
+pub mod continue_timed_run_reducer;
 pub mod detailed_benchmark_receipts_table;
 pub mod disconnected_reducer;
 pub mod enter_market_reducer;
@@ -116,6 +117,7 @@ pub use cadence_state_type::CadenceState;
 pub use connected_reducer::connected;
 pub use connection_state_table::*;
 pub use connection_state_type::ConnectionState;
+pub use continue_timed_run_reducer::continue_timed_run;
 pub use detailed_benchmark_receipts_table::*;
 pub use disconnected_reducer::disconnected;
 pub use enter_market_reducer::enter_market;
@@ -187,6 +189,11 @@ pub enum Reducer {
     },
     BenchmarkStep,
     Connected,
+    ContinueTimedRun {
+        profile: String,
+        build_hash: String,
+        duration_seconds: u64,
+    },
     Disconnected,
     EnterMarket,
     InitializeBatch {
@@ -256,6 +263,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::AuthorizeReader { .. } => "authorize_reader",
             Reducer::BenchmarkStep => "benchmark_step",
             Reducer::Connected => "connected",
+            Reducer::ContinueTimedRun { .. } => "continue_timed_run",
             Reducer::Disconnected => "disconnected",
             Reducer::EnterMarket => "enter_market",
             Reducer::InitializeBatch { .. } => "initialize_batch",
@@ -290,6 +298,15 @@ impl __sdk::Reducer for Reducer {
                 __sats::bsatn::to_vec(&benchmark_step_reducer::BenchmarkStepArgs {})
             }
             Reducer::Connected => __sats::bsatn::to_vec(&connected_reducer::ConnectedArgs {}),
+            Reducer::ContinueTimedRun {
+                profile,
+                build_hash,
+                duration_seconds,
+            } => __sats::bsatn::to_vec(&continue_timed_run_reducer::ContinueTimedRunArgs {
+                profile: profile.clone(),
+                build_hash: build_hash.clone(),
+                duration_seconds: duration_seconds.clone(),
+            }),
             Reducer::Disconnected => {
                 __sats::bsatn::to_vec(&disconnected_reducer::DisconnectedArgs {})
             }

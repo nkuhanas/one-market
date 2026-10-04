@@ -960,6 +960,85 @@ test.describe
     await assertRemainsPaused(stopped, readServer, readCache);
   });
 
+  test('bounded continuation keeps the world and cadence, closes only its old segment', async () => {
+    const previous = owner.db.runtimeConfig.id.find(0)!.runId;
+    const before = await readServer();
+    const actors = [...owner.db.actorState.iter()].sort((a, b) =>
+      Number(a.actorId - b.actorId),
+    );
+    const oldRun = owner.db.runRecord.runId.find(previous)!;
+    const oldReceipts = [...owner.db.detailedBenchmarkReceipts.iter()].filter(
+      (r) => r.runId === previous,
+    );
+    const cadence = owner.db.cadenceState.id.find(0)!;
+    const args = { profile: 'NORMAL', buildHash, durationSeconds: 1n };
+    await expect(alice.reducers.continueTimedRun(args)).rejects.toThrow();
+    for (const invalid of [
+      { durationSeconds: 0n },
+      { durationSeconds: 3601n },
+      { buildHash: 'invalid' },
+      { profile: 'invalid' },
+    ]) {
+      await expect(
+        owner.reducers.continueTimedRun({ ...args, ...invalid }),
+      ).rejects.toThrow();
+      expect(await readServer()).toEqual(before);
+      expect(owner.db.runRecord.runId.find(previous)).toEqual(oldRun);
+    }
+    await owner.reducers.continueTimedRun(args);
+    await expect
+      .poll(() => owner.db.runtimeConfig.id.find(0)!.runId)
+      .not.toBe(previous);
+    const next = owner.db.runtimeConfig.id.find(0)!.runId;
+    const newRun = owner.db.runRecord.runId.find(next)!;
+    expect(newRun.qualification).toBe(false);
+    expect(owner.db.runCadence.runId.find(next)!.profile).toBe(cadence.profile);
+    expect(owner.db.runCadence.runId.find(next)!.firstLogicalTick).toBe(
+      before.logicalTick,
+    );
+    await expect(owner.reducers.continueTimedRun(args)).rejects.toThrow();
+    await expect
+      .poll(() => owner.db.runtimeConfig.id.find(0)!.enabled)
+      .toBe(false);
+    const stopped = await readServer();
+    await expect.poll(readCache).toEqual(stopped);
+    expect(stopped.logicalTick).toBeGreaterThan(before.logicalTick);
+    expect(owner.db.runRecord.runId.find(previous)!.failureReason).toContain(
+      oldRun.failureReason,
+    );
+    expect(owner.db.runRecord.runId.find(previous)!.completedAt).not.toBeNull();
+    expect(
+      [...owner.db.detailedBenchmarkReceipts.iter()].filter(
+        (r) => r.runId === previous,
+      ),
+    ).toEqual(oldReceipts);
+    const immutable = (a: (typeof actors)[number]) => [
+      a.actorId,
+      a.bucket,
+      a.initialEndowmentValueCents,
+      a.momentumWeight,
+      a.meanReversionWeight,
+      a.contrarianWeight,
+      a.newsWeight,
+      a.riskToleranceBps,
+      a.convictionThresholdBps,
+    ];
+    expect(
+      [...owner.db.actorState.iter()]
+        .sort((a, b) => Number(a.actorId - b.actorId))
+        .map(immutable),
+    ).toEqual(actors.map(immutable));
+    for (const receipt of [...owner.db.detailedBenchmarkReceipts.iter()].filter(
+      (r) => r.runId === next,
+    )) {
+      expect(receipt.previousStepsValid).toBe(true);
+      expect(receipt.logicalTick).toBeGreaterThanOrEqual(before.logicalTick);
+    }
+    expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+    expect([...owner.db.timedRunStop.iter()]).toHaveLength(0);
+    await assertRemainsPaused(stopped, readServer, readCache);
+  });
+
   test('early pause cancels the deadline and cannot stop a later run', async () => {
     await owner.reducers.setCadenceProfile({ profile: '10hz' });
     await owner.reducers.startTimedRun({

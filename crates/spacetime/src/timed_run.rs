@@ -49,6 +49,51 @@ pub fn start_timed_run(
     Ok(())
 }
 
+/// A fresh evidence segment on the same paused world/cadence. This never
+/// rehabilitates old failures or claims a mixed-age world as qualification.
+#[reducer]
+pub fn continue_timed_run(
+    ctx: &ReducerContext,
+    profile: String,
+    build_hash: String,
+    duration_seconds: u64,
+) -> Result<()> {
+    admin(ctx)?;
+    deadline(now_us(ctx), duration_seconds)?;
+    let mut r = runtime(ctx)?;
+    if r.phase != "READY"
+        || r.enabled
+        || r.run_id == 0
+        || ctx.db.tick_schedule().count() != 0
+        || ctx.db.timed_run_stop().count() != 0
+    {
+        return Err("continuation requires a paused initialized run without schedules".into());
+    }
+    let mut previous = ctx
+        .db
+        .run_record()
+        .run_id()
+        .find(r.run_id)
+        .ok_or("run missing")?;
+    if previous.completed_at.is_none() {
+        previous.status = "FAILED".into();
+        if !previous.failure_reason.is_empty() {
+            previous.failure_reason.push_str("; ");
+        }
+        previous
+            .failure_reason
+            .push_str("bounded continuation; previous segment closed");
+        previous.completed_at = Some(ctx.timestamp);
+        ctx.db.run_record().run_id().update(previous);
+    }
+    r.run_id = 0;
+    r.next_slot = 0;
+    ctx.db.runtime_config().id().update(r);
+    // All validations, segment closure, start and timer insertion share one
+    // reducer transaction. Any error leaves the previous paused world intact.
+    start_timed_run(ctx, profile, build_hash, duration_seconds)
+}
+
 fn due(stop: &TimedRunStop, r: &RuntimeConfig, now: i64) -> bool {
     r.enabled
         && stop.run_id == r.run_id

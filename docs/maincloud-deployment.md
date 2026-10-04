@@ -100,6 +100,14 @@ paused, select its cadence, and use the owner-only
 Initialization must finish before that call; `initialize-maincloud` currently
 starts an unbounded session and is not the bounded-session entry point.
 
+To measure an **already-started, paused** world without resetting its actors or
+switching cadence, call `continue_timed_run("NORMAL", module_sha256, 180)`.
+It closes the previous evidence segment (preserving its failure and receipts),
+starts a new non-qualifying segment at the current logical tick and selected
+cadence, and arms the same durable stop in one transaction. It rejects running
+worlds and leftover schedules. Invalid arguments roll back the entire operation.
+It does not adopt changed workload rules; explicit adoption is still required.
+
 The timed reducer atomically starts a non-qualifying run and records a private
 one-shot stop at `run.origin + duration_seconds`. Durations are 1–3,600 seconds.
 It survives operator disconnect and database restart. The scheduled callback
