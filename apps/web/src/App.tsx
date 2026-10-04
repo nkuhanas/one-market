@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { PriceChart } from './charts/price-chart';
+import { priceChartView } from './charts/price-chart';
 import { ActivityTape } from './components/activity-tape';
 import { Channel } from './components/channel';
 import { ChaosBanner } from './components/chaos-banner';
 import { EpochMeter } from './components/epoch-meter';
+import { TradePanel } from './components/trade-panel';
 import { previewOverrides } from './dev/preview';
 import {
   live,
@@ -36,8 +37,14 @@ export function App() {
   const news = preview?.news ?? liveNews;
   const activity = preview?.activity ?? liveActivity;
   const shock = news.state === 'live' ? news.value : undefined;
+
   const [pingMessage, setPingMessage] = useState('');
   const [pinging, setPinging] = useState(false);
+
+  const chart = priceChartView({
+    samples: priceHistory,
+    clientObserved: priceHistoryIsClientObserved,
+  });
 
   async function sendPing() {
     setPinging(true);
@@ -71,53 +78,54 @@ export function App() {
 
       {shock && <ChaosBanner news={shock} />}
 
-      <section className="readout" aria-label="Live market state">
-        <div className="readout-clock">
-          <h2>Simulation tick</h2>
-          <strong className="tick" data-testid="tick">
-            {snapshot ? (
-              formatCount(snapshot.logicalTick)
-            ) : (
-              <span className="awaiting">No clock</span>
-            )}
-          </strong>
+      <section
+        className={`hero hero-${chart.direction}`}
+        aria-label="Live market state"
+      >
+        <div className="hero-plot">{chart.element}</div>
+
+        <div className="hero-face">
+          <div className="hero-price">
+            <h2>ONE</h2>
+            <strong>
+              {snapshot ? (
+                formatUsd(snapshot.priceCents)
+              ) : (
+                <span className="awaiting">No price</span>
+              )}
+            </strong>
+            <p>{chart.caption}</p>
+          </div>
+
+          <div className="hero-clock">
+            <h2>Tick</h2>
+            <strong data-testid="tick">
+              {snapshot ? (
+                formatCount(snapshot.logicalTick)
+              ) : (
+                <span className="awaiting">No clock</span>
+              )}
+            </strong>
+          </div>
+        </div>
+
+        <div className="hero-meter">
           <EpochMeter slot={snapshot?.slot ?? -1} />
-          <p className="readout-note">
+          <p>
             {snapshot
-              ? `Epoch ${formatCount(snapshot.epoch)}, slot ${snapshot.slot + 1} of ${TICKS_PER_EPOCH}`
+              ? `Epoch ${formatCount(snapshot.epoch)} · slot ${snapshot.slot + 1} of ${TICKS_PER_EPOCH}`
               : 'Waiting for the shared clock'}
-            <span className="readout-sep" />
+            <span className="hero-sep" />
             {TARGET_HZ} Hz target
           </p>
         </div>
-
-        <div className="readout-price">
-          <h2>ONE</h2>
-          <strong className="price">
-            {snapshot ? (
-              formatUsd(snapshot.priceCents)
-            ) : (
-              <span className="awaiting">No price</span>
-            )}
-          </strong>
-          <p className="readout-note">
-            Opening price, unchanged until the auction clears its first tick
-          </p>
-        </div>
-      </section>
-
-      <section className="chart-block" aria-label="Price history">
-        <PriceChart
-          samples={priceHistory}
-          clientObserved={priceHistoryIsClientObserved}
-        />
       </section>
 
       <section className="channels" aria-label="Population and throughput">
         <Channel
           label="Autonomous actors"
           value={snapshot ? live(formatCount(snapshot.actorCount)) : WAITING}
-          note="Persistent policy actors in the deployed world"
+          note="Persistent policy actors in the world"
         />
         <Channel
           label="Filled orders / sec"
@@ -138,21 +146,21 @@ export function App() {
           value={mapPending(
             verifiedCapacity,
             (result) =>
-              `${formatCount(result.actorCount)} actors @ ${result.tickHz} Hz`,
+              `${formatCount(result.actorCount)} @ ${result.tickHz} Hz`,
           )}
         />
       </section>
 
-      <ActivityTape activity={activity} />
+      <div className="floor">
+        <ActivityTape activity={activity} />
+        <TradePanel enabled={false} />
+      </div>
 
       <footer className="footer">
-        <div>
-          <h2>Runtime check</h2>
-          <p>
-            Open this page in a second window. Both windows read the same tick
-            from the same database.
-          </p>
-        </div>
+        <p>
+          Open this page in a second window. Both read the same tick from the
+          same database.
+        </p>
         <div className="footer-actions">
           <button
             disabled={status !== 'Connected' || pinging}

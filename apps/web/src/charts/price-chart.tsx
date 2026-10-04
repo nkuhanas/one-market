@@ -1,8 +1,8 @@
-import { centsToDollars, formatDollars, formatUsd } from '../lib/units';
+import { centsToDollars, formatDollars } from '../lib/units';
 import type { PriceSample } from '../market/contract';
 
 const VIEW_WIDTH = 1000;
-const VIEW_HEIGHT = 260;
+const VIEW_HEIGHT = 300;
 /** Drawn points are capped so a 20 Hz redraw stays cheap on a phone. */
 const MAX_DRAWN_POINTS = 240;
 
@@ -18,24 +18,35 @@ function downsample(samples: readonly PriceSample[]): PriceSample[] {
   return drawn;
 }
 
-export function PriceChart({
+export interface PriceChartView {
+  readonly element: React.ReactNode;
+  readonly direction: 'up' | 'down' | 'flat' | 'empty';
+  readonly caption: string;
+}
+
+/**
+ * The price line, drawn to fill whatever it is given. It sits behind the hero
+ * readout, so it carries no labels of its own: the surrounding layout owns the
+ * price, the scale and the caption.
+ */
+export function priceChartView({
   samples,
   clientObserved,
 }: {
   samples: readonly PriceSample[];
   clientObserved: boolean;
-}) {
+}): PriceChartView {
   const drawn = downsample(samples);
   const source = clientObserved
-    ? `${samples.length} ticks watched by this browser. Server price history arrives with PricePoint.`
-    : `Last ${samples.length} ticks of server price history.`;
+    ? `${samples.length} ticks watched by this browser`
+    : `last ${samples.length} ticks of server history`;
 
   if (drawn.length < 2) {
-    return (
-      <figure className="chart chart-empty">
-        <p>Watching for the next tick. The line starts drawing immediately.</p>
-      </figure>
-    );
+    return {
+      element: null,
+      direction: 'empty',
+      caption: 'Watching for the next tick',
+    };
   }
 
   const dollars = drawn.map((sample) =>
@@ -48,7 +59,7 @@ export function PriceChart({
   // fill so a flat reading does not render as a solid block.
   const flat = high === low;
   const span = high - low || 1;
-  const padding = span * 0.12;
+  const padding = span * 0.18;
   const floor = low - padding;
   const ceiling = high + padding;
 
@@ -60,39 +71,27 @@ export function PriceChart({
 
   const line = `M${points.join(' L')}`;
   const area = `${line} L${VIEW_WIDTH},${VIEW_HEIGHT} L0,${VIEW_HEIGHT} Z`;
-  const first = dollars[0];
-  const last = dollars[dollars.length - 1];
-  const direction = flat ? 'flat' : last > first ? 'up' : 'down';
-  const latest = drawn[drawn.length - 1];
+  const direction = flat
+    ? 'flat'
+    : dollars[dollars.length - 1] > dollars[0]
+      ? 'up'
+      : 'down';
 
-  return (
-    <figure className={`chart chart-${direction}`}>
-      <div className="chart-canvas">
-        <svg
-          viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
-          preserveAspectRatio="none"
-          role="img"
-          aria-label={`Price of ONE across the last ${samples.length} observed ticks, currently ${formatUsd(latest.priceCents)}`}
-        >
-          {!flat && <path className="chart-area" d={area} />}
-          <path className="chart-line" d={line} />
-        </svg>
-        {/* Scale labels sit outside the SVG because the chart stretches to fit
-            its container, which would distort any text drawn inside it. */}
-        <div className={`chart-scale ${flat ? 'chart-scale-flat' : ''}`}>
-          {flat ? (
-            <span>{formatDollars(high)}</span>
-          ) : (
-            <>
-              <span>{formatDollars(ceiling)}</span>
-              <span>{formatDollars(floor)}</span>
-            </>
-          )}
-        </div>
-      </div>
-      <figcaption>
-        {flat ? `Price has not moved. ${source}` : source}
-      </figcaption>
-    </figure>
-  );
+  return {
+    direction,
+    caption: flat
+      ? `Price has not moved · ${source} · server history arrives with PricePoint`
+      : `${formatDollars(low)}–${formatDollars(high)} · ${source}`,
+    element: (
+      <svg
+        className="price-line"
+        viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        {!flat && <path className="chart-area" d={area} />}
+        <path className="chart-line" d={line} />
+      </svg>
+    ),
+  };
 }

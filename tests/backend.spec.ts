@@ -265,7 +265,20 @@ test.describe
     await expect
       .poll(() => owner.db.runtimeConfig.id.find(0)!.enabled)
       .toBe(false);
-    const before = row().logicalTick;
+    // Ticks committed before the pause landed can still be in flight to this
+    // subscriber, so `enabled === false` does not mean the cache has caught up.
+    // Let it settle first; otherwise `before` is a stale read and the assertion
+    // below fails on rows the paused world had already committed.
+    let latest = -1n;
+    await expect
+      .poll(() => {
+        const current = row().logicalTick;
+        const unchanged = current === latest;
+        latest = current;
+        return unchanged;
+      })
+      .toBe(true);
+    const before = latest;
     await new Promise((resolve) => setTimeout(resolve, 150));
     expect(row().logicalTick).toBe(before);
     expect(owner.db.runRecord.runId.find(1n)!.status).toBe('FAILED');
