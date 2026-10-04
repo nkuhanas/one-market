@@ -5,6 +5,9 @@ import { EmptyState } from './value';
 
 const VIEW_W = 1000;
 const VIEW_H = 320;
+/** The lower band of the plot is given over to per-tick volume. */
+const VOLUME_H = 72;
+const PRICE_H = VIEW_H - VOLUME_H;
 /** Capped so redraw cost is independent of runtime cadence. */
 const MAX_POINTS = 320;
 
@@ -16,6 +19,11 @@ export const RANGES = [
 ] as const;
 
 export type RangeId = (typeof RANGES)[number]['id'];
+
+export interface ChartStat {
+  readonly label: string;
+  readonly value: string;
+}
 
 function downsample(samples: readonly PriceSample[]): PriceSample[] {
   if (samples.length <= MAX_POINTS) return [...samples];
@@ -32,10 +40,12 @@ export const PriceChart = memo(function PriceChart({
   samples,
   range,
   onRange,
+  stats = [],
 }: {
   samples: readonly PriceSample[];
   range: RangeId;
   onRange: (id: RangeId) => void;
+  stats?: readonly ChartStat[];
 }) {
   const [cursor, setCursor] = useState<number>();
   const window = RANGES.find((r) => r.id === range)!.seconds;
@@ -55,6 +65,8 @@ export const PriceChart = memo(function PriceChart({
     const pad = (high - low || Math.max(high, 1)) * 0.15;
     const floor = low - pad;
     const ceil = high + pad;
+    // Points sit at their real elapsed time, not evenly by index, so the shape
+    // stays honest across a cadence change or a pause.
     const elapsed =
       drawn[drawn.length - 1].recordedAtUs - drawn[0].recordedAtUs;
     const positions = drawn.map((sample, i) =>
@@ -65,20 +77,35 @@ export const PriceChart = memo(function PriceChart({
           ) /
             1_000_000) *
           VIEW_W
-        : (i / (values.length - 1)) * VIEW_W,
+        : (i / Math.max(values.length - 1, 1)) * VIEW_W,
     );
     const pts = values.map((v, i) => {
       const x = positions[i];
-      const y = VIEW_H - ((v - floor) / (ceil - floor)) * VIEW_H;
+      const y = PRICE_H - ((v - floor) / (ceil - floor)) * PRICE_H;
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     });
     const line = `M${pts.join(' L')}`;
+
+    // Volume is a real per-tick figure from the server price feed, so it is
+    // drawn to its own scale beneath the price rather than implied by it.
+    const volumes = drawn.map((s) => Number(s.matchedShareVolume));
+    const peak = Math.max(...volumes, 1);
+    const barWidth = Math.max((VIEW_W / Math.max(volumes.length, 1)) * 0.7, 1);
+    const bars = volumes.map((v, i) => ({
+      x: positions[i],
+      w: barWidth,
+      h: (v / peak) * VOLUME_H,
+    }));
+
     return {
       drawn,
       values,
       positions,
       line,
-      area: `${line} L${VIEW_W},${VIEW_H} L0,${VIEW_H} Z`,
+      area: `${line} L${VIEW_W},${PRICE_H} L0,${PRICE_H} Z`,
+      bars,
+      peak,
+      traded: volumes.some((v) => v > 0),
       flat,
       low,
       high,
@@ -159,7 +186,22 @@ export const PriceChart = memo(function PriceChart({
               >
                 <path className="chart-area" d={plot.area} />
                 <path className="chart-line" d={plot.line} />
+                <g
+                  className="chart-volume"
+                  transform={`translate(0 ${PRICE_H})`}
+                >
+                  {plot.bars.map((b, i) => (
+                    <rect
+                      key={i}
+                      x={b.x}
+                      y={VOLUME_H - b.h}
+                      width={b.w}
+                      height={b.h}
+                    />
+                  ))}
+                </g>
               </svg>
+
               {cursor !== undefined && plot.drawn[cursor] && (
                 <div
                   className="crosshair"
@@ -174,23 +216,44 @@ export const PriceChart = memo(function PriceChart({
                   <span className="mono">
                     {formatUsd(plot.drawn[cursor].priceCents)}
                   </span>
+                  <span className="mono">
+                    {formatCount(plot.drawn[cursor].matchedShareVolume)} sh
+                  </span>
                   <span>
                     tick {formatCount(plot.drawn[cursor].logicalTick)}
                   </span>
                 </p>
               )}
             </div>
+
             <div className="chart-scale">
               <span>{formatUsd(BigInt(Math.round(plot.high * 100)))}</span>
               <span>{formatUsd(BigInt(Math.round(plot.low * 100)))}</span>
+              <span className="chart-scale-volume">
+                {plot.traded
+                  ? `${formatCount(BigInt(plot.peak))} sh`
+                  : 'no volume'}
+              </span>
             </div>
           </div>
+
+          {stats.length > 0 && (
+            <dl className="chart-stats">
+              {stats.map((stat) => (
+                <div key={stat.label}>
+                  <dt>{stat.label}</dt>
+                  <dd className="mono">{stat.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+
           <div className="chart-foot">
             <span>
               Tick {formatCount(plot.first.logicalTick)} →{' '}
               {formatCount(plot.last.logicalTick)}
             </span>
-            {plot.flat && <span>Price held flat across this range</span>}
+            <span>Per-second figures observed by this browser</span>
           </div>
         </>
       ) : (

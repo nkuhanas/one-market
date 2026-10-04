@@ -7,6 +7,10 @@
  *
  * Hues avoid the red and green arcs, which report market direction elsewhere
  * and must not read as a signal here.
+ *
+ * Shifts are unsigned: `hash` returns a full 32-bit value, and `>>` would
+ * coerce it to a signed int32, so more than half of all ids produced a
+ * negative index and drew a face with no features at all.
  */
 function hash(id: string): number {
   let h = 2166136261;
@@ -32,9 +36,9 @@ export function AgentAvatar({
   const h = hash(id);
   // 160–280° spans teal through blue to indigo, clear of the direction colours.
   const hue = 160 + (h % 120);
-  const eyes = EYES[(h >> 7) % EYES.length];
-  const mouth = MOUTHS[(h >> 11) % MOUTHS.length];
-  const tilt = ((h >> 17) % 5) - 2;
+  const eyes = EYES[(h >>> 7) % EYES.length];
+  const mouth = MOUTHS[(h >>> 11) % MOUTHS.length];
+  const tilt = ((h >>> 17) % 5) - 2;
 
   const skin = dead ? 'hsl(215 12% 26%)' : `hsl(${hue} 42% 32%)`;
   const ink = dead ? 'hsl(215 10% 48%)' : `hsl(${hue} 70% 78%)`;

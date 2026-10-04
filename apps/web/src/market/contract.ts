@@ -75,6 +75,9 @@ export interface MarketSnapshot {
   readonly activeActorCount: bigint;
   readonly registeredHumanTraderCount: bigint;
   readonly connectedIdentityCount: bigint;
+  readonly cumulativeActorSteps: bigint;
+  readonly cumulativePolicyEvaluations: bigint;
+  readonly cumulativeOrdersSubmitted: bigint;
   readonly cumulativeOrdersFilled: bigint;
   readonly cumulativeMatchedShareVolume: bigint;
   readonly rateWindowUs: bigint;
