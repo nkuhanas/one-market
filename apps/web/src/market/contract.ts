@@ -43,6 +43,21 @@ export function cadenceLabel(cadence?: Cadence): string {
     : 'Cadence pending';
 }
 
+/** Zero-based position in the server's epoch, without narrowing a u64 tick. */
+export function epochSlot(
+  logicalTick?: bigint,
+  bucketCount?: number,
+): number | undefined {
+  if (
+    logicalTick === undefined ||
+    bucketCount === undefined ||
+    !Number.isSafeInteger(bucketCount) ||
+    bucketCount <= 0
+  )
+    return undefined;
+  return Number(logicalTick % BigInt(bucketCount));
+}
+
 export type ConnectionStatus = 'Connecting' | 'Connected' | 'Disconnected';
 export type OrderSide = 'BUY' | 'SELL';
 

@@ -83,6 +83,8 @@ export function App() {
             range={range}
             onRange={setRange}
             stats={chartStats}
+            snapshot={snapshot}
+            cadence={market.cadence}
           />
           <OrderPanel
             snapshot={snapshot}
@@ -172,7 +174,6 @@ export function App() {
 
         <SystemStatus
           snapshot={snapshot}
-          cadence={market.cadence}
           status={market.status}
           error={market.error}
           pricePoints={market.priceHistory.length}

@@ -1,7 +1,13 @@
 import { memo, useMemo, useState } from 'react';
 import { toCandles } from '../lib/candles';
 import { centsToDollars, formatCount, formatUsd } from '../lib/units';
-import { priceWindow, type PriceSample } from '../market/contract';
+import {
+  priceWindow,
+  type Cadence,
+  type MarketSnapshot,
+  type PriceSample,
+} from '../market/contract';
+import { MarketClock } from './market-clock';
 import { EmptyState } from './value';
 
 const VIEW_W = 1000;
@@ -29,11 +35,15 @@ export const PriceChart = memo(function PriceChart({
   range,
   onRange,
   stats = [],
+  snapshot,
+  cadence,
 }: {
   samples: readonly PriceSample[];
   range: RangeId;
   onRange: (id: RangeId) => void;
   stats?: readonly ChartStat[];
+  snapshot?: MarketSnapshot;
+  cadence?: Cadence;
 }) {
   const [cursor, setCursor] = useState<number>();
   const window = RANGES.find((r) => r.id === range)!.seconds;
@@ -235,14 +245,6 @@ export const PriceChart = memo(function PriceChart({
               ))}
             </dl>
           )}
-
-          <div className="chart-foot">
-            <span>
-              Tick {formatCount(plot.first.firstTick)} →{' '}
-              {formatCount(plot.last.lastTick)}
-            </span>
-            <span>Per-second figures observed by this browser</span>
-          </div>
         </>
       ) : (
         <EmptyState
@@ -250,6 +252,10 @@ export const PriceChart = memo(function PriceChart({
           body="Each cleared tick writes a point here. Candles form as soon as the runtime records them."
         />
       )}
+      <div className="chart-foot">
+        <MarketClock snapshot={snapshot} cadence={cadence} />
+        {plot && <span>Per-second figures observed by this browser</span>}
+      </div>
     </section>
   );
 });
