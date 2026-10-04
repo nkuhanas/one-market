@@ -45,7 +45,6 @@ export function App() {
         <Hero
           snapshot={snapshot}
           fillRate={fillRate}
-          connected={market.status === 'Connected'}
           samples={market.priceHistory}
         />
 
