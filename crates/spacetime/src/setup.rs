@@ -69,7 +69,7 @@ pub fn initialize_batch(ctx: &ReducerContext, count: u64) -> Result<()> {
         if actor_id <= c.sample_size {
             crate::lifecycle::sample(ctx, &a);
         }
-        ctx.db.actor_state().insert(a);
+        crate::actor_storage::insert(ctx, a);
         let mut manifest = ctx
             .db
             .bucket_manifest()
@@ -150,6 +150,7 @@ pub fn reset_batch(ctx: &ReducerContext) -> Result<()> {
         }};
     }
     let empty = prune!(actor_state, actor_id)
+        & prune!(actor_state_compact, actor_id)
         & prune!(actor_recovery, actor_id)
         & prune!(human_trader, identity)
         & prune!(pending_human_order, identity)

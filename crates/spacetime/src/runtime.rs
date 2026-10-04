@@ -396,9 +396,8 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
     let policy_tick = PolicyTick::new(signals, r.seed, tick, m.price_cents, &c);
     let timer = profiling
         .then(|| spacetimedb::log_stopwatch::LogStopwatch::new("profile/indexed-select-sort"));
-    // The only actor query in a measured tick is this indexed due-bucket query.
-    let mut actors: Vec<_> = ctx.db.actor_state().bucket().filter(bucket).collect();
-    actors.sort_unstable_by_key(|a| a.actor_id);
+    // Only indexed due-bucket reads, from each nonempty actor representation.
+    let mut actors = crate::actor_storage::load_bucket(ctx, bucket)?;
     drop(timer);
     let timer = profiling.then(|| {
         spacetimedb::log_stopwatch::LogStopwatch::new("profile/coverage-policy-lifecycle")
@@ -586,7 +585,7 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         }
         active_in_bucket += u64::from(a.status == ActorStatus::Active);
         // Exactly one final actor row write, including PASS/EXITING/COOLDOWN.
-        ctx.db.actor_state().actor_id().update(a);
+        crate::actor_storage::update(ctx, a);
     }
     drop(timer);
     let timer =

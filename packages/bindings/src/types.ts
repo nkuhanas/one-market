@@ -58,6 +58,30 @@ export const ActorState = __t.object("ActorState", {
 });
 export type ActorState = __Infer<typeof ActorState>;
 
+export const ActorStateCompact = __t.object("ActorStateCompact", {
+  actorId: __t.u64(),
+  bucket: __t.u8(),
+  flags: __t.u8(),
+  cashCents: __t.u32(),
+  shares: __t.u32(),
+  markedEquityCents: __t.u32(),
+  initialEndowmentValueCents: __t.u32(),
+  lifePeakEquityCents: __t.u32(),
+  cumulativeRecapitalizationGrantsCents: __t.u32(),
+  momentumWeight: __t.i16(),
+  meanReversionWeight: __t.i16(),
+  contrarianWeight: __t.i16(),
+  newsWeight: __t.i16(),
+  riskToleranceBps: __t.u16(),
+  convictionThresholdBps: __t.u16(),
+  lastStepTickValue: __t.u64(),
+  cooldownStartedTickValue: __t.u64(),
+  lifetimePnlCents: __t.i32(),
+  wipeoutCount: __t.u32(),
+  filledOrderCount: __t.u32(),
+});
+export type ActorStateCompact = __Infer<typeof ActorStateCompact>;
+
 // The tagged union or sum type for the algebraic type `ActorStatus`.
 export const ActorStatus = __t.enum("ActorStatus", {
   Active: __t.unit(),

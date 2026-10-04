@@ -1,4 +1,5 @@
 mod access;
+mod actor_storage;
 mod humans;
 mod lifecycle;
 #[cfg(test)]

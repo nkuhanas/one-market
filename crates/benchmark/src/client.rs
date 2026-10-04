@@ -109,6 +109,89 @@ pub fn control_queries() -> Vec<String> {
     .collect()
 }
 
+pub fn audit_queries() -> Vec<String> {
+    let tables = [
+        "actor_state",
+        "human_trader",
+        "grant_accounting",
+        "runtime_config",
+    ];
+    let mut queries: Vec<_> = tables
+        .iter()
+        .map(|t| format!("SELECT * FROM {t}"))
+        .collect();
+    if cfg!(has_compact_actor_storage) {
+        queries.push("SELECT * FROM actor_state_compact".into());
+    }
+    queries
+}
+
+pub struct AuditActor {
+    pub actor_id: u64,
+    pub cash_cents: u64,
+    pub shares: u64,
+    pub status: ActorStatus,
+    pub wipeout_count: u64,
+}
+
+pub fn audit_actors(client: &Client) -> Result<Vec<AuditActor>> {
+    #[allow(unused_mut)] // Old preserved schemas have no compact table.
+    let mut actors: Vec<_> = client
+        .db
+        .db
+        .actor_state()
+        .iter()
+        .map(|a| AuditActor {
+            actor_id: a.actor_id,
+            cash_cents: a.cash_cents,
+            shares: a.shares,
+            status: a.status,
+            wipeout_count: a.wipeout_count,
+        })
+        .collect();
+    #[cfg(has_compact_actor_storage)]
+    for a in client.db.db.actor_state_compact().iter() {
+        if a.flags & !15 != 0 {
+            return Err("invalid compact actor flags".into());
+        }
+        actors.push(AuditActor {
+            actor_id: a.actor_id,
+            cash_cents: a.cash_cents.into(),
+            shares: a.shares.into(),
+            status: match a.flags & 3 {
+                0 => ActorStatus::Active,
+                1 => ActorStatus::Exiting,
+                2 => ActorStatus::Cooldown,
+                _ => return Err("invalid compact actor status".into()),
+            },
+            wipeout_count: a.wipeout_count.into(),
+        });
+    }
+    let initialized = client
+        .db
+        .db
+        .runtime_config()
+        .id()
+        .find(&0)
+        .ok_or("runtime missing from population audit")?
+        .initialized;
+    validate_actor_ids(&actors, initialized)?;
+    Ok(actors)
+}
+
+fn validate_actor_ids(actors: &[AuditActor], initialized: u64) -> Result<()> {
+    if actors.len() as u64 != initialized {
+        return Err("actor storage population mismatch".into());
+    }
+    let mut ids = std::collections::HashSet::with_capacity(actors.len());
+    for a in actors {
+        if a.actor_id == 0 || a.actor_id > initialized || !ids.insert(a.actor_id) {
+            return Err("missing, duplicate, or out-of-range actor storage".into());
+        }
+    }
+    Ok(())
+}
+
 pub fn audit(client: &Client) -> Result<()> {
     let g = client
         .db
@@ -119,7 +202,7 @@ pub fn audit(client: &Client) -> Result<()> {
         .ok_or("grant accounting missing")?;
     let mut shares = 0u128;
     let mut cash = 0u128;
-    for a in client.db.db.actor_state().iter() {
+    for a in audit_actors(client)? {
         shares += u128::from(a.shares);
         cash += u128::from(a.cash_cents);
     }
@@ -138,6 +221,33 @@ pub fn audit(client: &Client) -> Result<()> {
         return Err("cash/grant conservation failed".into());
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn population_audit_rejects_missing_duplicate_and_out_of_range_rows() {
+        let check = |ids: &[u64], initialized| {
+            let rows: Vec<_> = ids
+                .iter()
+                .map(|&actor_id| AuditActor {
+                    actor_id,
+                    cash_cents: 0,
+                    shares: 0,
+                    status: ActorStatus::Active,
+                    wipeout_count: 0,
+                })
+                .collect();
+            validate_actor_ids(&rows, initialized)
+        };
+        assert!(check(&[2, 1, 3], 3).is_ok());
+        assert!(check(&[1, 2], 3).is_err());
+        assert!(check(&[1, 2, 2], 3).is_err());
+        assert!(check(&[0, 1, 2], 3).is_err());
+        assert!(check(&[1, 2, 4], 3).is_err());
+    }
 }
 
 #[macro_export]

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { ScheduleAt } from 'spacetimedb';
 import { openOrderedWebSocket } from '@one-market/transport';
 import { DbConnection } from './private-bindings';
+import { actorRows, actorRow } from './helpers/actor-state';
 import {
   assertRemainsPaused,
   cachedSnapshot,
@@ -75,6 +76,7 @@ test.describe
       'SELECT * FROM market_state',
       'SELECT * FROM runtime_config',
       'SELECT * FROM actor_state',
+      'SELECT * FROM actor_state_compact',
       'SELECT * FROM grant_accounting',
       'SELECT * FROM run_record',
       'SELECT * FROM tick_schedule',
@@ -147,10 +149,100 @@ test.describe
     ).rejects.toThrow();
     await owner.reducers.initializeBatch({ count: 27n });
     await expect.poll(() => row().phase).toBe('READY');
-    expect([...owner.db.actorState.iter()]).toHaveLength(40);
+    expect(actorRows(owner)).toHaveLength(40);
     expect(owner.db.grantAccounting.id.find(0)!.initialShareSupply).toBe(
       20000n,
     );
+  });
+
+  test('actor storage migration is authorized, bounded, reversible, and atomic', async () => {
+    const original = actorRows(owner);
+    expect([...owner.db.actorStateCompact.iter()]).toHaveLength(40);
+    expect([...owner.db.actorState.iter()]).toHaveLength(0);
+    const unchanged = () => ({
+      market: row(),
+      runtime: owner.db.runtimeConfig.id.find(0),
+      grants: owner.db.grantAccounting.id.find(0),
+      manifests: [...owner.db.bucketManifest.iter()],
+    });
+    const before = unchanged();
+    await expect(
+      alice.reducers.migrateActorStorageBatch({
+        startActorId: 1n,
+        count: 1n,
+        compact: false,
+      }),
+    ).rejects.toThrow();
+    for (const [startActorId, count] of [
+      [0n, 1n],
+      [1n, 0n],
+      [1n, 501n],
+      [40n, 2n],
+      [(1n << 64n) - 1n, 2n],
+    ]) {
+      await expect(
+        owner.reducers.migrateActorStorageBatch({
+          startActorId,
+          count,
+          compact: false,
+        }),
+      ).rejects.toThrow();
+    }
+    await owner.reducers.migrateActorStorageBatch({
+      startActorId: 1n,
+      count: 20n,
+      compact: false,
+    });
+    await expect.poll(() => [...owner.db.actorState.iter()].length).toBe(20);
+    expect(actorRows(owner)).toEqual(original);
+    await owner.reducers.migrateActorStorageBatch({
+      startActorId: 1n,
+      count: 20n,
+      compact: false,
+    });
+    expect(actorRows(owner)).toEqual(original);
+    await owner.reducers.migrateActorStorageBatch({
+      startActorId: 1n,
+      count: 40n,
+      compact: true,
+    });
+    await expect
+      .poll(() => [...owner.db.actorStateCompact.iter()].length)
+      .toBe(40);
+    expect(actorRows(owner)).toEqual(original);
+    // Failure after actor 1 has already moved must roll back that move too.
+    await owner.reducers.testActorStorageFixture({
+      actorId: 2n,
+      mode: 'invalidate_flags',
+    });
+    await expect
+      .poll(() => owner.db.actorStateCompact.actorId.find(2n)!.flags & 128)
+      .toBe(128);
+    await expect(
+      owner.reducers.migrateActorStorageBatch({
+        startActorId: 1n,
+        count: 40n,
+        compact: false,
+      }),
+    ).rejects.toThrow();
+    expect([...owner.db.actorState.iter()]).toHaveLength(0);
+    expect([...owner.db.actorStateCompact.iter()]).toHaveLength(40);
+    await owner.reducers.testActorStorageFixture({
+      actorId: 2n,
+      mode: 'repair_flags',
+    });
+    await expect
+      .poll(() => owner.db.actorStateCompact.actorId.find(2n)!.flags & 128)
+      .toBe(0);
+    expect(actorRows(owner)).toEqual(original);
+    expect(unchanged()).toEqual(before);
+    // Exercise the following scheduler/settlement tests on both representations.
+    await owner.reducers.migrateActorStorageBatch({
+      startActorId: 1n,
+      count: 20n,
+      compact: false,
+    });
+    await expect.poll(() => [...owner.db.actorState.iter()].length).toBe(20);
   });
 
   test('caller-scoped views and private tables reject cross-identity reads', async () => {
@@ -172,6 +264,7 @@ test.describe
       'pending_human_order',
       'human_order_receipt',
       'actor_state',
+      'actor_state_compact',
       'actor_recovery',
       'run_cadence',
       'timed_run_stop',
@@ -371,7 +464,7 @@ test.describe
     });
     await expect.poll(() => [...alice.db.myPendingOrder.iter()].length).toBe(1);
     const tickBefore = row().logicalTick;
-    const actorBefore = [...owner.db.actorState.iter()]
+    const actorBefore = actorRows(owner)
       .map(
         (a) =>
           `${a.actorId}:${a.cashCents}:${a.shares}:${a.lastStepTick.present}:${a.lastStepTick.value}`,
@@ -382,7 +475,7 @@ test.describe
     await expect(owner.reducers.benchmarkStep({})).rejects.toThrow();
     expect(row().logicalTick).toBe(tickBefore);
     expect(
-      [...owner.db.actorState.iter()]
+      actorRows(owner)
         .map(
           (a) =>
             `${a.actorId}:${a.cashCents}:${a.shares}:${a.lastStepTick.present}:${a.lastStepTick.value}`,
@@ -431,7 +524,7 @@ test.describe
 
   test('runtime persists PASS, EXITING and COOLDOWN and records a recapitalization grant', async () => {
     const counts = new Map<number, number>();
-    for (const actor of owner.db.actorState.iter())
+    for (const actor of actorRows(owner))
       counts.set(actor.bucket, (counts.get(actor.bucket) || 0) + 1);
     const target = [...counts].find(([, count]) => count >= 3)![0];
     for (
@@ -444,7 +537,7 @@ test.describe
       await expect.poll(() => row().logicalTick).toBe(before + 1n);
     }
     const tick = row().logicalTick;
-    const due = [...owner.db.actorState.iter()]
+    const due = actorRows(owner)
       .filter((a) => a.bucket === target)
       .sort((a, b) => Number(a.actorId - b.actorId));
     for (const [i, actor] of due.entries()) {
@@ -462,19 +555,14 @@ test.describe
     expect(row().priceCents).toBe(price);
     expect(row().matchedShareVolume).toBe(0n);
     for (const actor of due)
-      expect(
-        owner.db.actorState.actorId.find(actor.actorId)!.lastStepTick,
-      ).toEqual({ value: tick, present: true });
-    expect(owner.db.actorState.actorId.find(due[0].actorId)!.status.tag).toBe(
-      'Active',
-    );
-    expect(owner.db.actorState.actorId.find(due[1].actorId)!.status.tag).toBe(
-      'Exiting',
-    );
-    expect(owner.db.actorState.actorId.find(due[1].actorId)!.shares).toBe(5n);
-    expect(owner.db.actorState.actorId.find(due[2].actorId)!.status.tag).toBe(
-      'Cooldown',
-    );
+      expect(actorRow(owner, actor.actorId)!.lastStepTick).toEqual({
+        value: tick,
+        present: true,
+      });
+    expect(actorRow(owner, due[0].actorId)!.status.tag).toBe('Active');
+    expect(actorRow(owner, due[1].actorId)!.status.tag).toBe('Exiting');
+    expect(actorRow(owner, due[1].actorId)!.shares).toBe(5n);
+    expect(actorRow(owner, due[2].actorId)!.status.tag).toBe('Cooldown');
     const grantsBefore =
       owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents;
     for (let step = 0; step < 20; step++) {
@@ -482,13 +570,9 @@ test.describe
       await owner.reducers.benchmarkStep({});
       await expect.poll(() => row().logicalTick).toBe(before + 1n);
     }
-    expect(owner.db.actorState.actorId.find(due[2].actorId)!.status.tag).toBe(
-      'Active',
-    );
-    expect(owner.db.actorState.actorId.find(due[2].actorId)!.cashCents).toBe(
-      10000000n,
-    );
-    expect(owner.db.actorState.actorId.find(due[2].actorId)!.shares).toBe(0n);
+    expect(actorRow(owner, due[2].actorId)!.status.tag).toBe('Active');
+    expect(actorRow(owner, due[2].actorId)!.cashCents).toBe(10000000n);
+    expect(actorRow(owner, due[2].actorId)!.shares).toBe(0n);
     expect(
       owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents -
         grantsBefore,
@@ -496,7 +580,7 @@ test.describe
   });
 
   test('liquidation is quantity-bounded and rejects a below-reserve buyer', async () => {
-    const target = [...owner.db.actorState.iter()][0];
+    const target = actorRows(owner)[0];
     for (
       let step = 0;
       Number(row().logicalTick % 20n) !== target.bucket && step < 20;
@@ -506,9 +590,7 @@ test.describe
       await owner.reducers.benchmarkStep({});
       await expect.poll(() => row().logicalTick).toBe(before + 1n);
     }
-    const due = [...owner.db.actorState.iter()].filter(
-      (a) => a.bucket === target.bucket,
-    );
+    const due = actorRows(owner).filter((a) => a.bucket === target.bucket);
     for (const a of due) {
       await owner.reducers.testActorFixture({
         actorId: a.actorId,
@@ -529,7 +611,7 @@ test.describe
     let tick = row().logicalTick;
     await owner.reducers.benchmarkStep({});
     await expect.poll(() => row().logicalTick).toBe(tick + 1n);
-    expect(owner.db.actorState.actorId.find(target.actorId)!.shares).toBe(500n);
+    expect(actorRow(owner, target.actorId)!.shares).toBe(500n);
     expect(row().priceCents).toBe(price);
     await expect
       .poll(
@@ -565,7 +647,7 @@ test.describe
             ?.filledQuantity,
       )
       .toBe(10n);
-    const actor = owner.db.actorState.actorId.find(target.actorId)!;
+    const actor = actorRow(owner, target.actorId)!;
     expect(actor.shares).toBe(490n);
     expect(actor.status.tag).toBe('Exiting');
     expect(row().priceCents).toBeGreaterThanOrEqual(secondReserve);
@@ -579,7 +661,7 @@ test.describe
     await owner.reducers.testStaleConfiguration({});
     await expect.poll(() => row().configurationHash).toBe('0'.repeat(64));
     const tick = row().logicalTick;
-    const rows = [...owner.db.actorState.iter()]
+    const rows = actorRows(owner)
       .map(
         (a) =>
           `${a.actorId}:${a.shares}:${a.cashCents}:${a.lastStepTick.value}`,
@@ -592,7 +674,7 @@ test.describe
     expect(row().logicalTick).toBe(tick);
     expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
     expect(
-      [...owner.db.actorState.iter()]
+      actorRows(owner)
         .map(
           (a) =>
             `${a.actorId}:${a.shares}:${a.cashCents}:${a.lastStepTick.value}`,
@@ -614,7 +696,7 @@ test.describe
     await expect(alice.reducers.testClearRevivalState({})).rejects.toThrow();
     await expect(alice.reducers.testStepMany({ count: 1n })).rejects.toThrow();
     await owner.reducers.testClearRevivalState({});
-    for (const a of owner.db.actorState.iter()) {
+    for (const a of actorRows(owner)) {
       await owner.reducers.testActorFixture({
         actorId: a.actorId,
         status: 'EXITING',
@@ -632,7 +714,7 @@ test.describe
     expect(row().priceCents).toBe(price);
     const accounting =
       owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents;
-    const target = [...owner.db.actorState.iter()].sort(
+    const target = actorRows(owner).sort(
       (a, b) => a.bucket - b.bucket || Number(a.actorId - b.actorId),
     )[0];
     const exitTick = owner.db.actorRecovery.actorId.find(
@@ -657,9 +739,7 @@ test.describe
         recovery: [...owner.db.actorRecovery.iter()].sort((a, b) =>
           Number(a.actorId - b.actorId),
         ),
-        actors: [...owner.db.actorState.iter()].sort((a, b) =>
-          Number(a.actorId - b.actorId),
-        ),
+        actors: actorRows(owner).sort((a, b) => Number(a.actorId - b.actorId)),
         accounting: owner.db.grantAccounting.id.find(0),
       });
     const before = snapshot();
@@ -678,9 +758,7 @@ test.describe
       owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents -
         accounting,
     ).toBe(dynamics.totalGrantsCents);
-    expect([...owner.db.actorState.iter()].every((a) => a.shares === 10n)).toBe(
-      true,
-    );
+    expect(actorRows(owner).every((a) => a.shares === 10n)).toBe(true);
     const revivalCount = dynamics.revivedActors;
     await owner.reducers.recoverSimulation({});
     // Accelerated manual ticks can put the original deadline grid in the future.
@@ -731,7 +809,7 @@ test.describe
   test('incorrect per-actor coverage aborts the tick; reset retains the order watermark', async () => {
     // Choose the next nonempty bucket while stopped.
     while (
-      ![...owner.db.actorState.iter()].some(
+      !actorRows(owner).some(
         (a) => a.bucket === Number(row().logicalTick % 20n),
       )
     ) {
@@ -739,7 +817,7 @@ test.describe
       await expect.poll(() => row().logicalTick).toBeGreaterThan(0n);
     }
     const tickBefore = row().logicalTick;
-    const actor = [...owner.db.actorState.iter()].find(
+    const actor = actorRows(owner).find(
       (a) => a.bucket === Number(tickBefore % 20n),
     )!;
     await owner.reducers.testCorruptCoverage({ actorId: actor.actorId });
@@ -772,12 +850,12 @@ test.describe
     await expect(
       owner.reducers.setCadenceProfile({ profile: '11hz' }),
     ).rejects.toThrow();
-    const initialActors = [...owner.db.actorState.iter()];
+    const initialActors = actorRows(owner);
     await owner.reducers.setCadenceProfile({ profile: '10hz' });
     await expect
       .poll(() => owner.db.cadenceState.id.find(0)!.profile)
       .toBe('10hz');
-    expect([...owner.db.actorState.iter()]).toEqual(initialActors);
+    expect(actorRows(owner)).toEqual(initialActors);
     expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
     await owner.reducers.startRun({
       profile: 'NORMAL',
@@ -813,7 +891,7 @@ test.describe
       .toBeGreaterThan(stopped.logicalTick);
     await pause();
     const tick = row().logicalTick;
-    const actors = [...owner.db.actorState.iter()];
+    const actors = actorRows(owner);
     const accounting = owner.db.grantAccounting.id.find(0)!;
     await alice.reducers.placeOrder({
       clientOrderId: 999n,
@@ -831,7 +909,7 @@ test.describe
     await owner.reducers.setCadenceProfile({ profile: '20hz' });
     await expect.poll(() => owner.db.runtimeConfig.id.find(0)!.runId).toBe(0n);
     expect(row().logicalTick).toBe(tick);
-    expect([...owner.db.actorState.iter()]).toEqual(actors);
+    expect(actorRows(owner)).toEqual(actors);
     expect(owner.db.grantAccounting.id.find(0)).toEqual(accounting);
     expect([...alice.db.myTrader.iter()][0]).toEqual(human);
     expect([...alice.db.myPendingOrder.iter()][0]).toEqual(pendingOrder);
@@ -903,7 +981,7 @@ test.describe
     await expect.poll(() => owner.db.runRecord.runId.find(firstId)).toBeNull();
     expect(owner.db.runCadence.runId.find(firstId)).toBeNull();
     expect(row().logicalTick).toBe(next.logicalTick);
-    expect([...owner.db.actorState.iter()]).toHaveLength(20);
+    expect(actorRows(owner)).toHaveLength(20);
   });
 
   test('timed 5 Hz runs arm atomically and stop on their server deadline', async () => {
@@ -946,7 +1024,7 @@ test.describe
     await expect.poll(readCache).toEqual(stopped);
     expect([...owner.db.timedRunStop.iter()]).toHaveLength(0);
     expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
-    expect([...owner.db.actorState.iter()]).toHaveLength(20);
+    expect(actorRows(owner)).toHaveLength(20);
     expect(owner.db.runRecord.runId.find(stop.runId)!.status).toBe('FAILED');
     const receipts = [...owner.db.detailedBenchmarkReceipts.iter()].filter(
       (r) => r.runId === stop.runId,
@@ -963,7 +1041,7 @@ test.describe
   test('bounded continuation keeps the world and cadence, closes only its old segment', async () => {
     const previous = owner.db.runtimeConfig.id.find(0)!.runId;
     const before = await readServer();
-    const actors = [...owner.db.actorState.iter()].sort((a, b) =>
+    const actors = actorRows(owner).sort((a, b) =>
       Number(a.actorId - b.actorId),
     );
     const oldRun = owner.db.runRecord.runId.find(previous)!;
@@ -1024,7 +1102,7 @@ test.describe
       a.convictionThresholdBps,
     ];
     expect(
-      [...owner.db.actorState.iter()]
+      actorRows(owner)
         .sort((a, b) => Number(a.actorId - b.actorId))
         .map(immutable),
     ).toEqual(actors.map(immutable));
@@ -1067,5 +1145,77 @@ test.describe
     expect(owner.db.runtimeConfig.id.find(0)!.runId).not.toBe(cancelled.runId);
     expect([...owner.db.timedRunStop.iter()]).toHaveLength(0);
     await pause();
+  });
+
+  test('storage migration rejects live changes; overflow promotion rolls back with a failed tick', async () => {
+    await owner.reducers.recoverSimulation({});
+    await expect
+      .poll(() => owner.db.runtimeConfig.id.find(0)!.enabled)
+      .toBe(true);
+    await expect(
+      owner.reducers.migrateActorStorageBatch({
+        startActorId: 1n,
+        count: 20n,
+        compact: false,
+      }),
+    ).rejects.toThrow();
+    await pause();
+    let beforeTick = row().logicalTick;
+    let due = actorRows(owner).find(
+      (a) => BigInt(a.bucket) === beforeTick % 20n,
+    );
+    // Hash buckets need not all be occupied in the 20-actor fixture world.
+    for (let i = 0; !due && i < 20; i++) {
+      await owner.reducers.benchmarkStep({});
+      await expect.poll(() => row().logicalTick).toBe(beforeTick + 1n);
+      beforeTick = row().logicalTick;
+      due = actorRows(owner).find((a) => BigInt(a.bucket) === beforeTick % 20n);
+    }
+    if (!due) throw new Error('No populated actor bucket');
+    await owner.reducers.testActorStorageFixture({
+      actorId: due.actorId,
+      mode: 'promote_on_step',
+    });
+    await owner.reducers.migrateActorStorageBatch({
+      startActorId: due.actorId,
+      count: 1n,
+      compact: true,
+    });
+    await expect
+      .poll(() => owner.db.actorStateCompact.actorId.find(due.actorId))
+      .toBeTruthy();
+    const before = actorRows(owner);
+    const receiptCount = [...owner.db.detailedBenchmarkReceipts.iter()].length;
+    await owner.reducers.testSetFault({ failAfterWrites: true });
+    await expect(owner.reducers.benchmarkStep({})).rejects.toThrow();
+    expect(row().logicalTick).toBe(beforeTick);
+    expect(actorRows(owner)).toEqual(before);
+    expect(owner.db.actorStateCompact.actorId.find(due.actorId)).toBeTruthy();
+    expect(owner.db.actorState.actorId.find(due.actorId)).toBeFalsy();
+    expect([...owner.db.detailedBenchmarkReceipts.iter()]).toHaveLength(
+      receiptCount,
+    );
+    await owner.reducers.testSetFault({ failAfterWrites: false });
+    await owner.reducers.benchmarkStep({});
+    await expect.poll(() => row().logicalTick).toBe(beforeTick + 1n);
+    expect(owner.db.actorStateCompact.actorId.find(due.actorId)).toBeFalsy();
+    const promoted = owner.db.actorState.actorId.find(due.actorId)!;
+    expect(promoted.markedEquityCents).toBeGreaterThan((1n << 32n) - 1n);
+    expect(promoted.lastStepTick).toEqual({ value: beforeTick, present: true });
+    await owner.reducers.migrateActorStorageBatch({
+      startActorId: due.actorId,
+      count: 1n,
+      compact: true,
+    });
+    expect(owner.db.actorState.actorId.find(due.actorId)).toEqual(promoted);
+    await pause();
+    // Reset must remove BOTH physical representations, using bounded batches.
+    await owner.reducers.resetMarket({ confirmation: 'RESET WORLD' });
+    while (owner.db.runtimeConfig.id.find(0)!.phase !== 'EMPTY') {
+      await owner.reducers.resetBatch({});
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    expect([...owner.db.actorState.iter()]).toHaveLength(0);
+    expect([...owner.db.actorStateCompact.iter()]).toHaveLength(0);
   });
 });

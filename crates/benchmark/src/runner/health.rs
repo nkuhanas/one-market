@@ -1,7 +1,6 @@
 //! Market behavior is reported separately from schedule-adherence validation.
 use crate::{bindings::*, client::Client};
 use serde::{Deserialize, Serialize};
-use spacetimedb_sdk::Table;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Sample {
@@ -83,10 +82,10 @@ fn history(samples: Vec<Sample>, floor: u64) -> Health {
     }
 }
 
-pub fn summarize(samples: Vec<Sample>, audit: &Client) -> Health {
+pub fn summarize(samples: Vec<Sample>, audit: &Client) -> crate::client::Result<Health> {
     let mut h = history(samples, one_market_core::config::config().min_price_cents);
     let mut exiting_shares = 0u128;
-    for a in audit.db.db.actor_state().iter() {
+    for a in crate::client::audit_actors(audit)? {
         match a.status {
             ActorStatus::Active => h.active_actors += 1,
             ActorStatus::Exiting => {
@@ -104,7 +103,7 @@ pub fn summarize(samples: Vec<Sample>, audit: &Client) -> Health {
         h.recapitalizations = g.recapitalization_count;
         h.recapitalization_cash_cents = g.recapitalization_cash_cents.to_string();
     }
-    h
+    Ok(h)
 }
 
 #[cfg(test)]
