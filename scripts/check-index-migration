@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+# Exercise an ordinary, non-destructive index migration on a fresh test world.
+# Never point this at a development or benchmark database.
+module="${MODULE_WASM:-artifacts/builds/capacity-delta/direct-index.wasm}"
+stamp="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+database="one-market-index-migration-${stamp,,}"
+output="artifacts/verification/index-migration-$stamp"
+compose up -d --wait db
+compose run --rm --no-deps -e MIGRATION_DATABASE="$database" \
+  -e MIGRATION_MODULE="$module" -e MIGRATION_OUTPUT="$output" tools bash -ec '
+  mkdir -p "$MIGRATION_OUTPUT"
+  cli() { spacetime --root-dir /state "$@"; }
+  publish() {
+    cli publish --server http://db:3000 --bin-path "$1" --no-config \
+      --delete-data=never --yes=remote,migrate,skip-login "$MIGRATION_DATABASE"
+  }
+  call() { cli call --server http://db:3000 --no-config "$MIGRATION_DATABASE" "$@"; }
+  snapshot() {
+    for table in actor_state bucket_manifest grant_accounting market_state runtime_config run_record tick_schedule detailed_benchmark_receipts; do
+      cli sql --server http://db:3000 --no-config --format json "$MIGRATION_DATABASE" \
+        "SELECT * FROM $table" > "$MIGRATION_OUTPUT/$1-$table.json"
+    done
+  }
+  publish artifacts/builds/fixed-row.wasm
+  call set_actor_population 200 20261003
+  call initialize_batch 200
+  call start_run "\"NORMAL\"" "\"$(sha256sum artifacts/builds/fixed-row.wasm | cut -d " " -f 1)\"" false
+  call pause_simulation
+  snapshot before
+  publish "$MIGRATION_MODULE"
+  snapshot after
+'
+compose run --rm --no-deps web node --input-type=module -e '
+  import assert from "node:assert/strict";
+  import fs from "node:fs";
+  const directory = process.argv[1];
+  const read = (phase, table) => JSON.parse(
+    fs.readFileSync(`${directory}/${phase}-${table}.json`, "utf8"),
+    (_key, value, context) => typeof value === "number" ? context.source : value,
+  ).flatMap(result => result.rows).map(row => JSON.stringify(row)).sort();
+  for (const table of ["actor_state", "bucket_manifest", "grant_accounting", "market_state", "runtime_config", "run_record", "tick_schedule", "detailed_benchmark_receipts"]) {
+    const before = read("before", table);
+    assert(JSON.stringify(read("after", table)) === JSON.stringify(before), `${table} changed during migration`);
+    if (table === "actor_state") assert.equal(before.length, 200);
+    if (table === "tick_schedule") assert.equal(before.length, 0);
+    console.log(`${table}: ${before.length} rows preserved exactly`);
+  }
+' "$output" | tee "$REPO_ROOT/$output/result.txt"
+printf 'Migration evidence: %s\n' "$output"

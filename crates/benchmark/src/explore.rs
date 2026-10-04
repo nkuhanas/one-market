@@ -71,7 +71,7 @@ pub fn measure(
         .collect();
     rows.sort_unstable_by_key(|r| r.logical_tick);
     let mut counts = [0u64; 20];
-    let mut digests = [[0; 32]; 20];
+    let mut digests = vec![vec![0; 32]; 20];
     for id in 1..=population {
         let b = bucket(id) as usize;
         counts[b] += 1;
@@ -171,7 +171,7 @@ mod tests {
 
     fn complete_receipts(population: u64) -> Vec<Receipt> {
         let mut counts = [0u64; 20];
-        let mut digests = [[0; 32]; 20];
+        let mut digests = vec![vec![0; 32]; 20];
         for id in 1..=population {
             let b = bucket(id) as usize;
             counts[b] += 1;
@@ -194,7 +194,7 @@ mod tests {
                     actor_steps: counts[b],
                     policy_evaluations: counts[b],
                     actor_rows_updated: counts[b],
-                    membership_digest: digests[b].to_vec(),
+                    membership_digest: digests[b].clone(),
                     previous_steps_valid: true,
                     orders_submitted: 2,
                     orders_filled: 2,

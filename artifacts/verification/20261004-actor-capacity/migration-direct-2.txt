@@ -1,0 +1,77 @@
+ Container one-market-db-1 Running 
+ Container one-market-db-1 Waiting 
+ Container one-market-db-1 Healthy 
+ Container one-market-tools-run-4278b71ce33e Creating 
+ Container one-market-tools-run-4278b71ce33e Created 
+(WASM) Skipping build. Instead we are publishing artifacts/builds/fixed-row.wasm
+You are about to publish to a non-local server: db
+Skipping confirmation due to --yes
+Uploading to http://db:3000 => http://db:3000
+Checking for breaking changes...
+Publishing module...
+Created new database with name: one-market-index-migration-20261004t023640z-250562, identity: c200764ab00ac48b5ce405764077661f7783aae4c89149679e8bd065e471d3b6
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+(WASM) Skipping build. Instead we are publishing artifacts/builds/capacity-delta/direct-index.wasm
+You are about to publish to a non-local server: db
+Skipping confirmation due to --yes
+Uploading to http://db:3000 => http://db:3000
+Checking for breaking changes...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0m[1m[34mDatabase Migration Plan[0m
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▸ [0m[1m[31mRemoved[0m index actor_state_actor_id_idx_btree on [actor_id] of table [0m[1m[36mactor_state[0m
+▸ [0m[1m[32mCreated[0m index actor_state_actor_id_idx_direct on [actor_id] of table [0m[1m[36mactor_state[0m
+
+Publishing module...
+Updated database with name: one-market-index-migration-20261004t023640z-250562, identity: c200764ab00ac48b5ce405764077661f7783aae4c89149679e8bd065e471d3b6
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+WARNING: This command is UNSTABLE and subject to breaking changes.
+
+ Container one-market-web-run-a3a529d410a2 Creating 
+ Container one-market-web-run-a3a529d410a2 Created 
+actor_state: 200 rows preserved exactly
+bucket_manifest: 20 rows preserved exactly
+grant_accounting: 1 rows preserved exactly
+market_state: 1 rows preserved exactly
+runtime_config: 1 rows preserved exactly
+run_record: 1 rows preserved exactly
+tick_schedule: 0 rows preserved exactly
+detailed_benchmark_receipts: 0 rows preserved exactly
+Migration evidence: artifacts/verification/index-migration-20261004T023640Z-250562

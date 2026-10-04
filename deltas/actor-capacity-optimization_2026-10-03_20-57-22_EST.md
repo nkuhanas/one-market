@@ -334,7 +334,8 @@ the user explicitly authorized the separate PR. Final acceptance is pending.
   `artifacts/exploration/20261004T021051Z-103017/`. Two uninstrumented NORMAL
   controls each at 325k, 337.5k, 350k, and 500k are complete. The first three
   populations passed these short probes; both 500k runs failed. These are not
-  new qualifications. Direct-index and digest experiments have not started.
+  new qualifications. Direct-index and digest experiments had not started at
+  that checkpoint; subsequent progress is recorded below.
 
 ### CI escalation: transport ordering, not merely cache delay
 
@@ -382,7 +383,15 @@ malformed frames close the connection instead of skipping a transaction.
 Browser and Node ordering/lifecycle regressions accompany the fix. There are
 no visual, runtime pause-semantic, workload, or SPEC changes.
 
-The direct-index candidate has also built successfully with unchanged generated
-bindings and all 24 pre-transport backend tests passing; independent performance
-measurement is still pending. The PR remains draft until the remaining
-experiments, qualification, and final CI checks have been reviewed.
+Both CI invocations at `8e52986` passed all 33 backend/transport and three browser
+tests, plus static/Rust/build/binding checks. The direct-index candidate has
+unchanged bindings and passed all 24 pre-transport backend tests. Its independent
+paired short probes passed at 325k/337.5k/350k and failed at 500k, with improved
+throughput but no higher qualification. A fresh-world non-destructive migration
+preserved all checked rows. Digest-only equivalence/static checks passed;
+independent and combined matrices are now complete. The direct index is retained;
+the production digest change is rejected as inconclusive (sub-1% paired failure
+throughput gain, mixed tails, unchanged passing boundary). Its source, module,
+raw measurements and test-only equivalence fixtures are retained. Longer 375k
+NORMAL/CHAOS probes are next. The worklog has hashes, results, commands and paths.
+The PR remains draft until final qualification and CI have been reviewed.

@@ -1,0 +1,290 @@
+time="2026-10-03T19:47:26-07:00" level=warning msg="Docker Compose requires buildx plugin to be installed"
+ Image one-market-web:24.21.0 Building 
+ Image one-market-spacetime:2.10.1 Building 
+ Image one-market-web:24.21.0 Building 
+ Image one-market-spacetime:2.10.1 Building 
+Sending build context to Docker daemon  524.4kBSending build context to Docker daemon  524.4kBSending build context to Docker daemon  1.573MBSending build context to Docker daemon  1.573MBSending build context to Docker daemon  2.622MBSending build context to Docker daemon  2.622MBSending build context to Docker daemon  3.671MBSending build context to Docker daemon  3.671MBSending build context to Docker daemon   4.72MBSending build context to Docker daemon   4.72MBSending build context to Docker daemon  5.768MBSending build context to Docker daemon  5.768MBSending build context to Docker daemon  6.817MBSending build context to Docker daemon  6.817MBSending build context to Docker daemon   8.39MBSending build context to Docker daemon   8.39MBSending build context to Docker daemon  9.439MBSending build context to Docker daemon  9.439MBSending build context to Docker daemon  10.49MBSending build context to Docker daemon  10.49MBSending build context to Docker daemon  11.54MBSending build context to Docker daemon  11.54MBSending build context to Docker daemon  12.59MBSending build context to Docker daemon  12.59MBSending build context to Docker daemon   13.6MB
+Sending build context to Docker daemon   13.6MB
+Step 1/4 : FROM node:24.21.0-bookworm-slim
+Step 1/5 : FROM clockworklabs/spacetime:v2.10.1@sha256:5231fa24bc8eaa28b2a3c6a4725f1d31e6a868e2e9b311c8efa1ddc314466014
+ ---> 0e0ff40c39bc
+Step 2/4 : RUN mkdir -p /workspace/node_modules /workspace/apps/web/node_modules       /workspace/packages/bindings/node_modules     && chmod 1777 /workspace/node_modules /workspace/apps/web/node_modules       /workspace/packages/bindings/node_modules
+ ---> 5231fa24bc8e
+Step 2/5 : USER root
+ ---> Using cache
+ ---> d9ad682fd84d
+Step 3/4 : WORKDIR /workspace
+ ---> Using cache
+ ---> c29c9d212932
+Step 3/5 : RUN rustup toolchain install 1.93.0 --profile minimal       --component rustfmt --component clippy --target wasm32-unknown-unknown     && mkdir -p /data /state /cache/cargo /workspace/target     && chmod 1777 /data /state /cache/cargo /workspace/target
+ ---> Using cache
+ ---> 6c688f7e5c34
+Step 4/4 : LABEL com.docker.compose.image.builder=classic
+ ---> Using cache
+ ---> cabbc6ff0208
+Step 4/5 : WORKDIR /workspace
+ ---> Using cache
+ ---> 482e767f85db
+ ---> Using cache
+ ---> e210b0cbc8b9
+Step 5/5 : LABEL com.docker.compose.image.builder=classic
+Successfully built 482e767f85db
+ ---> Using cache
+ ---> 7486060c3734
+Successfully tagged one-market-web:24.21.0
+ Image one-market-web:24.21.0 Built 
+ Image one-market-web:24.21.0 Built 
+Successfully built 7486060c3734
+Successfully tagged one-market-spacetime:2.10.1
+ Image one-market-spacetime:2.10.1 Built 
+ Image one-market-spacetime:2.10.1 Built 
+ Container one-market-web-run-0f2019025870 Creating 
+ Container one-market-web-run-0f2019025870 Created 
+
+added 133 packages in 2s
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+ Container one-market-web-run-9efcdd3c0790 Creating 
+ Container one-market-web-run-9efcdd3c0790 Created 
+
+> one-market@0.1.0 format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+ Container one-market-web-run-634f260cdc20 Creating 
+ Container one-market-web-run-634f260cdc20 Created 
+
+> one-market@0.1.0 lint
+> eslint .
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+ Container one-market-web-run-e35b92dfda17 Creating 
+ Container one-market-web-run-e35b92dfda17 Created 
+
+> one-market@0.1.0 typecheck
+> npm run typecheck --workspaces --if-present
+
+
+> @one-market/web@0.1.0 typecheck
+> tsc --noEmit
+
+
+> @one-market/transport@0.1.0 typecheck
+> tsc --noEmit
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+ Container one-market-web-run-89773784541e Creating 
+ Container one-market-web-run-89773784541e Created 
+
+> one-market@0.1.0 build
+> npm run build --workspace @one-market/web
+
+
+> @one-market/web@0.1.0 build
+> tsc --noEmit && vite build
+
+vite v8.3.2 building client environment for production...
+transforming...
+✓ 58 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.44 kB │ gzip:   0.28 kB
+dist/assets/index-BTc0q7AA.css    8.34 kB │ gzip:   2.44 kB
+dist/assets/index-MtnsqTIw.js   343.40 kB │ gzip: 101.21 kB
+
+✓ built in 85ms
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+ Container one-market-tools-run-037430db0c7b Creating 
+ Container one-market-tools-run-037430db0c7b Created 
+ Container one-market-tools-run-e901e26eccb7 Creating 
+ Container one-market-tools-run-e901e26eccb7 Created 
+   Compiling one-market-core v0.1.0 (/workspace/crates/market-core)
+   Compiling one-market-benchmark v0.1.0 (/workspace/crates/benchmark)
+   Compiling one-market-spacetime v0.1.0 (/workspace/crates/spacetime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.31s
+     Running unittests src/main.rs (target/debug/deps/one_market_benchmark-8d3d87200c582c79)
+
+running 3 tests
+test runner::archive_tests::qualification_archive_matches_raw_evidence ... ignored, requires CAPACITY_ARTIFACT_DIR and a completed six-run qualification archive
+test explore::tests::rejects_unbounded_windows_and_never_qualifies_missing_evidence ... ok
+test explore::tests::exploration_keeps_coverage_timing_and_load_gates_and_wall_time_rates ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/one_market_core-475ab966577368a9)
+
+running 9 tests
+test auction::tests::priority_partial_and_no_counterparty ... ok
+test auction::tests::rejects_overflow_and_invalid_orders ... ok
+test auction::tests::ties_are_seeded_deterministic_and_input_order_independent ... ok
+test digest_tests::fixed_digest_matches_original_empty_multi_and_boundary_chains ... ok
+test policy::tests::settlement_checks_balances_and_grant_adjustment ... ok
+test schedule::tests::keeps_original_deadline_and_exposes_gaps ... ok
+test evidence::tests::missing_duplicate_and_reduced_workload_never_qualify ... ok
+test auction::tests::differential_and_conservation ... ok
+test digest_tests::fixed_digest_matches_all_representative_buckets ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
+
+     Running unittests src/lib.rs (target/debug/deps/one_market_spacetime-65c04d0b4a4b8c44)
+
+running 3 tests
+test lifecycle::tests::drawdown_exits_require_buyers_then_cooldown_and_grant ... ok
+test lifecycle::tests::no_shares_exit_and_zero_grant_are_well_defined ... ok
+test lifecycle::tests::private_actor_encoding_is_fixed_width_and_lossless ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests one_market_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+ Container one-market-tools-run-0e47c01f40ca Creating 
+ Container one-market-tools-run-0e47c01f40ca Created 
+    Checking one-market-core v0.1.0 (/workspace/crates/market-core)
+    Checking one-market-spacetime v0.1.0 (/workspace/crates/spacetime)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.15s
+ Container one-market-tools-run-50ba17500086 Creating 
+ Container one-market-tools-run-50ba17500086 Created 
+    Checking one-market-core v0.1.0 (/workspace/crates/market-core)
+    Checking one-market-benchmark v0.1.0 (/workspace/crates/benchmark)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.91s
+ Container one-market-tools-run-7fd892c89ff8 Creating 
+ Container one-market-tools-run-7fd892c89ff8 Created 
+   Compiling one-market-core v0.1.0 (/workspace/crates/market-core)
+   Compiling one-market-spacetime v0.1.0 (/workspace/crates/spacetime)
+    Finished `release` profile [optimized] target(s) in 3.64s
+Optimising module with wasm-opt...
+Build finished successfully.
+ Container one-market-tools-run-561b55203480 Creating 
+ Container one-market-tools-run-561b55203480 Created 
+Generating TypeScript module bindings for module spacetimedb
+Skipping build. Instead we are inspecting target/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+Skipping private tables during codegen: actor_state, admin_allowlist, benchmark_reader, bucket_manifest, connection_state, detailed_benchmark_receipts, grant_accounting, human_order_receipt, human_trader, order_watermark, pending_human_order, run_record, runtime_config, tick_schedule, validated_run.
+Writing file /tmp/bindings/actor_sample_table.ts
+Writing file /tmp/bindings/benchmark_result_table.ts
+Writing file /tmp/bindings/market_state_table.ts
+Writing file /tmp/bindings/news_event_table.ts
+Writing file /tmp/bindings/price_point_table.ts
+Writing file /tmp/bindings/public_activity_table.ts
+Writing file /tmp/bindings/benchmark_latest_receipt_table.ts
+Writing file /tmp/bindings/benchmark_runs_table.ts
+Writing file /tmp/bindings/my_pending_order_table.ts
+Writing file /tmp/bindings/my_recent_fills_table.ts
+Writing file /tmp/bindings/my_trader_table.ts
+Writing file /tmp/bindings/authorize_reader_reducer.ts
+Writing file /tmp/bindings/benchmark_step_reducer.ts
+Writing file /tmp/bindings/enter_market_reducer.ts
+Writing file /tmp/bindings/initialize_batch_reducer.ts
+Writing file /tmp/bindings/pause_simulation_reducer.ts
+Writing file /tmp/bindings/ping_reducer.ts
+Writing file /tmp/bindings/place_order_reducer.ts
+Writing file /tmp/bindings/publish_benchmark_result_reducer.ts
+Writing file /tmp/bindings/recover_simulation_reducer.ts
+Writing file /tmp/bindings/reset_batch_reducer.ts
+Writing file /tmp/bindings/reset_market_reducer.ts
+Writing file /tmp/bindings/set_actor_population_reducer.ts
+Writing file /tmp/bindings/start_run_reducer.ts
+Writing file /tmp/bindings/trigger_chaos_reducer.ts
+Writing file /tmp/bindings/validate_run_reducer.ts
+Writing file /tmp/bindings/index.ts
+Creating directory /tmp/bindings/types
+Writing file /tmp/bindings/types/reducers.ts
+Creating directory /tmp/bindings/types
+Writing file /tmp/bindings/types/procedures.ts
+Writing file /tmp/bindings/types.ts
+Generate finished successfully.
+Generating Rust module bindings for module spacetimedb
+Skipping build. Instead we are inspecting target/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+Writing file /tmp/rust-bindings/actor_sample_table.rs
+Writing file /tmp/rust-bindings/actor_state_table.rs
+Writing file /tmp/rust-bindings/admin_allowlist_table.rs
+Writing file /tmp/rust-bindings/benchmark_reader_table.rs
+Writing file /tmp/rust-bindings/benchmark_result_table.rs
+Writing file /tmp/rust-bindings/bucket_manifest_table.rs
+Writing file /tmp/rust-bindings/connection_state_table.rs
+Writing file /tmp/rust-bindings/detailed_benchmark_receipts_table.rs
+Writing file /tmp/rust-bindings/grant_accounting_table.rs
+Writing file /tmp/rust-bindings/human_order_receipt_table.rs
+Writing file /tmp/rust-bindings/human_trader_table.rs
+Writing file /tmp/rust-bindings/market_state_table.rs
+Writing file /tmp/rust-bindings/news_event_table.rs
+Writing file /tmp/rust-bindings/order_watermark_table.rs
+Writing file /tmp/rust-bindings/pending_human_order_table.rs
+Writing file /tmp/rust-bindings/price_point_table.rs
+Writing file /tmp/rust-bindings/public_activity_table.rs
+Writing file /tmp/rust-bindings/run_record_table.rs
+Writing file /tmp/rust-bindings/runtime_config_table.rs
+Writing file /tmp/rust-bindings/tick_schedule_table.rs
+Writing file /tmp/rust-bindings/validated_run_table.rs
+Writing file /tmp/rust-bindings/benchmark_latest_receipt_table.rs
+Writing file /tmp/rust-bindings/benchmark_runs_table.rs
+Writing file /tmp/rust-bindings/my_pending_order_table.rs
+Writing file /tmp/rust-bindings/my_recent_fills_table.rs
+Writing file /tmp/rust-bindings/my_trader_table.rs
+Writing file /tmp/rust-bindings/connection_state_type.rs
+Writing file /tmp/rust-bindings/price_point_type.rs
+Writing file /tmp/rust-bindings/human_trader_type.rs
+Writing file /tmp/rust-bindings/bucket_manifest_type.rs
+Writing file /tmp/rust-bindings/human_order_receipt_type.rs
+Writing file /tmp/rust-bindings/tick_receipt_type.rs
+Writing file /tmp/rust-bindings/public_activity_type.rs
+Writing file /tmp/rust-bindings/actor_state_type.rs
+Writing file /tmp/rust-bindings/actor_status_type.rs
+Writing file /tmp/rust-bindings/market_state_type.rs
+Writing file /tmp/rust-bindings/news_event_type.rs
+Writing file /tmp/rust-bindings/admin_allowlist_type.rs
+Writing file /tmp/rust-bindings/pending_human_order_type.rs
+Writing file /tmp/rust-bindings/benchmark_reader_type.rs
+Writing file /tmp/rust-bindings/optional_tick_type.rs
+Writing file /tmp/rust-bindings/order_watermark_type.rs
+Writing file /tmp/rust-bindings/actor_sample_type.rs
+Writing file /tmp/rust-bindings/validated_run_type.rs
+Writing file /tmp/rust-bindings/grant_accounting_type.rs
+Writing file /tmp/rust-bindings/benchmark_result_type.rs
+Writing file /tmp/rust-bindings/runtime_config_type.rs
+Writing file /tmp/rust-bindings/tick_schedule_type.rs
+Writing file /tmp/rust-bindings/run_record_type.rs
+Writing file /tmp/rust-bindings/authorize_reader_reducer.rs
+Writing file /tmp/rust-bindings/benchmark_step_reducer.rs
+Writing file /tmp/rust-bindings/connected_reducer.rs
+Writing file /tmp/rust-bindings/disconnected_reducer.rs
+Writing file /tmp/rust-bindings/enter_market_reducer.rs
+Writing file /tmp/rust-bindings/initialize_batch_reducer.rs
+Writing file /tmp/rust-bindings/pause_simulation_reducer.rs
+Writing file /tmp/rust-bindings/ping_reducer.rs
+Writing file /tmp/rust-bindings/place_order_reducer.rs
+Writing file /tmp/rust-bindings/publish_benchmark_result_reducer.rs
+Writing file /tmp/rust-bindings/recover_simulation_reducer.rs
+Writing file /tmp/rust-bindings/reset_batch_reducer.rs
+Writing file /tmp/rust-bindings/reset_market_reducer.rs
+Writing file /tmp/rust-bindings/set_actor_population_reducer.rs
+Writing file /tmp/rust-bindings/simulation_tick_reducer.rs
+Writing file /tmp/rust-bindings/start_run_reducer.rs
+Writing file /tmp/rust-bindings/trigger_chaos_reducer.rs
+Writing file /tmp/rust-bindings/validate_run_reducer.rs
+Writing file /tmp/rust-bindings/mod.rs
+Generate finished successfully.
