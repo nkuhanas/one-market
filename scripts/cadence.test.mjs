@@ -60,6 +60,10 @@ test('cadence labels are server-derived and absent metadata stays pending', () =
   assert.equal(cadenceLabel(), 'Cadence pending');
   assert.equal(cadenceLabel(ten), '10 Hz target');
   assert.equal(
+    cadenceLabel({ ...ten, profile: '4hz', tickIntervalUs: 250000n }),
+    '4 Hz target',
+  );
+  assert.equal(
     cadenceLabel({ ...ten, profile: '20hz', tickIntervalUs: 50000n }),
     '20 Hz target',
   );

@@ -61,7 +61,7 @@ pub fn set_cadence_profile(ctx: &ReducerContext, profile: String) -> Result<()> 
         return Err("cadence selection requires an empty or ready world".into());
     }
     if market(ctx)?.configuration_hash != configuration_hash() {
-        return Err("explicitly recover the changed workload before selecting cadence".into());
+        return Err("explicitly adopt the changed workload before selecting cadence".into());
     }
     ensure(ctx);
     if selected(ctx, &c)? == cadence {

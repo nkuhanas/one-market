@@ -363,15 +363,21 @@ fn no_buyers_escape_after_distress_without_inventory_deletion_or_fake_fills() {
         assert_eq!(w.grants, 0);
     }
     assert_eq!(w.dynamics.mode, "RECOVERY");
+    let mut escaped = vec![false; w.actors.len()];
     for tick in 600..1020 {
         w.step(tick, 0);
+        for (seen, actor) in escaped.iter_mut().zip(&w.actors) {
+            *seen |= actor.status != ActorStatus::Exiting;
+        }
     }
     w.audit();
-    assert_eq!(w.dynamics.revived_actors, 200);
-    assert!(w
-        .recovery
-        .iter()
-        .all(|r| r.as_ref().unwrap().last_episode == 1));
+    assert!(escaped.iter().all(|seen| *seen));
+    assert!(w.dynamics.revived_actors > 0);
+    // With only 25 shares, revived buyers can fully liquidate other actors
+    // before their cohort is due. Both routes legitimately escape EXITING.
+    for (a, record) in w.actors.iter().zip(&w.recovery) {
+        assert!(record.as_ref().unwrap().last_episode == 1 || a.filled_order_count > 0);
+    }
     assert!(w.active() > 0);
     // Eligibility and explicit grants are guaranteed, not a synthetic price rise.
     for tick in 1020..12_000 {
@@ -386,8 +392,8 @@ fn no_buyers_escape_after_distress_without_inventory_deletion_or_fake_fills() {
 fn revival_grants_are_capped_and_do_not_count_as_lifetime_profit() {
     let mut w = World::new(42, 2);
     w.c.revival_actor_cap_cents = 100;
-    w.c.revival_episode_budget_bps = 1; // 2,000 cents for this world
-    w.c.revival_total_budget_bps = 1;
+    w.c.revival_episode_budget_bps = 20; // 2,000 cents for this world
+    w.c.revival_total_budget_bps = 20;
     w.dynamics.mode = "RECOVERY".into();
     w.dynamics.episode = 1;
     let a = &mut w.actors[0];
@@ -411,7 +417,7 @@ fn revival_grants_are_capped_and_do_not_count_as_lifetime_profit() {
     assert_eq!(a.shares, shares);
     assert_eq!(a.cash_cents, w.c.actor_cash_cents + 100);
     lifecycle::finish(a, 800, 1).unwrap();
-    assert_eq!(a.lifetime_pnl_cents, -4_999_500);
+    assert_eq!(a.lifetime_pnl_cents, -249_975);
     a.status = ActorStatus::Exiting;
     assert_eq!(
         revival::try_revive(a, &mut record, &mut w.dynamics, 0, 1200, 1, 2, &w.c).unwrap(),
@@ -428,7 +434,7 @@ fn revival_grants_are_capped_and_do_not_count_as_lifetime_profit() {
     assert_eq!(w.dynamics.constrained_grants, 2);
     let b = &mut w.actors[1];
     b.status = ActorStatus::Exiting;
-    w.c.revival_actor_cap_cents = w.c.bankroll_cents;
+    w.c.revival_actor_cap_cents = w.c.actor_bankroll_cents;
     let mut other = ActorRecovery {
         actor_id: b.actor_id,
         exit_started_tick: 0,
@@ -457,20 +463,55 @@ fn no_cash_revival_distinguishes_available_funding_from_exhausted_budgets() {
             a.status = ActorStatus::Exiting;
             a.cash_cents = 0;
         }
+        let mut escaped = vec![false; w.actors.len()];
         for tick in 0..2000 {
             w.step(tick, 0);
+            for (seen, actor) in escaped.iter_mut().zip(&w.actors) {
+                *seen |= actor.status != ActorStatus::Exiting;
+            }
         }
         w.audit();
-        assert_eq!(w.dynamics.revived_actors, 200);
+        assert!(escaped.iter().all(|seen| *seen));
+        assert!(w.dynamics.revived_actors > 0);
         if funded {
             assert!(w.grants > 0 && w.volume > 0);
         } else {
+            assert_eq!(w.dynamics.revived_actors, 200);
             assert_eq!(w.grants, 0);
             assert_eq!(w.volume, 0);
             assert_eq!(w.price, 1);
             assert_eq!(w.active(), 200);
         }
     }
+}
+
+#[test]
+fn retained_inventory_revival_tops_up_total_equity_not_cash() {
+    let mut w = World::new(42, 20);
+    w.dynamics.mode = "RECOVERY".into();
+    w.dynamics.episode = 1;
+    let a = &mut w.actors[0];
+    a.cash_cents = 100_000;
+    a.shares = 10;
+    a.status = ActorStatus::Exiting;
+    let mut record = ActorRecovery {
+        actor_id: a.actor_id,
+        exit_started_tick: 0,
+        last_episode: 0,
+        grants_cents: 0,
+    };
+    assert_eq!(
+        revival::try_revive(a, &mut record, &mut w.dynamics, 0, 800, 10_000, 20, &w.c).unwrap(),
+        Some(300_000)
+    );
+    lifecycle::finish(a, 800, 10_000).unwrap();
+    assert_eq!(a.cash_cents, 400_000);
+    assert_eq!(a.shares, 10);
+    assert_eq!(a.marked_equity_cents, 500_000);
+    assert_eq!(a.life_peak_equity_cents, 500_000);
+    assert_eq!(a.lifetime_pnl_cents, -300_000);
+    assert_eq!(record.grants_cents, 300_000);
+    assert_eq!(w.dynamics.total_grants_cents, 300_000);
 }
 
 #[test]

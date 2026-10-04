@@ -155,6 +155,62 @@ pub(crate) fn pause(ctx: &ReducerContext, reason: &str) -> Result<()> {
 }
 
 #[reducer]
+pub fn adopt_workload_paused(
+    ctx: &ReducerContext,
+    expected_configuration_hash: String,
+) -> Result<()> {
+    admin(ctx)?;
+    let mut r = runtime(ctx)?;
+    if r.phase != "READY"
+        || r.enabled
+        || ctx.db.tick_schedule().count() != 0
+        || ctx.db.timed_run_stop().count() != 0
+    {
+        return Err("workload adoption requires a ready, paused world with no schedules".into());
+    }
+    let hash = configuration_hash();
+    if expected_configuration_hash != hash {
+        return Err("unexpected compiled configuration hash".into());
+    }
+    let mut m = market(ctx)?;
+    if m.configuration_hash == hash {
+        return Ok(());
+    }
+    // Close, never rewrite, historical evidence. Unlike recovery this cannot
+    // enqueue work or advance a tick, even transiently during deployment.
+    if let Some(mut run) = ctx.db.run_record().run_id().find(r.run_id) {
+        if run.completed_at.is_none() {
+            run.status = "FAILED".into();
+            if !run.failure_reason.is_empty() {
+                run.failure_reason.push_str("; ");
+            }
+            run.failure_reason.push_str(&format!(
+                "authorized paused workload adoption: {hash}; segment closed"
+            ));
+            run.completed_at = Some(ctx.timestamp);
+            ctx.db.run_record().run_id().update(run);
+        }
+    }
+    revival::ensure(ctx, m.price_cents);
+    timing::ensure(ctx);
+    let mut cadence = ctx
+        .db
+        .cadence_state()
+        .id()
+        .find(0)
+        .ok_or("cadence missing")?;
+    cadence.requires_explicit_start |= r.run_id != 0 || m.logical_tick != 0;
+    ctx.db.cadence_state().id().update(cadence);
+    r.run_id = 0;
+    r.next_slot = 0;
+    r.generation = add(r.generation, 1)?;
+    m.configuration_hash = hash;
+    ctx.db.runtime_config().id().update(r);
+    ctx.db.market_state().id().update(m);
+    Ok(())
+}
+
+#[reducer]
 pub fn recover_simulation(ctx: &ReducerContext) -> Result<()> {
     admin(ctx)?;
     let mut r = runtime(ctx)?;
@@ -282,13 +338,20 @@ fn shock(ctx: &ReducerContext, r: &mut RuntimeConfig, tick: u64) -> Result<()> {
 
 #[reducer]
 pub fn trigger_chaos(ctx: &ReducerContext) -> Result<()> {
-    admin(ctx)?;
     let mut r = runtime(ctx)?;
     if r.phase != "READY" {
         return Err("world is not ready".into());
     }
+    let mut m = market(ctx)?;
+    // Public demo control. Serialized, idempotent activation prevents multiple
+    // identities from extending a shock or flooding retained news while paused.
+    if m.logical_tick < r.chaos_end {
+        return Ok(());
+    }
     fail_run(ctx, r.run_id, "manual shock changed workload")?;
-    shock(ctx, &mut r, market(ctx)?.logical_tick)?;
+    shock(ctx, &mut r, m.logical_tick)?;
+    m.chaos_active = true;
+    ctx.db.market_state().id().update(m);
     ctx.db.runtime_config().id().update(r);
     Ok(())
 }
@@ -604,7 +667,7 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         h.reserved_shares = 0;
         h.pnl_cents = policy::pnl(
             equity(h.cash_cents, h.shares, clearing.price)?,
-            c.bankroll_cents,
+            c.human_bankroll_cents,
             0,
         )?;
         h.completed_orders = add(h.completed_orders, 1)?;

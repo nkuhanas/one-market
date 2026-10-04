@@ -19,7 +19,7 @@ pub fn enter_market(ctx: &ReducerContext) -> Result<()> {
     let c = config();
     ctx.db.human_trader().insert(HumanTrader {
         identity: ctx.sender(),
-        cash_cents: c.bankroll_cents,
+        cash_cents: c.human_bankroll_cents,
         shares: 0,
         reserved_cash_cents: 0,
         reserved_shares: 0,
@@ -39,7 +39,7 @@ pub fn enter_market(ctx: &ReducerContext) -> Result<()> {
         .ok_or("accounting missing")?;
     g.human_entry_cash_cents = g
         .human_entry_cash_cents
-        .checked_add(c.bankroll_cents.into())
+        .checked_add(c.human_bankroll_cents.into())
         .ok_or("grant overflow")?;
     g.human_entry_count = add(g.human_entry_count, 1)?;
     ctx.db.grant_accounting().id().update(g);

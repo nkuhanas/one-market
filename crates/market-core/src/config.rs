@@ -13,7 +13,8 @@ pub struct Config {
     pub initial_price_cents: u64,
     pub actor_cash_cents: u64,
     pub actor_shares: u64,
-    pub bankroll_cents: u64,
+    pub actor_bankroll_cents: u64,
+    pub human_bankroll_cents: u64,
     pub seed: u64,
     pub setup_batch_max: u64,
     pub population_max: u64,
@@ -148,16 +149,32 @@ mod tests {
     use super::*;
 
     #[test]
+    fn actor_endowment_is_five_thousand_total_and_humans_are_unchanged() {
+        let c = config();
+        assert_eq!(c.initial_price_cents, 10_000);
+        assert_eq!(c.actor_cash_cents, 250_000);
+        assert_eq!(c.actor_shares, 25);
+        assert_eq!(c.actor_bankroll_cents, 500_000);
+        assert_eq!(c.actor_shares * c.initial_price_cents, c.actor_cash_cents);
+        assert_eq!(
+            c.actor_cash_cents + c.actor_shares * c.initial_price_cents,
+            c.actor_bankroll_cents
+        );
+        assert_eq!(c.human_bankroll_cents, 10_000_000);
+        assert_eq!(c.revival_actor_cap_cents, c.actor_bankroll_cents);
+    }
+
+    #[test]
     fn cadence_registry_and_hashes_are_explicit() {
         let c = config();
         assert_eq!(c.default_cadence().id, "20hz");
         assert_eq!(c.buckets, 20);
         let mut hashes = std::collections::HashSet::new();
-        // 5 Hz is prepared and arithmetic-tested, not used to run a simulation.
         for (id, hz, epoch_us) in [
             ("20hz", 20, 1_000_000),
             ("10hz", 10, 2_000_000),
             ("5hz", 5, 4_000_000),
+            ("4hz", 4, 5_000_000),
         ] {
             let cadence = c.cadence(id).unwrap();
             assert_eq!(cadence.ticks_for_seconds(1).unwrap(), hz);
@@ -183,7 +200,7 @@ mod tests {
         assert!(c.revival_healthy_active_bps <= 10_000);
         assert!(c.revival_floor_cents >= c.min_price_cents);
         assert!(c.revival_episode_budget_bps <= c.revival_total_budget_bps);
-        assert!(c.revival_actor_cap_cents <= c.bankroll_cents);
+        assert!(c.revival_actor_cap_cents <= c.actor_bankroll_cents);
     }
 
     #[test]

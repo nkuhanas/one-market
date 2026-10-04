@@ -12,6 +12,19 @@ qualified workload hash. The compiled module and Rust harness share the pure
 
 ## Frozen baseline rules
 
+- `one-market-v02-actor-endowment-5k-1` separates actor/human bankrolls. Actors
+  start with $2,500 cash and 25 shares at $100 ($5,000 total). Fully liquidated
+  cooldowns top up cash to $5,000; inventory-retaining revival targets $5,000
+  equity, with a $5,000 lifetime revival cap and unchanged relative budgets.
+  Humans retain $100,000 cash and their existing grant-adjusted P&L rules.
+  Adopt these initialization semantics only in a fresh or explicitly reset
+  world; do not migrate old actors or reinterpret historical qualifications.
+- `one-market-v02-public-chaos-4hz-1` adds 4 Hz (250,000 µs) to the existing
+  registry without changing the default, bucket count or actor economics.
+  Public `trigger_chaos` accepts any connected identity in a READY world;
+  repeated clicks during the 1,200-tick shock are idempotent, not extensions.
+  It publishes the active flag immediately but never starts ticks. A new manual
+  shock still invalidates current qualification. All other admin guards remain.
 - `one-market-v02-cadence-profiles-1` keeps the dynamics/revival economic rules
   and adds a versioned 20hz/10hz/5hz registry. 20hz is the default; scheduler and
   benchmark timings derive from the selected interval. All retain 20 buckets,
@@ -147,6 +160,13 @@ does not guarantee cash, fills, or departure from the penny floor; the native
 no-cash/exhausted-budget fixture deliberately retains that counterexample.
 
 ## Workload upgrades
+
+Owner-only `adopt_workload_paused(expected_configuration_hash)` verifies the
+compiled hash and READY/paused state with no tick/stop schedules. It adopts new
+rules without starting ticks, closes the current segment without rewriting its
+hashes/receipts or earlier failure reason, and requires an explicit non-qualifying
+start for an existing world. Same-hash adoption is a no-op. This is the route
+for deployments that must remain paused; do not briefly recover then pause.
 
 An ordinary non-destructive publish does not rewrite actor rows or erase old
 evidence. Before a tick writes actors, compare the world's configuration hash

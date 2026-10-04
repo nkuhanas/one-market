@@ -88,6 +88,7 @@ test.describe
       'SELECT * FROM cadence_state',
       'SELECT * FROM run_cadence',
       'SELECT * FROM timed_run_stop',
+      'SELECT * FROM news_event',
     ]);
     for (const client of [alice, bob]) {
       await subscribe(client, [
@@ -115,7 +116,9 @@ test.describe
     await expect(
       alice.reducers.resetMarket({ confirmation: 'RESET WORLD' }),
     ).rejects.toThrow();
-    await expect(alice.reducers.triggerChaos({})).rejects.toThrow();
+    await expect(alice.reducers.triggerChaos({})).rejects.toThrow(
+      'world is not ready',
+    );
     await expect(alice.reducers.benchmarkStep({})).rejects.toThrow();
     await expect(
       alice.reducers.setCadenceProfile({ profile: '10hz' }),
@@ -150,9 +153,25 @@ test.describe
     await owner.reducers.initializeBatch({ count: 27n });
     await expect.poll(() => row().phase).toBe('READY');
     expect(actorRows(owner)).toHaveLength(40);
-    expect(owner.db.grantAccounting.id.find(0)!.initialShareSupply).toBe(
-      20000n,
+    expect(owner.db.grantAccounting.id.find(0)!.initialShareSupply).toBe(1000n);
+    expect(owner.db.grantAccounting.id.find(0)!.actorInitialCashCents).toBe(
+      10000000n,
     );
+    expect(owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents).toBe(
+      0n,
+    );
+    for (const actor of actorRows(owner)) {
+      expect(actor.cashCents).toBe(250000n);
+      expect(actor.shares).toBe(25n);
+      expect(actor.markedEquityCents).toBe(500000n);
+      expect(actor.initialEndowmentValueCents).toBe(500000n);
+      expect(actor.lifePeakEquityCents).toBe(500000n);
+      expect(actor.cumulativeRecapitalizationGrantsCents).toBe(0n);
+      expect(actor.lifetimePnlCents).toBe(0n);
+      expect(actor.wipeoutCount).toBe(0n);
+      expect(actor.lastStepTick.present).toBe(false);
+      expect(actor.status.tag).toBe('Active');
+    }
   });
 
   test('actor storage migration is authorized, bounded, reversible, and atomic', async () => {
@@ -259,6 +278,18 @@ test.describe
     );
     expect([...alice.db.benchmarkLatestReceipt.iter()]).toHaveLength(0);
     await expect.poll(() => row().registeredHumanTraderCount).toBe(2n);
+    for (const client of [alice, bob]) {
+      const trader = [...client.db.myTrader.iter()][0];
+      expect(trader.cashCents).toBe(10000000n);
+      expect(trader.shares).toBe(0n);
+      expect(trader.pnlCents).toBe(0n);
+    }
+    await expect
+      .poll(() => owner.db.grantAccounting.id.find(0)!.humanEntryCount)
+      .toBe(2n);
+    expect(owner.db.grantAccounting.id.find(0)!.humanEntryCashCents).toBe(
+      20000000n,
+    );
     for (const table of [
       'human_trader',
       'pending_human_order',
@@ -571,12 +602,12 @@ test.describe
       await expect.poll(() => row().logicalTick).toBe(before + 1n);
     }
     expect(actorRow(owner, due[2].actorId)!.status.tag).toBe('Active');
-    expect(actorRow(owner, due[2].actorId)!.cashCents).toBe(10000000n);
+    expect(actorRow(owner, due[2].actorId)!.cashCents).toBe(500000n);
     expect(actorRow(owner, due[2].actorId)!.shares).toBe(0n);
     expect(
       owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents -
         grantsBefore,
-    ).toBe(BigInt(due.length - 2) * 10000000n);
+    ).toBe(BigInt(due.length - 2) * 500000n);
   });
 
   test('liquidation is quantity-bounded and rejects a below-reserve buyer', async () => {
@@ -753,7 +784,7 @@ test.describe
     expect(row().activeActorCount).toBe(40n);
     expect(row().priceCents).toBe(price); // no fabricated price rebound or trades
     const dynamics = owner.db.marketDynamics.id.find(0)!;
-    expect(dynamics.totalGrantsCents).toBeLessThanOrEqual(100000000n);
+    expect(dynamics.totalGrantsCents).toBeLessThanOrEqual(5000000n);
     expect(
       owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents -
         accounting,
@@ -984,8 +1015,8 @@ test.describe
     expect(actorRows(owner)).toHaveLength(20);
   });
 
-  test('timed 5 Hz runs arm atomically and stop on their server deadline', async () => {
-    await owner.reducers.setCadenceProfile({ profile: '5hz' });
+  test('timed 4 Hz runs arm atomically and stop on their server deadline', async () => {
+    await owner.reducers.setCadenceProfile({ profile: '4hz' });
     await expect.poll(() => owner.db.runtimeConfig.id.find(0)!.runId).toBe(0n);
     const before = row().logicalTick;
     const args = { profile: 'NORMAL', buildHash, durationSeconds: 1n };
@@ -999,12 +1030,17 @@ test.describe
     expect([...owner.db.timedRunStop.iter()]).toHaveLength(0);
     expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
     await owner.reducers.startTimedRun(args);
+    await expect(
+      owner.reducers.adoptWorkloadPaused({
+        expectedConfigurationHash: row().configurationHash,
+      }),
+    ).rejects.toThrow('ready, paused world');
     await expect.poll(() => [...owner.db.timedRunStop.iter()].length).toBe(1);
     const stop = [...owner.db.timedRunStop.iter()][0];
     const run = owner.db.runRecord.runId.find(stop.runId)!;
     expect(run.qualification).toBe(false);
     expect(owner.db.runCadence.runId.find(stop.runId)!.tickIntervalUs).toBe(
-      200000n,
+      250000n,
     );
     expect(stop.deadline.microsSinceUnixEpoch).toBe(
       run.origin.microsSinceUnixEpoch + 1000000n,
@@ -1033,6 +1069,9 @@ test.describe
     for (const receipt of receipts) {
       expect(receipt.invokedAt.microsSinceUnixEpoch).toBeLessThan(
         stop.deadline.microsSinceUnixEpoch,
+      );
+      expect(receipt.intendedAt.microsSinceUnixEpoch).toBe(
+        run.origin.microsSinceUnixEpoch + receipt.intendedSlot * 250000n,
       );
     }
     await assertRemainsPaused(stopped, readServer, readCache);
@@ -1209,6 +1248,132 @@ test.describe
     });
     expect(owner.db.actorState.actorId.find(due.actorId)).toEqual(promoted);
     await pause();
+  });
+
+  test('public CHAOS needs no trader/admin role, coalesces concurrent clicks, and never resumes', async () => {
+    const viewer = await connect();
+    try {
+      await subscribe(viewer, [
+        'SELECT * FROM market_state',
+        'SELECT * FROM news_event',
+        'SELECT * FROM my_trader',
+      ]);
+      expect([...viewer.db.myTrader.iter()]).toHaveLength(0);
+      const stopped = await readServer();
+      const actors = actorRows(owner);
+      const events = [...owner.db.newsEvent.iter()].length;
+      await viewer.reducers.triggerChaos({});
+      await expect.poll(() => row().chaosActive).toBe(true);
+      await expect
+        .poll(() => viewer.db.marketState.id.find(0)!.chaosActive)
+        .toBe(true);
+      await expect
+        .poll(() => [...viewer.db.newsEvent.iter()].length)
+        .toBe(events + 1);
+      const shock = [...viewer.db.newsEvent.iter()]
+        .sort((a, b) => Number(a.id - b.id))
+        .at(-1)!;
+      expect(shock.startTick).toBe(stopped.logicalTick);
+      expect(shock.endTick - shock.startTick).toBe(1200n);
+      await Promise.all([
+        viewer.reducers.triggerChaos({}),
+        alice.reducers.triggerChaos({}),
+        bob.reducers.triggerChaos({}),
+      ]);
+      expect([...owner.db.newsEvent.iter()]).toHaveLength(events + 1);
+      expect(owner.db.newsEvent.id.find(shock.id)).toEqual(shock);
+      expect(actorRows(owner)).toEqual(actors);
+      await assertRemainsPaused(stopped, readServer, readCache);
+      for (const action of [
+        () => viewer.reducers.recoverSimulation({}),
+        () => viewer.reducers.pauseSimulation({}),
+        () => viewer.reducers.benchmarkStep({}),
+        () => viewer.reducers.setCadenceProfile({ profile: '4hz' }),
+        () => viewer.reducers.resetMarket({ confirmation: 'RESET WORLD' }),
+      ])
+        await expect(action()).rejects.toThrow();
+      // LOCAL test-only manual stepping verifies the logical expiry boundary.
+      await owner.reducers.testStepMany({ count: 600n });
+      await owner.reducers.testStepMany({ count: 600n });
+      await owner.reducers.benchmarkStep({});
+      await expect.poll(() => row().chaosActive).toBe(false);
+      await viewer.reducers.triggerChaos({});
+      await expect
+        .poll(() => [...owner.db.newsEvent.iter()].length)
+        .toBe(events + 2);
+      expect(owner.db.runtimeConfig.id.find(0)!.enabled).toBe(false);
+      expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+    } finally {
+      viewer.disconnect();
+    }
+  });
+
+  test('paused workload adoption verifies the expected hash and preserves actors and old evidence', async () => {
+    const expectedConfigurationHash = row().configurationHash;
+    await expect(
+      alice.reducers.adoptWorkloadPaused({ expectedConfigurationHash }),
+    ).rejects.toThrow();
+    const sameRuntime = owner.db.runtimeConfig.id.find(0)!;
+    await owner.reducers.adoptWorkloadPaused({ expectedConfigurationHash });
+    expect(owner.db.runtimeConfig.id.find(0)).toEqual(sameRuntime);
+    await owner.reducers.testStaleConfiguration({});
+    await expect.poll(() => row().configurationHash).toBe('0'.repeat(64));
+    const before = await readServer();
+    const actors = actorRows(owner);
+    const run = owner.db.runRecord.runId.find(before.runId)!;
+    const receipts = [...owner.db.detailedBenchmarkReceipts.iter()];
+    const accounting = owner.db.grantAccounting.id.find(0)!;
+    await expect(
+      owner.reducers.adoptWorkloadPaused({
+        expectedConfigurationHash: '0'.repeat(64),
+      }),
+    ).rejects.toThrow('unexpected compiled configuration hash');
+    expect(await readServer()).toEqual(before);
+    await owner.reducers.adoptWorkloadPaused({ expectedConfigurationHash });
+    await expect
+      .poll(() => row().configurationHash)
+      .toBe(expectedConfigurationHash);
+    await expect.poll(() => owner.db.runtimeConfig.id.find(0)!.runId).toBe(0n);
+    const adopted = await readServer();
+    await expect.poll(readCache).toEqual(adopted);
+    expect(adopted.enabled).toBe(false);
+    expect(adopted.logicalTick).toBe(before.logicalTick);
+    expect(actorRows(owner)).toEqual(actors);
+    expect(owner.db.grantAccounting.id.find(0)).toEqual(accounting);
+    expect([...owner.db.detailedBenchmarkReceipts.iter()]).toEqual(receipts);
+    const closed = owner.db.runRecord.runId.find(before.runId)!;
+    expect(closed.completedAt).toBeDefined();
+    expect(closed.status).toBe('FAILED');
+    expect(closed.configurationHash).toBe(run.configurationHash);
+    expect(closed.buildHash).toBe(run.buildHash);
+    expect(closed.origin).toEqual(run.origin);
+    expect(closed.failureReason).toContain(run.failureReason);
+    expect(closed.failureReason).toContain(
+      'authorized paused workload adoption',
+    );
+    await owner.reducers.adoptWorkloadPaused({ expectedConfigurationHash });
+    expect(await readServer()).toEqual(adopted);
+    await owner.reducers.setCadenceProfile({ profile: '4hz' });
+    await expect
+      .poll(() => owner.db.cadenceState.id.find(0)!.tickIntervalUs)
+      .toBe(250000n);
+    const selected = await readServer();
+    await expect.poll(readCache).toEqual(selected);
+    await assertRemainsPaused(selected, readServer, readCache);
+    expect(selected.logicalTick).toBe(before.logicalTick);
+    expect(owner.db.cadenceState.id.find(0)!.requiresExplicitStart).toBe(true);
+    expect([...owner.db.timedRunStop.iter()]).toHaveLength(0);
+    await expect(owner.reducers.recoverSimulation({})).rejects.toThrow();
+    await expect(
+      owner.reducers.startRun({
+        profile: 'NORMAL',
+        buildHash,
+        qualification: true,
+      }),
+    ).rejects.toThrow();
+  });
+
+  test('reset clears both actor representations after paused configuration changes', async () => {
     // Reset must remove BOTH physical representations, using bounded batches.
     await owner.reducers.resetMarket({ confirmation: 'RESET WORLD' });
     while (owner.db.runtimeConfig.id.find(0)!.phase !== 'EMPTY') {
@@ -1217,5 +1382,36 @@ test.describe
     }
     expect([...owner.db.actorState.iter()]).toHaveLength(0);
     expect([...owner.db.actorStateCompact.iter()]).toHaveLength(0);
+    await expect.poll(() => [...alice.db.myTrader.iter()].length).toBe(0);
+    expect(owner.db.grantAccounting.id.find(0)!.initialShareSupply).toBe(0n);
+    expect(owner.db.grantAccounting.id.find(0)!.humanEntryCashCents).toBe(0n);
+    expect(row().logicalTick).toBe(0n);
+    expect(owner.db.runtimeConfig.id.find(0)!.enabled).toBe(false);
+    await owner.reducers.setActorPopulation({
+      population: 20n,
+      seed: 20261003n,
+    });
+    await owner.reducers.initializeBatch({ count: 20n });
+    await expect.poll(() => row().phase).toBe('READY');
+    expect(actorRows(owner)).toHaveLength(20);
+    expect(
+      actorRows(owner).every(
+        (a) =>
+          a.cashCents === 250000n &&
+          a.shares === 25n &&
+          a.lifetimePnlCents === 0n,
+      ),
+    ).toBe(true);
+    expect(owner.db.grantAccounting.id.find(0)!.initialShareSupply).toBe(500n);
+    expect(owner.db.grantAccounting.id.find(0)!.actorInitialCashCents).toBe(
+      5000000n,
+    );
+    expect(owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents).toBe(
+      0n,
+    );
+    expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+    expect([...owner.db.timedRunStop.iter()]).toHaveLength(0);
+    expect(row().logicalTick).toBe(0n);
+    expect(owner.db.runtimeConfig.id.find(0)!.enabled).toBe(false);
   });
 });

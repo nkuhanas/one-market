@@ -3,7 +3,7 @@
 The release Rust harness runs the fixed workload in [SPEC.md](../../SPEC.md):
 30 seconds warm-up, 180 seconds measurement, three production-query viewers, five
 offered human orders per second, confirmed reads, and three fresh confirmations.
-`CADENCE=20hz` is the default; `10hz` and `5hz` are selectable.
+`CADENCE=20hz` is the default; `10hz`, `5hz` and `4hz` are selectable.
 The scheduler, evidence windows and gates use the selected interval;
 all profiles retain 20 actor buckets. Market `PROFILE=NORMAL|CHAOS` is separate.
 

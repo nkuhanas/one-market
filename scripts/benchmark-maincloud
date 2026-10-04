@@ -8,7 +8,7 @@ source "$(dirname "$0")/common.sh"
 [[ "$MAINCLOUD_SERVER" == https://* ]] || { printf 'Maincloud requires HTTPS.\n' >&2; exit 1; }
 profile="${PROFILE:-NORMAL}"
 cadence="${CADENCE:-20hz}"
-case "$cadence" in 20hz|10hz|5hz) ;; *) printf 'CADENCE must be 20hz, 10hz or 5hz\n' >&2; exit 1;; esac
+case "$cadence" in 20hz|10hz|5hz|4hz) ;; *) printf 'CADENCE must be 20hz, 10hz, 5hz or 4hz\n' >&2; exit 1;; esac
 case "$profile" in NORMAL|CHAOS) ;; *) printf 'PROFILE must be NORMAL or CHAOS\n' >&2; exit 1;; esac
 # Always bounded: exactly three 30s+180s runs. The runner refuses nonempty worlds.
 # Publish separately using publish-maincloud; this script does not deploy.

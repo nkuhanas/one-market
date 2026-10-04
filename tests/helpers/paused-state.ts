@@ -18,14 +18,14 @@ export function cachedSnapshot(
   const market = connection.db.marketState.id.find(0);
   const runtime = connection.db.runtimeConfig.id.find(0);
   const run = runtime && connection.db.runRecord.runId.find(runtime.runId);
-  if (!market || !runtime || !run) return undefined;
+  if (!market || !runtime || (!run && runtime.runId !== 0n)) return undefined;
   return {
     logicalTick: market.logicalTick,
     enabled: runtime.enabled,
     generation: runtime.generation,
     runId: runtime.runId,
-    status: run.status,
-    skippedSlots: run.skippedSlots,
+    status: run?.status ?? 'NONE',
+    skippedSlots: run?.skippedSlots ?? 0n,
     scheduledTicks: [...connection.db.tickSchedule.iter()].length,
   };
 }
@@ -61,8 +61,11 @@ export function parseSnapshot(json: string | string[]): RuntimeSnapshot {
   const [enabled, generation, runId] = runtime[0];
   assert.equal(typeof enabled, 'boolean');
   const run = runs.find(([id]) => id === runId);
-  assert(run, 'current run missing from authoritative snapshot');
-  assert.equal(typeof run[1], 'string');
+  assert(
+    run || runId === 0n,
+    'current run missing from authoritative snapshot',
+  );
+  if (run) assert.equal(typeof run[1], 'string');
   const u64 = (value: unknown): bigint => {
     assert(
       typeof value === 'bigint' && value >= 0n && value <= 0xffffffffffffffffn,
@@ -75,8 +78,8 @@ export function parseSnapshot(json: string | string[]): RuntimeSnapshot {
     enabled: enabled as boolean,
     generation: u64(generation),
     runId: u64(runId),
-    status: run[1] as string,
-    skippedSlots: u64(run[2]),
+    status: run ? (run[1] as string) : 'NONE',
+    skippedSlots: run ? u64(run[2]) : 0n,
     scheduledTicks: schedule.length,
   };
 }

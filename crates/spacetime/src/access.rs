@@ -38,7 +38,7 @@ pub fn my_trader(ctx: &ViewContext) -> Option<HumanTrader> {
     let market = ctx.db.market_state().id().find(0)?;
     trader.pnl_cents = one_market_core::policy::pnl(
         one_market_core::equity(trader.cash_cents, trader.shares, market.price_cents).ok()?,
-        one_market_core::config::config().bankroll_cents,
+        one_market_core::config::config().human_bankroll_cents,
         0,
     )
     .ok()?;
