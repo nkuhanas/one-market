@@ -1,4 +1,4 @@
-use crate::{access::admin, lifecycle, market, now_us, runtime, schema::*, timestamp};
+use crate::{access::admin, lifecycle, market, now_us, revival, runtime, schema::*, timestamp};
 use one_market_core::{
     add,
     auction::{self, Order},
@@ -53,6 +53,7 @@ pub fn start_run(
     if profile != "NORMAL" && profile != "CHAOS" {
         return Err("unknown workload profile".into());
     }
+    revival::ensure(ctx, market(ctx)?.price_cents);
     if build_hash.len() != 64 || !build_hash.bytes().all(|b| b.is_ascii_hexdigit()) {
         return Err("64-character module hash required".into());
     }
@@ -131,12 +132,13 @@ pub fn recover_simulation(ctx: &ReducerContext) -> Result<()> {
     let mut m = market(ctx)?;
     let changed = m.configuration_hash != configuration_hash();
     if changed {
+        revival::ensure(ctx, m.price_cents);
         m.configuration_hash = configuration_hash();
         ctx.db.market_state().id().update(m);
     }
     // Recovery records evidence of interruption and cannot turn FAILED into PASSED.
     run.status = "FAILED".into();
-    run.failure_reason =
+    let recovery_reason =
         if run.configuration_hash != workload_hash(r.initialized, r.seed, &run.profile) {
             format!(
                 "authorized non-qualifying recovery after workload change: {}",
@@ -145,6 +147,12 @@ pub fn recover_simulation(ctx: &ReducerContext) -> Result<()> {
         } else {
             "authorized recovery after pause/stall".into()
         };
+    if !run.failure_reason.contains(&recovery_reason) {
+        if !run.failure_reason.is_empty() {
+            run.failure_reason.push_str("; ");
+        }
+        run.failure_reason.push_str(&recovery_reason);
+    }
     let elapsed = i128::from(now_us(ctx)) - i128::from(r.origin.to_micros_since_unix_epoch());
     let next = if elapsed < 0 {
         1
@@ -291,23 +299,32 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
     };
     if skipped > 0 {
         run.status = "FAILED".into();
-        run.failure_reason = "missed application slots".into();
+        if !run.failure_reason.contains("missed application slots") {
+            if !run.failure_reason.is_empty() {
+                run.failure_reason.push_str("; ");
+            }
+            run.failure_reason.push_str("missed application slots");
+        }
     }
     if run.profile == "CHAOS" && r.next_slot >= c.chaos_slot && r.chaos_end == 0 {
         shock(ctx, &mut r, tick)?;
     }
     m.chaos_active = tick >= r.chaos_start && tick < r.chaos_end;
+    let mut dynamics = ctx
+        .db
+        .market_dynamics()
+        .id()
+        .find(0)
+        .ok_or("market dynamics missing; explicit workload adoption required")?;
+    revival::advance_reference(&mut dynamics, r.seed, tick, &c)?;
     let signals = Signals {
         momentum_bps: i64::try_from(
             (i128::from(m.price_cents) - i128::from(m.previous_traded_price_cents)) * 10_000
                 / i128::from(m.previous_traded_price_cents),
         )
         .map_err(|_| "momentum overflow")?,
-        reversion_bps: i64::try_from(
-            (i128::from(c.initial_price_cents) - i128::from(m.price_cents)) * 10_000
-                / i128::from(m.price_cents),
-        )
-        .map_err(|_| "reversion overflow")?,
+        reference_price_cents: dynamics.reference_price_cents,
+        sentiment_bps: dynamics.sentiment_bps,
         imbalance_bps: r.imbalance_bps,
         news_bps: if m.chaos_active {
             r.chaos_signal_bps
@@ -345,11 +362,44 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         }
         digest = extend_digest(&digest, a.actor_id);
         let was_active = a.status == ActorStatus::Active;
-        let (grant, transition) = lifecycle::prepare(a, m.price_cents, tick, &c)?;
+        let (mut grant, mut transition) = lifecycle::prepare(a, m.price_cents, tick, &c)?;
+        if a.status == ActorStatus::Exiting {
+            let previous = ctx.db.actor_recovery().actor_id().find(a.actor_id);
+            let mut record = previous.clone().unwrap_or(ActorRecovery {
+                actor_id: a.actor_id,
+                exit_started_tick: tick,
+                last_episode: 0,
+                grants_cents: 0,
+            });
+            if was_active {
+                record.exit_started_tick = tick;
+            }
+            if let Some(support) = revival::try_revive(
+                a,
+                &mut record,
+                &mut dynamics,
+                i,
+                tick,
+                m.price_cents,
+                r.initialized,
+                &c,
+            )? {
+                grant = add(grant, support)?;
+                transition = Some("REVIVED — INVENTORY RETAINED");
+            }
+            if previous.as_ref() != Some(&record) {
+                if previous.is_some() {
+                    ctx.db.actor_recovery().actor_id().update(record);
+                } else {
+                    ctx.db.actor_recovery().insert(record);
+                }
+            }
+        }
         grants = grants
             .checked_add(u128::from(grant))
             .ok_or("grant overflow")?;
-        if transition == Some("RECAPITALIZED") {
+        if transition == Some("RECAPITALIZED") || transition == Some("REVIVED — INVENTORY RETAINED")
+        {
             grant_count = add(grant_count, 1)?;
         }
         if (a.status == ActorStatus::Active) != was_active {
@@ -380,7 +430,10 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         }
         let intent = if a.status == ActorStatus::Exiting && a.shares > 0 {
             policy::liquidation(a.shares, m.price_cents, &c)?
-        } else if a.status == ActorStatus::Active && transition != Some("RECAPITALIZED") {
+        } else if a.status == ActorStatus::Active
+            && transition != Some("RECAPITALIZED")
+            && transition != Some("REVIVED — INVENTORY RETAINED")
+        {
             evaluations = add(evaluations, 1)?;
             policy::decide(
                 Weights {
@@ -648,6 +701,29 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         m.rate_window_started_at = m.rate_window_ended_at;
     }
     m.rate_window_ended_at = ctx.timestamp;
+    let mut health = ctx
+        .db
+        .bucket_health()
+        .bucket()
+        .find(bucket)
+        .ok_or("bucket health missing")?;
+    revival::observe(
+        &mut dynamics,
+        &mut health,
+        tick,
+        clearing.price,
+        clearing.volume,
+        m.active_actor_count,
+        r.initialized,
+        actors
+            .iter()
+            .filter(|a| a.status == ActorStatus::Active)
+            .count() as u64,
+        actors.len() as u64,
+        &c,
+    )?;
+    ctx.db.market_dynamics().id().update(dynamics);
+    ctx.db.bucket_health().bucket().update(health);
     ctx.db.market_state().id().update(m);
     ctx.db.price_point().insert(PricePoint {
         logical_tick: tick,

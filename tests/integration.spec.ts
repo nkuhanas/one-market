@@ -1,6 +1,16 @@
 import { expect, test, type Page, type WebSocketRoute } from '@playwright/test';
 import { gzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
+import { asEventKind } from '../apps/web/src/market/contract';
+
+test('lifecycle activity is never classified as a filled trade', () => {
+  expect(asEventKind('WIPED — DRAWDOWN LIMIT')).toBe('WIPED');
+  expect(asEventKind('COOLDOWN')).toBe('COOLDOWN');
+  expect(asEventKind('RECAPITALIZED')).toBe('RECAPITALIZED');
+  expect(asEventKind('REVIVED — INVENTORY RETAINED')).toBe('REVIVED');
+  expect(asEventKind('future event')).toBe('UNKNOWN');
+  expect(asEventKind('FILLED')).toBe('FILLED');
+});
 
 async function openMarket(page: Page) {
   await page.goto('/');

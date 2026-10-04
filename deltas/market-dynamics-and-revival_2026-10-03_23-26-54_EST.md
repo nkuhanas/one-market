@@ -2,10 +2,11 @@
 
 - Created: 2026-10-03 23:26:54 EST (UTC-05:00, fixed standard time).
 - Branch: `docs/market-dynamics-revival-delta`, based on `main` at `14d3fa5`.
-- Status: proposed design only; not implemented or deployed.
-- Authorization: document the discussed approach and safely merge a PR. The
-  user's instruction not to implement remains in effect. Merging this document
-  does not authorize runtime changes, a SPEC edit or a Maincloud publication.
+- Status: implemented and in verification; original proposal committed as `d7481b3`.
+- Authorization: after the documentation-only request, the user explicitly
+  approved implementing this delta, updating SPEC to match, safely merging the
+  PR, and then publishing to Maincloud and changing the live simulation. Preserve
+  existing rows and evidence; no reset or population change is authorized.
 - Related work: [market recovery](market-recovery_2026-10-03_22-05-19_EST.md)
   and [100k Maincloud deployment](maincloud-100k-deployment_2026-10-03_22-52-12_EST.md).
 
@@ -132,11 +133,11 @@ price rebound or reset-to-$100 is included in this proposal.
 - Minimal persistent state, migration/backfill rules and public observability.
   Any schema change requires regenerated bindings and coordinated consumers.
 
-These are deliberate policy choices, not defaults silently approved by merging
-this document. Obtain approval for implementation and the corresponding SPEC
-changes: section 6 currently specifies initial-price anchoring, and section 9
-explicitly prohibits timeout-based cooldown while unsold inventory remains.
-Revise related grant, event and client-contract wording as needed at that time.
+These are deliberate policy choices. Implementation and corresponding SPEC
+changes have now been explicitly approved. Section 6's initial-price anchoring
+and section 9's inventory/lifecycle rules must be revised together with grant,
+event and client-contract wording. Final measured parameters will be recorded
+below before release; model comparisons are not capacity qualifications.
 
 ## Future acceptance and rollout
 
@@ -166,11 +167,98 @@ Revise related grant, event and client-contract wording as needed at that time.
    require explicit owner recovery for an upgraded live world. Economic revival
    must never rehabilitate FAILED run evidence or re-anchor scheduler deadlines.
 
-## This PR's boundary and merge checks
+## Implementation decisions and merge checks
 
-This PR adds only this proposal. Leave `SPEC.md`, configuration, implementation,
-bindings, credentials, databases and the running simulation unchanged. Check
-Markdown formatting and the complete diff, push a dedicated branch, and merge
-only the current tested head after CI passes and any new `main` changes are
-reconciled. Record verification and the merge result in the PR; do not label
-the proposed behavior implemented merely because this document has merged.
+The implementation will use additive singleton/bucket-health tables and a sparse
+private per-actor recovery record; existing actor and market row encodings stay
+intact. Old-world state initializes only after explicit workload adoption, not
+as an implicit reset. Recovery work stays within the due indexed bucket.
+
+Initial model candidates: a 1% maximum quote pull, a 10% signal-reversion scale,
+actor-specific valuation offsets/horizons, and bounded shared sentiment with a
+slowly evolving reservation reference. Compare the old policy and each weaker
+anchor separately before selecting the final versioned settings.
+
+Distress candidates: a price at or below 10 cents for 600 completed ticks, or
+zero-volume/low-active participation for 600 ticks. Track isolated illiquid
+buckets as well as whole-market distress. Initial recovery candidates use a
+600-tick exit wait, 20 staggered cohorts per bucket, a 1,200-tick recovery window
+and 1,200-tick retry backoff. One actor can receive revival support once per
+episode, with a lifetime revival-grant cap and per-episode/world budgets.
+Budget exhaustion never deletes inventory or prevents eligibility restoration.
+Ordinary fully-liquidated recapitalizations remain separately accounted.
+
+Review and measure these candidates, freeze the final formulas in configuration
+and SPEC, and regenerate bindings rather than editing them. Require complete
+local verification and current-head CI before merging without bypasses. Only
+then publish the merged production WASM to the existing Maincloud database with
+`--delete-data=never`, verify preserved state, explicitly recover the fenced
+run, and check live progress. Keep its original FAILED evidence and hashes.
+
+## Selected behavior and measured model evidence
+
+The selected defaults are a **5% maximum quote pull**, **10% signal reversion**,
+±20% private valuation offsets on staggered 200–1,000-tick horizons, and a
+shared sentiment target bounded to ±50 bps. The shared reference evolves once
+per epoch; it is not the traded price and has no permanent $100 destination.
+The exact seeded formulas are in SPEC §6 and `docs/implementation-decisions.md`.
+Distress/revival timers and budgets use the candidates above, now frozen in
+configuration and SPEC §9: 10-cent/600-tick floor window, 10% ACTIVE plus zero
+volume, 30 illiquid visits for an isolated bucket, 600-tick exit wait, 20 cohorts,
+1,200-tick episode/backoff, 400 healthy ticks, $100k lifetime per-actor revival
+cap, 25% episode and 100% lifetime world-bankroll revival budgets. Ordinary
+fully-liquidated recapitalizations remain separately accounted and uncapped by
+the revival budget; neither kind of grant is lifetime trading profit.
+
+Native models use the production policy, auction, lifecycle and revival code,
+but replace the database/clock. These are deterministic economic observations,
+**not runtime capacity qualifications or wall-clock soaks**. Selected results:
+
+| Model (seed 20261003 unless noted)                        |  Ticks | Price range    | Final ACTIVE | Notes                                                   |
+| --------------------------------------------------------- | -----: | -------------- | -----------: | ------------------------------------------------------- |
+| Old policy, 100k                                          | 12,000 | $99.37–$100.65 |      100,000 | No grants/floor ticks                                   |
+| Only quote pull reduced to 5%, 100k                       | 12,000 | $99.28–$100.71 |      100,000 | Little independent effect                               |
+| Only signal reversion reduced to 10%, 100k                | 12,000 | $98.48–$101.35 |      100,000 | Little independent effect                               |
+| Selected full policy, 100k                                | 12,000 | $93.38–$107.75 |      100,000 | Final $102.44; no grants/floor ticks                    |
+| Selected full policy, repeated CHAOS, 100k                | 48,000 | $0.19–$352.54  |      100,000 | Final $105.74; 534,966,241 matched shares               |
+| All 200 actors EXITING at a penny; reference also a penny | 12,000 | $0.01–$1.13    |          200 | All revived by tick 1,020; left floor after 1,221 ticks |
+
+The 100k repeated-CHAOS model recorded 379,265,425,360 cents of ordinary
+recapitalization grants and no inventory-retaining revival grants. That is
+substantial explicit monetary support, not organic investment profit.
+Three-seed 200-actor NORMAL/repeated-CHAOS 48,000-tick regressions
+(20261003, 42, 987654) ended with 187–200 ACTIVE and no floor ticks. Distressed
+1,000-actor fixtures for those seeds left the penny after 704 ticks and ended
+with all 1,000 ACTIVE; both cash and shares were audited against grants.
+
+Rejected candidates are retained here: 1% quote pull/±200 bps sentiment at 100k
+ended at $2.07 with only 26,326 ACTIVE after 12,000 ticks. Reducing sentiment
+to ±50 bps restored the 100k NORMAL case, but the 200-actor NORMAL soak still
+ranged $1.81–$723.17 and missed the existing 75%-ACTIVE regression (149/200).
+The selected 5% pull passes that unchanged regression across all three seeds.
+
+An exhausted-budget/no-cash fixture still has zero fills and a penny price
+after all actors become ACTIVE. Revival restores eligibility, not purchasing
+power beyond the caps or a guaranteed clearing-price rebound. This limitation
+is explicit; do not use actor reactivation alone as proof of market health.
+
+## Verification and rollout record
+
+- Docker `check`: passed (format/lint/types/build, Rust tests/clippy, binding freshness).
+- Docker `backend-smoke`: 36 passed, including private recovery-table access,
+  grant/inventory persistence, rollback on a revival tick, workload fencing,
+  and idempotent recovery. A test-only bounded stepping reducer exercises real
+  production phases without changing the production module's interface.
+- The accelerated test initially expected a future-grid callback immediately;
+  fixed the test to verify recovery without re-anchoring the runtime schedule.
+- Docker `upgrade-smoke`: additive schema only; old actor/account/order/evidence
+  fingerprints survive publication and explicit adoption, with conserved assets
+  and original FAILED run hashes/reason retained across local service restart.
+- Docker browser `smoke`: 4 passed, including independent observers, reconnect,
+  lifecycle event classification and ordered transport. Restart/republish kept
+  the tick history and a single schedule in an isolated local world.
+- Final-current-head CI, merge and live publication: pending.
+- Frontend activity rendering now distinguishes wipeouts, cooldown,
+  recapitalization and inventory-retaining revival from filled trades. Unknown
+  events fail closed as lifecycle updates. Existing observer subscriptions,
+  public market-row layout and visual design remain unchanged.

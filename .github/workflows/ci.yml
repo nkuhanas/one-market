@@ -19,6 +19,8 @@ jobs:
         run: ./scripts/smoke
       - name: Backend authorization, market, and recovery integration
         run: ./scripts/backend-smoke
+      - name: Non-destructive old-world upgrade and restart
+        run: ./scripts/upgrade-smoke
       - name: Verify tracked files remain unchanged
         run: git diff --exit-code
       - name: Stop local services

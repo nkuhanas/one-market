@@ -45,6 +45,22 @@ It checks ownership and market bootstrap rows, and still forbids data deletion.
 Changed workload rules may stop the scheduler until explicit owner recovery;
 see the market-recovery delta. Preserve original run evidence.
 
+The dynamics/revival upgrade has an additive-schema preservation gate:
+`./scripts/upgrade-smoke` creates a disposable local world using the archived
+old WASM, fingerprints all existing actor/account/order/evidence rows, publishes
+with `--delete-data=never`, verifies the workload fence and explicit adoption,
+then restarts the local service and rechecks the paused state. It never targets
+Maincloud. CI runs this gate after backend integration.
+
+For an authorized live update, capture the paused world's actor/account/run
+fingerprints before publication, verify they remain unchanged afterward, and
+only then call the owner-only `recover_simulation`. Do not use the fresh-world
+initializer to adopt a changed workload. The additive dynamics row is seeded
+from the current traded price on explicit adoption. `maincloud-status` reports
+both the current configuration hash and the historical run configuration hash;
+its `build_hash` remains the original run's build, not proof of the newly
+published module. Record the new production WASM SHA-256 separately.
+
 ## Connect the frontend
 
 Set these public values in the ignored root `.env` for local Vite/Docker use,

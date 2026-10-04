@@ -57,6 +57,8 @@ import ActorSampleRow from "./actor_sample_table";
 import BenchmarkLatestReceiptRow from "./benchmark_latest_receipt_table";
 import BenchmarkResultRow from "./benchmark_result_table";
 import BenchmarkRunsRow from "./benchmark_runs_table";
+import BucketHealthRow from "./bucket_health_table";
+import MarketDynamicsRow from "./market_dynamics_table";
 import MarketStateRow from "./market_state_table";
 import MyPendingOrderRow from "./my_pending_order_table";
 import MyRecentFillsRow from "./my_recent_fills_table";
@@ -91,6 +93,28 @@ const tablesSchema = __schema({
       { name: 'benchmark_result_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, BenchmarkResultRow),
+  bucketHealth: __table({
+    name: 'bucket_health',
+    indexes: [
+      { accessor: 'bucket', name: 'bucket_health_bucket_idx_btree', algorithm: 'btree', columns: [
+        'bucket',
+      ] },
+    ],
+    constraints: [
+      { name: 'bucket_health_bucket_key', constraint: 'unique', columns: ['bucket'] },
+    ],
+  }, BucketHealthRow),
+  marketDynamics: __table({
+    name: 'market_dynamics',
+    indexes: [
+      { accessor: 'id', name: 'market_dynamics_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'market_dynamics_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, MarketDynamicsRow),
   marketState: __table({
     name: 'market_state',
     indexes: [
@@ -201,6 +225,10 @@ type __SchemaWithTableAccessorAliases = Omit<typeof tablesSchema.schemaType, "ta
     readonly "actor_sample": Omit<typeof tablesSchema.schemaType.tables["actorSample"], "accessorName"> & { readonly accessorName: "actor_sample" };
     /** @deprecated Use `benchmarkResult` instead. This alias will be removed in the next major version. */
     readonly "benchmark_result": Omit<typeof tablesSchema.schemaType.tables["benchmarkResult"], "accessorName"> & { readonly accessorName: "benchmark_result" };
+    /** @deprecated Use `bucketHealth` instead. This alias will be removed in the next major version. */
+    readonly "bucket_health": Omit<typeof tablesSchema.schemaType.tables["bucketHealth"], "accessorName"> & { readonly accessorName: "bucket_health" };
+    /** @deprecated Use `marketDynamics` instead. This alias will be removed in the next major version. */
+    readonly "market_dynamics": Omit<typeof tablesSchema.schemaType.tables["marketDynamics"], "accessorName"> & { readonly accessorName: "market_dynamics" };
     /** @deprecated Use `marketState` instead. This alias will be removed in the next major version. */
     readonly "market_state": Omit<typeof tablesSchema.schemaType.tables["marketState"], "accessorName"> & { readonly accessorName: "market_state" };
     /** @deprecated Use `newsEvent` instead. This alias will be removed in the next major version. */
@@ -239,6 +267,8 @@ const REMOTE_MODULE = {
 const tableAccessorAliases = {
   "actor_sample": "actorSample",
   "benchmark_result": "benchmarkResult",
+  "bucket_health": "bucketHealth",
+  "market_dynamics": "marketDynamics",
   "market_state": "marketState",
   "news_event": "newsEvent",
   "price_point": "pricePoint",
@@ -272,6 +302,10 @@ export type DbView = __DbViewBase & {
   readonly "actor_sample": __DbViewBase["actorSample"];
   /** @deprecated Use `benchmarkResult` instead. This alias will be removed in the next major version. */
   readonly "benchmark_result": __DbViewBase["benchmarkResult"];
+  /** @deprecated Use `bucketHealth` instead. This alias will be removed in the next major version. */
+  readonly "bucket_health": __DbViewBase["bucketHealth"];
+  /** @deprecated Use `marketDynamics` instead. This alias will be removed in the next major version. */
+  readonly "market_dynamics": __DbViewBase["marketDynamics"];
   /** @deprecated Use `marketState` instead. This alias will be removed in the next major version. */
   readonly "market_state": __DbViewBase["marketState"];
   /** @deprecated Use `newsEvent` instead. This alias will be removed in the next major version. */
@@ -298,6 +332,10 @@ export type Tables = __TablesBase & {
   readonly "actor_sample": __TablesBase["actorSample"];
   /** @deprecated Use `benchmarkResult` instead. This alias will be removed in the next major version. */
   readonly "benchmark_result": __TablesBase["benchmarkResult"];
+  /** @deprecated Use `bucketHealth` instead. This alias will be removed in the next major version. */
+  readonly "bucket_health": __TablesBase["bucketHealth"];
+  /** @deprecated Use `marketDynamics` instead. This alias will be removed in the next major version. */
+  readonly "market_dynamics": __TablesBase["marketDynamics"];
   /** @deprecated Use `marketState` instead. This alias will be removed in the next major version. */
   readonly "market_state": __TablesBase["marketState"];
   /** @deprecated Use `newsEvent` instead. This alias will be removed in the next major version. */

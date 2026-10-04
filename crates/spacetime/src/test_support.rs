@@ -25,6 +25,42 @@ pub fn test_set_fault(ctx: &ReducerContext, fail_after_writes: bool) -> Result<(
     Ok(())
 }
 
+/// Exercise complete production transactions/phases without wall-clock sleeps.
+/// Only compiled into the disposable, separately hashed test-support module.
+#[reducer]
+pub fn test_step_many(ctx: &ReducerContext, count: u64) -> Result<()> {
+    admin(ctx)?;
+    if count > 600 || runtime(ctx)?.enabled {
+        return Err("bounded paused-world stepping required".into());
+    }
+    for _ in 0..count {
+        crate::runtime::benchmark_step(ctx)?;
+    }
+    Ok(())
+}
+
+#[reducer]
+pub fn test_clear_revival_state(ctx: &ReducerContext) -> Result<()> {
+    admin(ctx)?;
+    if runtime(ctx)?.enabled {
+        return Err("pause before fixture setup".into());
+    }
+    ctx.db
+        .market_dynamics()
+        .id()
+        .update(crate::revival::fresh(crate::market(ctx)?.price_cents));
+    for bucket in 0..20 {
+        ctx.db
+            .bucket_health()
+            .bucket()
+            .update(crate::revival::bucket_state(bucket));
+    }
+    for record in ctx.db.actor_recovery().iter() {
+        ctx.db.actor_recovery().actor_id().delete(record.actor_id);
+    }
+    Ok(())
+}
+
 #[reducer]
 pub fn test_stale_configuration(ctx: &ReducerContext) -> Result<()> {
     admin(ctx)?;
