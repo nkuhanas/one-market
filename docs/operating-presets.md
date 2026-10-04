@@ -37,3 +37,7 @@ Benchmark artifacts and release WASM binaries are retained in Git independently
 of disposable local probe databases. Disk cleanup may remove those databases
 after verifying their archived evidence, but must not remove this record, the
 raw artifacts, development worlds, or CLI identities.
+
+The first [disk cleanup](maintenance/2026-10-04-disk-cleanup.md) removed the seven
+archived cadence-probe databases and regenerable caches. The evidence linked by
+these presets remains committed; exact final actor rows are not a retained backup.

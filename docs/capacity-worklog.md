@@ -683,8 +683,12 @@ not a guarantee against later distress.
 
 Evidence: `artifacts/exploration/20261004T053329Z-1166856/5hz-1000000-normal/`.
 Harness BLAKE3: `f8d3c31d8f2e7772932d348b7636f185f05aba0293a2db6b5e9a2bc7e9f01c28`.
-The database was automatically paused after collection and retained with its
-rows. No probe databases or preexisting worlds were deleted.
+At collection time the database was automatically paused and retained with its
+rows; no databases were deleted during measurement. The subsequent user-requested
+[disk cleanup](maintenance/2026-10-04-disk-cleanup.md) removed these seven cadence
+probe databases after checking their archives. All benchmark evidence and frozen
+WASM remain committed, but the deleted worlds' exact actor states are not backed
+up by those artifacts. Preexisting worlds were not deleted.
 
 This establishes a passing **local NORMAL exploratory test at the configured
 one-million ceiling**, not a universal maximum or full qualification. No 5 Hz

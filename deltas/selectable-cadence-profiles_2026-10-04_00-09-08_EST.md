@@ -155,7 +155,10 @@ Measured outcomes (local exploration, not qualification):
 - 5 Hz CHAOS and Maincloud capacity were not measured. No qualified result was
   published, no live module/frontend was deployed, and 20 Hz remains the default.
   A final Maincloud status read confirmed tick 85,475, disabled scheduling, zero
-  scheduled ticks and all 100k actors retained. All local probe worlds are paused.
+  scheduled ticks and all 100k actors retained. All local probe worlds were paused
+  at the end of measurement; the later user-requested
+  [disk cleanup](../docs/maintenance/2026-10-04-disk-cleanup.md) removed the seven
+  archived cadence probes while preserving their evidence and release modules.
 
 See [capacity worklog](../docs/capacity-worklog.md#selectable-cadence-investigation--2026-10-04)
 for all archives, including failed/cancelled probes, workload distinctions,
