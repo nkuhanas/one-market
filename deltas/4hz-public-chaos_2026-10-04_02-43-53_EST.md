@@ -76,3 +76,10 @@ Production rollout and final merge are held until the $5k cash-vs-total-equity
 definition and existing-world migration-vs-reset choice are resolved. Human
 bankrolls must remain unchanged: actor recapitalization and human entry currently
 share `bankroll_cents`, which must be separated for an actor-only reduction.
+
+The user has now resolved both choices: $2,500 cash plus 25 shares ($5,000 total),
+$5,000 actor recapitalization target, unchanged humans, and an explicit reset of
+the existing production world without resuming. The
+[actor-endowment delta](actor-endowment-5k_2026-10-04_09-18-33_EST.md) supersedes
+this document's no-reset/adopt-existing-actors rollout; paused adoption remains
+available for future compatible changes. Production still must not tick.

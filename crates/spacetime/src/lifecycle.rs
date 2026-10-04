@@ -54,7 +54,7 @@ pub fn prepare(
             .ok_or("cooldown tick regression")?
             >= c.cooldown_ticks
     {
-        let grant = c.bankroll_cents.saturating_sub(a.cash_cents);
+        let grant = c.actor_bankroll_cents.saturating_sub(a.cash_cents);
         a.cash_cents = add(a.cash_cents, grant)?;
         a.cumulative_recapitalization_grants_cents =
             add(a.cumulative_recapitalization_grants_cents, grant)?;
@@ -197,14 +197,14 @@ mod tests {
         assert_eq!(a.last_step_tick.get(), Some(59));
         let cash_before = a.cash_cents;
         let (grant, event) = prepare(&mut a, 10, 60, &c).unwrap();
-        assert_eq!(grant, c.bankroll_cents - cash_before);
+        assert_eq!(grant, c.actor_bankroll_cents - cash_before);
         assert_eq!(event, Some("RECAPITALIZED"));
         assert_eq!(a.shares, 0);
         assert_eq!(a.wipeout_count, 1);
         assert_eq!(a.status, ActorStatus::Active);
         finish(&mut a, 60, 10).unwrap();
         assert_eq!(a.lifetime_pnl_cents, cash_before as i64 - 200);
-        assert_eq!(a.life_peak_equity_cents, c.bankroll_cents);
+        assert_eq!(a.life_peak_equity_cents, c.actor_bankroll_cents);
     }
 
     #[test]
@@ -214,12 +214,42 @@ mod tests {
         a.shares = 0;
         prepare(&mut a, 10, 0, &c).unwrap();
         assert_eq!(a.status, ActorStatus::Cooldown);
-        a.cash_cents = c.bankroll_cents + 1;
+        a.cash_cents = c.actor_bankroll_cents + 1;
         assert_eq!(
             prepare(&mut a, 10, 20, &c).unwrap(),
             (0, Some("RECAPITALIZED"))
         );
-        assert_eq!(a.cash_cents, c.bankroll_cents + 1);
+        assert_eq!(a.cash_cents, c.actor_bankroll_cents + 1);
         assert_eq!(a.cumulative_recapitalization_grants_cents, 0);
+    }
+
+    #[test]
+    fn recap_tops_up_only_to_actor_target_without_minting_shares_or_profit() {
+        let c = config();
+        for cash in [0, 123_456, 500_000, 500_001] {
+            let mut a = actor();
+            a.cash_cents = cash;
+            a.shares = 0;
+            a.initial_endowment_value_cents = c.actor_bankroll_cents;
+            a.life_peak_equity_cents = c.actor_bankroll_cents;
+            a.status = ActorStatus::Cooldown;
+            a.cooldown_started_tick = Some(0).into();
+            assert_eq!(prepare(&mut a, 10_000, 19, &c).unwrap(), (0, None));
+            let grant = c.actor_bankroll_cents.saturating_sub(cash);
+            assert_eq!(
+                prepare(&mut a, 10_000, 20, &c).unwrap(),
+                (grant, Some("RECAPITALIZED"))
+            );
+            finish(&mut a, 20, 10_000).unwrap();
+            assert_eq!(a.cash_cents, cash.max(c.actor_bankroll_cents));
+            assert_eq!(a.life_peak_equity_cents, a.cash_cents);
+            assert_eq!(a.shares, 0);
+            assert_eq!(a.cumulative_recapitalization_grants_cents, grant);
+            assert_eq!(a.lifetime_pnl_cents, cash as i64 - 500_000);
+            assert_eq!(a.status, ActorStatus::Active);
+            assert_eq!(a.cooldown_started_tick.get(), None);
+            assert_eq!(prepare(&mut a, 10_000, 40, &c).unwrap(), (0, None));
+            assert_eq!(a.cumulative_recapitalization_grants_cents, grant);
+        }
     }
 }

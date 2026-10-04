@@ -153,9 +153,25 @@ test.describe
     await owner.reducers.initializeBatch({ count: 27n });
     await expect.poll(() => row().phase).toBe('READY');
     expect(actorRows(owner)).toHaveLength(40);
-    expect(owner.db.grantAccounting.id.find(0)!.initialShareSupply).toBe(
-      20000n,
+    expect(owner.db.grantAccounting.id.find(0)!.initialShareSupply).toBe(1000n);
+    expect(owner.db.grantAccounting.id.find(0)!.actorInitialCashCents).toBe(
+      10000000n,
     );
+    expect(owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents).toBe(
+      0n,
+    );
+    for (const actor of actorRows(owner)) {
+      expect(actor.cashCents).toBe(250000n);
+      expect(actor.shares).toBe(25n);
+      expect(actor.markedEquityCents).toBe(500000n);
+      expect(actor.initialEndowmentValueCents).toBe(500000n);
+      expect(actor.lifePeakEquityCents).toBe(500000n);
+      expect(actor.cumulativeRecapitalizationGrantsCents).toBe(0n);
+      expect(actor.lifetimePnlCents).toBe(0n);
+      expect(actor.wipeoutCount).toBe(0n);
+      expect(actor.lastStepTick.present).toBe(false);
+      expect(actor.status.tag).toBe('Active');
+    }
   });
 
   test('actor storage migration is authorized, bounded, reversible, and atomic', async () => {
@@ -262,6 +278,18 @@ test.describe
     );
     expect([...alice.db.benchmarkLatestReceipt.iter()]).toHaveLength(0);
     await expect.poll(() => row().registeredHumanTraderCount).toBe(2n);
+    for (const client of [alice, bob]) {
+      const trader = [...client.db.myTrader.iter()][0];
+      expect(trader.cashCents).toBe(10000000n);
+      expect(trader.shares).toBe(0n);
+      expect(trader.pnlCents).toBe(0n);
+    }
+    await expect
+      .poll(() => owner.db.grantAccounting.id.find(0)!.humanEntryCount)
+      .toBe(2n);
+    expect(owner.db.grantAccounting.id.find(0)!.humanEntryCashCents).toBe(
+      20000000n,
+    );
     for (const table of [
       'human_trader',
       'pending_human_order',
@@ -574,12 +602,12 @@ test.describe
       await expect.poll(() => row().logicalTick).toBe(before + 1n);
     }
     expect(actorRow(owner, due[2].actorId)!.status.tag).toBe('Active');
-    expect(actorRow(owner, due[2].actorId)!.cashCents).toBe(10000000n);
+    expect(actorRow(owner, due[2].actorId)!.cashCents).toBe(500000n);
     expect(actorRow(owner, due[2].actorId)!.shares).toBe(0n);
     expect(
       owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents -
         grantsBefore,
-    ).toBe(BigInt(due.length - 2) * 10000000n);
+    ).toBe(BigInt(due.length - 2) * 500000n);
   });
 
   test('liquidation is quantity-bounded and rejects a below-reserve buyer', async () => {
@@ -756,7 +784,7 @@ test.describe
     expect(row().activeActorCount).toBe(40n);
     expect(row().priceCents).toBe(price); // no fabricated price rebound or trades
     const dynamics = owner.db.marketDynamics.id.find(0)!;
-    expect(dynamics.totalGrantsCents).toBeLessThanOrEqual(100000000n);
+    expect(dynamics.totalGrantsCents).toBeLessThanOrEqual(5000000n);
     expect(
       owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents -
         accounting,
@@ -1354,5 +1382,36 @@ test.describe
     }
     expect([...owner.db.actorState.iter()]).toHaveLength(0);
     expect([...owner.db.actorStateCompact.iter()]).toHaveLength(0);
+    await expect.poll(() => [...alice.db.myTrader.iter()].length).toBe(0);
+    expect(owner.db.grantAccounting.id.find(0)!.initialShareSupply).toBe(0n);
+    expect(owner.db.grantAccounting.id.find(0)!.humanEntryCashCents).toBe(0n);
+    expect(row().logicalTick).toBe(0n);
+    expect(owner.db.runtimeConfig.id.find(0)!.enabled).toBe(false);
+    await owner.reducers.setActorPopulation({
+      population: 20n,
+      seed: 20261003n,
+    });
+    await owner.reducers.initializeBatch({ count: 20n });
+    await expect.poll(() => row().phase).toBe('READY');
+    expect(actorRows(owner)).toHaveLength(20);
+    expect(
+      actorRows(owner).every(
+        (a) =>
+          a.cashCents === 250000n &&
+          a.shares === 25n &&
+          a.lifetimePnlCents === 0n,
+      ),
+    ).toBe(true);
+    expect(owner.db.grantAccounting.id.find(0)!.initialShareSupply).toBe(500n);
+    expect(owner.db.grantAccounting.id.find(0)!.actorInitialCashCents).toBe(
+      5000000n,
+    );
+    expect(owner.db.grantAccounting.id.find(0)!.recapitalizationCashCents).toBe(
+      0n,
+    );
+    expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+    expect([...owner.db.timedRunStop.iter()]).toHaveLength(0);
+    expect(row().logicalTick).toBe(0n);
+    expect(owner.db.runtimeConfig.id.find(0)!.enabled).toBe(false);
   });
 });

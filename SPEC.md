@@ -300,9 +300,9 @@ The MVP has one entirely synthetic asset, **`ONE`**, and no debt, shorting, fees
 | Property                      | v0.2 default                                          |
 | ----------------------------- | ----------------------------------------------------- |
 | Starting price                | `$100.00` = `10,000` cents                            |
-| Agent endowment               | `$50,000` cash = `5,000,000` cents, plus `500` shares |
-| Initial agent endowment value | `$100,000` = `10,000,000` cents at the starting price |
-| Initial share supply          | Exactly `500 × initial_agent_count`                   |
+| Agent endowment               | `$2,500` cash = `250,000` cents, plus `25` shares     |
+| Initial agent endowment value | `$5,000` = `500,000` cents at the starting price     |
+| Initial share supply          | Exactly `25 × initial_agent_count`                  |
 | Human endowment               | `$100,000` cash = `10,000,000` cents, zero shares     |
 | Cash and prices               | Integer cents, `u64`                                  |
 | Share quantities              | Whole shares, `u64`                                   |
@@ -435,13 +435,13 @@ positive volume, at least 50% ACTIVE, and no distressed bucket).
 Revival grants target equity rather than cash alone:
 
 ```text
-desired_grant = max(0, 10,000,000 - (cash_cents + shares × price_cents))
+desired_grant = max(0, 500,000 - (cash_cents + shares × price_cents))
 grant = min(desired_grant, remaining_actor_cap, remaining_episode_budget,
             remaining_world_revival_budget)
 ```
 
 An actor revives at most once per episode. Its lifetime revival grant cap is
-10,000,000 cents; each episode may grant 25% of the initial actor-population
+500,000 cents; each episode may grant 25% of the initial actor-population
 bankroll, and lifetime revival grants may total at most 100% of that bankroll.
 All grants enter the existing accounting and grant-adjusted lifetime P&L.
 Reset only the per-life equity peak. Exhausting a budget still permits zero-grant
@@ -455,13 +455,13 @@ Sparse private actor recovery records persist exit timing, last supported
 episode and lifetime revival grants. Timers use completed ticks, so runtime
 pause/stall recovery remains an explicit owner operation.
 
-After 20 logical ticks have elapsed, its next due bucket update grants only enough cash to restore its bankroll to `$100,000`:
+After full liquidation and 20 logical ticks in cooldown, its next due bucket update grants only enough cash to restore its actor bankroll to `$5,000` (human bankrolls remain `$100,000`):
 
 ```text
-recapitalization_grant_cents = max(0, 10,000,000 - cash_cents)
+recapitalization_grant_cents = max(0, 500,000 - cash_cents)
 ```
 
-Record the grant, reset the per-life peak to post-grant equity, and return the actor to `ACTIVE`. Never mint its original 500 shares again. Retain its identity, strategy, wipeout count, and lifetime statistics.
+Record the grant, reset the per-life peak to post-grant equity, and return the actor to `ACTIVE`. Never mint its original 25 shares again or remove cash above the target. Retain its identity, strategy, wipeout count, and lifetime statistics.
 
 Lifetime performance is grant-adjusted:
 

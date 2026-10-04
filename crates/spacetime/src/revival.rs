@@ -197,9 +197,9 @@ pub fn try_revive(
         return Ok(None);
     }
     let desired = c
-        .bankroll_cents
+        .actor_bankroll_cents
         .saturating_sub(equity(a.cash_cents, a.shares, price)?);
-    let world_endowment = u128::from(population) * u128::from(c.bankroll_cents);
+    let world_endowment = u128::from(population) * u128::from(c.actor_bankroll_cents);
     let episode_budget = world_endowment
         .checked_mul(u128::from(c.revival_episode_budget_bps))
         .ok_or("episode budget overflow")?

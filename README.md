@@ -35,6 +35,12 @@ population is not a capacity claim. Qualification uses separate fresh databases;
 see [benchmark methodology](docs/benchmark-methodology.md) and the
 [backend handoff](docs/backend-handoff.md) for measured evidence and limitations.
 
+New actors start with **$5,000 total**: $2,500 cash plus 25 shares at $100.
+Fully liquidated actors recapitalize to $5,000 cash; distress revival includes
+retained shares when targeting $5,000 equity. Human entry remains $100,000 cash.
+Use a fresh or explicitly reset world for these endowment semantics; publishing
+never rewrites old actors. Historical capacity results retain their old hashes.
+
 Private actor rows use a fixed-width schema.
 The [lossless compact storage path](docs/actor-storage.md) reduces ordinary row
 payloads while preserving full-width fallback. Existing worlds require an

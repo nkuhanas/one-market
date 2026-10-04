@@ -667,7 +667,7 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         h.reserved_shares = 0;
         h.pnl_cents = policy::pnl(
             equity(h.cash_cents, h.shares, clearing.price)?,
-            c.bankroll_cents,
+            c.human_bankroll_cents,
             0,
         )?;
         h.completed_orders = add(h.completed_orders, 1)?;
