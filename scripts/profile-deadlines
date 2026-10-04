@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/common.sh"
+
+# Linux-only, non-qualifying diagnostic. Sample process faults/RSS/I/O and
+# aggregate per-thread scheduler counters over the offered-load window.
+# Sampling adds overhead; this wrapper must never call scripts/benchmark.
+export POPULATION="${POPULATION:-337500}"
+export WARMUP_SECONDS="${WARMUP_SECONDS:-30}"
+export MEASUREMENT_SECONDS="${MEASUREMENT_SECONDS:-90}"
+export REPEATS=1
+export MODULE_WASM="${MODULE_WASM:?select an explicit preserved module}"
+for seconds in "$WARMUP_SECONDS" "$MEASUREMENT_SECONDS"; do
+  [[ "$seconds" =~ ^[1-9][0-9]*$ && "$seconds" -le 200 ]] || exit 1
+done
+duration=$((WARMUP_SECONDS + MEASUREMENT_SECONDS))
+[[ "$duration" -le 200 ]] || exit 1
+compose up -d --wait db
+server_pid="$(docker inspect "$(compose ps -q db)" --format '{{.State.Pid}}')"
+[[ "$server_pid" =~ ^[1-9][0-9]*$ && -r "/proc/$server_pid/io" ]] || {
+  printf 'Readable Linux server process counters required\n' >&2; exit 1;
+}
+trace="artifacts/profiling/deadlines-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+mkdir -p "$trace"
+{
+  git rev-parse HEAD
+  git status --short
+  uname -srmo
+  getconf CLK_TCK
+  getconf PAGESIZE
+  docker inspect "$(compose ps -q db)" --format \
+    'image={{.Image}} pid={{.State.Pid}} cpus={{.HostConfig.NanoCpus}} memory={{.HostConfig.Memory}}'
+} > "$trace/environment.txt"
+
+sample() {
+  local began until now stat scheduler io
+  began="$(date +%s%6N)"
+  until=$((began + duration * 1000000))
+  printf '%s\n' "$began" > "$trace/capture-start-us.txt"
+  printf 'at_us,minor_faults,major_faults,user_ticks,system_ticks,rss_pages,thread_cpu_ns,thread_runqueue_ns,thread_slices,threads,read_bytes,write_bytes\n'
+  while :; do
+    now="$(date +%s%6N)"
+    [[ "$now" -lt "$until" ]] || break
+    stat="$(sed -E 's/^[0-9]+ \(.*\) //' "/proc/$server_pid/stat" \
+      | awk '{printf "%s,%s,%s,%s,%s", $8,$10,$12,$13,$22}')"
+    # Thread creation/exit can change these aggregate counters. The thread count
+    # is retained; counter decreases must not be interpreted as negative work.
+    scheduler="$(awk '{cpu+=$1; wait+=$2; slices+=$3; n++} END {printf "%.0f,%.0f,%.0f,%d",cpu,wait,slices,n}' \
+      /proc/"$server_pid"/task/*/schedstat 2>/dev/null || true)"
+    io="$(awk '$1=="read_bytes:" {r=$2} $1=="write_bytes:" {w=$2} END {printf "%s,%s",r,w}' "/proc/$server_pid/io")"
+    printf '%s,%s,%s,%s\n' "$now" "$stat" "$scheduler" "$io"
+    sleep 0.1
+  done
+  date +%s%6N > "$trace/capture-end-us.txt"
+}
+
+result=0
+"$REPO_ROOT/scripts/explore" 2>&1 | tee "$trace/probe.log" | (
+  sampler=''
+  while IFS= read -r line; do
+    printf '%s\n' "$line"
+    if [[ "$line" == '  offered 0/'* && -z "$sampler" ]]; then
+      sample > "$trace/process.csv" &
+      sampler=$!
+    fi
+  done
+  [[ -n "$sampler" ]] || { printf 'No offered-load window observed\n' >&2; exit 1; }
+  wait "$sampler"
+) || result=$?
+printf 'Deadline diagnostics: %s\n' "$trace"
+if [[ "$EUID" == 0 ]]; then chown -R "$LOCAL_UID:$LOCAL_GID" "$trace"; fi
+exit "$result"
