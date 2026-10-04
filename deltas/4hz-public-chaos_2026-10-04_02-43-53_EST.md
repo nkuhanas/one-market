@@ -1,6 +1,6 @@
 # Paused 4 Hz production selection and public CHAOS
 
-Status: implemented and locally verified; not deployed. Branch `fix/4hz-public-chaos`, based on
+Status: merged in PR #12 and deployed; see the actor-endowment rollout below. Branch `fix/4hz-public-chaos`, based on
 the deployed compact-storage patch and its recorded evidence (`61f1392`).
 
 ## Requested behavior
@@ -83,3 +83,12 @@ the existing production world without resuming. The
 [actor-endowment delta](actor-endowment-5k_2026-10-04_09-18-33_EST.md) supersedes
 this document's no-reset/adopt-existing-actors rollout; paused adoption remains
 available for future compatible changes. Production still must not tick.
+
+PR #12 merged as `9d90267e794803bb9c5ee6d675019fce15fd30af` after both CI
+checks passed. The regular module was published with `--delete-data=never`;
+the separately authorized reset and fresh $5k initialization selected 4 Hz
+without starting ticks. The user then explicitly authorized one three-minute
+timed run after initialization, superseding the earlier no-resume instruction
+for that session only. See the
+[deployment evidence](../artifacts/maincloud/20261004-5k-4hz/README.md) for the
+final state and limits; no other admin authorization was relaxed.

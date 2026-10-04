@@ -1,0 +1,224 @@
+{
+  "at": "2026-10-04T14:43:56.740Z",
+  "target": {
+    "server": "https://maincloud.spacetimedb.com",
+    "database": "one-market-100k-20261004-035212",
+    "mode": "update"
+  },
+  "database_identity": "c200e95eb69477bcf73f4c84aa7a9828dd8ccd623978bef401244483771e7739",
+  "source_commit": "9d90267e794803bb9c5ee6d675019fce15fd30af",
+  "build_sha256": "9d7b545617c0e446c87a1c1d9dd12be170d9f5fe44b3779122dfde1842f3ae94",
+  "configuration_hash": "e7f48d1418c02264bf27047c6211c73ad79d99c68044e1ea36d53eccc1fd547f",
+  "status": {
+    "database": "one-market-100k-20261004-035212",
+    "database_identity": "c200e95eb69477bcf73f4c84aa7a9828dd8ccd623978bef401244483771e7739",
+    "host_type": {
+      "Wasm": []
+    },
+    "phase": "READY",
+    "initialized": "1000000",
+    "target_population": "1000000",
+    "seed": "20261003",
+    "enabled": false,
+    "scheduled_ticks": 0,
+    "logical_tick": "0",
+    "active_actors": "1000000",
+    "price_cents": "10000",
+    "matched_shares": "0",
+    "run_id": "0",
+    "run_status": null,
+    "failure_reason": null,
+    "skipped_slots": "0",
+    "qualification": false,
+    "build_hash": null,
+    "configuration_hash": "e7f48d1418c02264bf27047c6211c73ad79d99c68044e1ea36d53eccc1fd547f",
+    "run_configuration_hash": null
+  },
+  "cadence": {
+    "id": "0",
+    "profile": "4hz",
+    "tick_interval_us": "250000",
+    "bucket_count": "20",
+    "requires_explicit_start": false
+  },
+  "actors": {
+    "count": 1000000,
+    "compact": 1000000,
+    "wide": 0,
+    "cash_cents": "250000000000",
+    "shares": "25000000",
+    "initial_actor_equity_cents": 500000,
+    "zero_lifetime_pnl_and_grants": true,
+    "all_fields_and_coverage_verified": true,
+    "buckets": [
+      {
+        "bucket": 0,
+        "count": 49940,
+        "exact_initial_field_matches": "49940",
+        "actor_ids_sha256": "793866f8949fbf1cb2c96b61fe5808147367bc389a06ac4b84c741f55da9a64c"
+      },
+      {
+        "bucket": 1,
+        "count": 50056,
+        "exact_initial_field_matches": "50056",
+        "actor_ids_sha256": "8225d7cbcc5d974e1cd9e720b832b33bfb15dae89aac2cd71a960c34f2f11518"
+      },
+      {
+        "bucket": 2,
+        "count": 49850,
+        "exact_initial_field_matches": "49850",
+        "actor_ids_sha256": "8da7192abcc1defb3083c90a9be73519e8e2e7a6ab1c7c66d93574461b02b6d5"
+      },
+      {
+        "bucket": 3,
+        "count": 50177,
+        "exact_initial_field_matches": "50177",
+        "actor_ids_sha256": "272b45976a6dfa696a0b087f26c838d0bf75e5f0d3eec28240cb7e1ef9c30d78"
+      },
+      {
+        "bucket": 4,
+        "count": 49759,
+        "exact_initial_field_matches": "49759",
+        "actor_ids_sha256": "dafc629b606b761b6ffc3c9e013140a5cbc0b6c1a9d9b785faeee69534a38632"
+      },
+      {
+        "bucket": 5,
+        "count": 49894,
+        "exact_initial_field_matches": "49894",
+        "actor_ids_sha256": "d5ebca4171113fef2f98e6b1078101f43ae98955436965947212fb353bb1285f"
+      },
+      {
+        "bucket": 6,
+        "count": 49980,
+        "exact_initial_field_matches": "49980",
+        "actor_ids_sha256": "e4365784321f0ce41dc909e4dac6f8c4599cd19d270fca7ed38c05417384b012"
+      },
+      {
+        "bucket": 7,
+        "count": 49987,
+        "exact_initial_field_matches": "49987",
+        "actor_ids_sha256": "394a35f5c2a5a6c0569fc98fb01ba7161bec6d13679bdfa8504f4b0ca8a90c06"
+      },
+      {
+        "bucket": 8,
+        "count": 49986,
+        "exact_initial_field_matches": "49986",
+        "actor_ids_sha256": "5401397889f537a515af28f1f02bac28ce951d668e98c18d34615b087df643b3"
+      },
+      {
+        "bucket": 9,
+        "count": 49997,
+        "exact_initial_field_matches": "49997",
+        "actor_ids_sha256": "090b37bc0dc08c2d2a688d29728f94b47e85aa19125ec069e18185f9b3e05730"
+      },
+      {
+        "bucket": 10,
+        "count": 49950,
+        "exact_initial_field_matches": "49950",
+        "actor_ids_sha256": "07a5c91289a44983d363c8ee152dc430a800aa847f24bc491de3dfeeeb06dc02"
+      },
+      {
+        "bucket": 11,
+        "count": 49964,
+        "exact_initial_field_matches": "49964",
+        "actor_ids_sha256": "207ab885e061e8edbaafece7cfc1291863def1965e3470f2ddeabcdef7868991"
+      },
+      {
+        "bucket": 12,
+        "count": 50221,
+        "exact_initial_field_matches": "50221",
+        "actor_ids_sha256": "f4a01b522cd3712162112935090f9d4e3ff0204b50abf95a181b5d08b0a3205b"
+      },
+      {
+        "bucket": 13,
+        "count": 50039,
+        "exact_initial_field_matches": "50039",
+        "actor_ids_sha256": "d0cbdab7b29ef038be98a0c5e49ee885112497145fba61bdb67dd32f0280302d"
+      },
+      {
+        "bucket": 14,
+        "count": 50164,
+        "exact_initial_field_matches": "50164",
+        "actor_ids_sha256": "a078f42901d8b5c1c2707b24c26be814fffb653c22cd8b88b79813ee70a4c642"
+      },
+      {
+        "bucket": 15,
+        "count": 49771,
+        "exact_initial_field_matches": "49771",
+        "actor_ids_sha256": "af7697220f6459bc848e9d1bd55e8a246a3d2cea442704aa15a3e36da999c986"
+      },
+      {
+        "bucket": 16,
+        "count": 50016,
+        "exact_initial_field_matches": "50016",
+        "actor_ids_sha256": "92e68e72b6b9052b1ef582996a1f4ed160818e359eaa1267be2515053edfebb4"
+      },
+      {
+        "bucket": 17,
+        "count": 50003,
+        "exact_initial_field_matches": "50003",
+        "actor_ids_sha256": "b60fff72c696f70dcad928ebfbb3d4bf363fd6e490c3c5e11356ec7a99b086f8"
+      },
+      {
+        "bucket": 18,
+        "count": 50107,
+        "exact_initial_field_matches": "50107",
+        "actor_ids_sha256": "1de0a3d6134e92ded356a5835222c2e12853ebb6cff76c38e8880674b96aa9fc"
+      },
+      {
+        "bucket": 19,
+        "count": 50139,
+        "exact_initial_field_matches": "50139",
+        "actor_ids_sha256": "b3632aa860604c27a67205cc2ea90af4e11e574c2801efd381f8fdfed8908a7d"
+      }
+    ]
+  },
+  "accounting": {
+    "id": "0",
+    "actor_initial_cash_cents": "250000000000",
+    "human_entry_cash_cents": "0",
+    "recapitalization_cash_cents": "0",
+    "initial_share_supply": "25000000",
+    "human_entry_count": "0",
+    "recapitalization_count": "0"
+  },
+  "historical_evidence_preserved": true,
+  "history": {
+    "run_record": {
+      "count": 4,
+      "sha256": "521cea5b87432ada5b6ab695d3d99bb4a99708b9d6d6a43a817f7b7f86d93b2a"
+    },
+    "detailed_benchmark_receipts": {
+      "count": 10313,
+      "sha256": "112a25e6a65ed62f94a01a4f2ed4e8e2355eea9d6dfdbe6b921a71c41bf2feb0"
+    },
+    "run_cadence": {
+      "count": 3,
+      "sha256": "afd4bc685a04aa3bf968a847b9a6ddd1dfdb29ef8a5f90f511885e62bb340cf6"
+    },
+    "benchmark_result": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "validated_run": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "order_watermark": {
+      "count": 2,
+      "sha256": "ed988f4015673c0beefa01e1ddb2ed5c247ef64ffb95d2a27e378daf8f47c762"
+    },
+    "admin_allowlist": {
+      "count": 1,
+      "sha256": "e76aecba900a4797532a0d69df5a8b59e478583e7a17a549bf334124e7678020"
+    },
+    "benchmark_reader": {
+      "count": 1,
+      "sha256": "e76aecba900a4797532a0d69df5a8b59e478583e7a17a549bf334124e7678020"
+    }
+  },
+  "old_world_reset": true,
+  "simulation_started": false,
+  "chaos_triggered_by_operator": false,
+  "capacity_qualification": false
+}
