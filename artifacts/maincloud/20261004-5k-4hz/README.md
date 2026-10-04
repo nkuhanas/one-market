@@ -11,7 +11,8 @@ the same paused tick at **2026-10-04 14:50:21 UTC**.
   first as `f1ff0e8017e74d38ccc14337f65eb27e58fa9f3f`.
 - 4 Hz/public CHAOS/$5k PR [#12](https://github.com/nkuhanas/one-market/pull/12)
   merged as `9d90267e794803bb9c5ee6d675019fce15fd30af`. Both PR-head CI runs
-  and post-merge main CI passed. Unrelated frontend PR #11 was not merged.
+  and post-merge main CI passed. Unrelated frontend PR #11 was not merged by
+  this rollout; it landed independently afterward and is preserved in main.
 - Regular WASM SHA-256:
   `9d7b545617c0e446c87a1c1d9dd12be170d9f5fe44b3779122dfde1842f3ae94`.
 - Configuration BLAKE3:

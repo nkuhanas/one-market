@@ -98,7 +98,8 @@ conservation audits, all 710 tick observations and the bounded-run summary.
 The old world was explicitly cleared and all 1M new actors were verified with
 the exact $5k allocation before starting. Human bankroll configuration stayed
 $100k, and historical run evidence was preserved. Maincloud and Vercel were
-updated from merged commit `9d90267`; unrelated frontend PR #11 was untouched.
+updated from merged commit `9d90267`; unrelated frontend PR #11 was untouched
+by this rollout and its subsequent independent main merge is preserved.
 
 The 180-second 4 Hz session stopped itself at its deadline. Final tick 710,
 price $95.48, 1M ACTIVE actors, no tick/stop schedules. Effective rate was
