@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ActivityFeed } from './components/activity-feed';
 import { ActorsPanel } from './components/actors-panel';
 import { ChaosBanner } from './components/chaos-banner';
+import { CursorTrail } from './components/cursor-trail';
 import { Explainer } from './components/explainer';
 import { Hero } from './components/hero';
 import { Header } from './components/header';
@@ -34,6 +35,8 @@ export function App() {
 
   return (
     <div className={`app ${market.shock ? 'app-chaos' : ''}`}>
+      <CursorTrail />
+
       <Header status={market.status} logicalTick={snapshot?.logicalTick} />
 
       <main>

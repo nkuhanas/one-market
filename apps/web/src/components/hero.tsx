@@ -123,10 +123,6 @@ export function Hero({
           Open the market
         </a>
       </div>
-      <p className="hero-reassure">
-        No sign-up. It is already running, and you are watching the same world
-        as everyone else on this page.
-      </p>
     </section>
   );
 }
