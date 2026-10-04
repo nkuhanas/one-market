@@ -31,12 +31,15 @@ export function MarketHeader({ snapshot }: { snapshot?: MarketSnapshot }) {
           {snapshot ? formatUsd(snapshot.priceCents) : '—'}
         </strong>
         {moveBps !== undefined && moveBps !== 0 && (
-          <span className={`market-move tone-${tone}`}>
-            {formatSignedPercent(moveBps)} on the last clearing
+          <span className={`market-move chip-move tone-${tone}`}>
+            {formatSignedPercent(moveBps)}
           </span>
         )}
         {moveBps === 0 && (
           <span className="market-move">Unchanged on the last clearing</span>
+        )}
+        {moveBps !== undefined && moveBps !== 0 && (
+          <span className="market-move">on the last clearing</span>
         )}
       </div>
     </section>
