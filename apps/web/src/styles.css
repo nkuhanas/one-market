@@ -47,7 +47,7 @@
 
   --text: #f0f2f5;
   --text-2: #9ba3ad;
-  --text-3: #6b737d;
+  --text-3: #7f8894;
 
   --accent: #ffb020;
   --accent-dim: #a86f08;
@@ -352,7 +352,7 @@ main {
 
 .trading {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 340px);
   gap: 20px;
   align-items: start;
 }
@@ -675,7 +675,7 @@ button.primary:disabled {
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
   gap: 1px;
   background: var(--line-soft);
   border: 1px solid var(--line-soft);
@@ -717,7 +717,7 @@ button.primary:disabled {
 
 .panels {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
   gap: 20px;
   align-items: start;
 }
