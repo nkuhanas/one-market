@@ -61,6 +61,13 @@ both the current configuration hash and the historical run configuration hash;
 its `build_hash` remains the original run's build, not proof of the newly
 published module. Record the new production WASM SHA-256 separately.
 
+The authorized compact-storage deployment is recorded in the
+[2026-10-04 Maincloud evidence](../artifacts/maincloud/20261004-compact-actor-storage/README.md).
+That session ended paused at tick 2121 with 1M actors and the regular compact
+build deployed. Future publication must retain support for compact actors;
+see [actor storage operations](actor-storage.md) before any rollback. The
+three-minute probe improved throughput but did not sustain the selected 5 Hz.
+
 ## Connect the frontend
 
 Set these public values in the ignored root `.env` for local Vite/Docker use,

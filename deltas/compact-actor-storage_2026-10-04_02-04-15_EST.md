@@ -1,8 +1,10 @@
 # Lossless compact actor storage and host write pressure
 
-Status: implemented and locally verified; not deployed. Branch:
+Status: implemented, locally verified, pushed, and deployed after authorization.
+The three-minute Maincloud probe completed; the world is paused. Branch:
 `perf/compact-actor-storage`, based on the retained actor-cost patch (`f305566`).
-No Maincloud tier change, production reset, deployment, or frontend change.
+[PR #10](https://github.com/nkuhanas/one-market/pull/10) remains open, not merged.
+No Maincloud tier change, production reset, SPEC edit, or frontend-source change.
 
 ## Evidence and hypothesis
 
@@ -52,10 +54,10 @@ and candidate locally at 1M actors / 5 Hz, three viewers, and five offered human
 orders per second, without overlapping builds or benchmark runs. Retain phase
 timings, host metrics, receipts, conservation/coverage checks and limitations.
 
-No new capacity claim follows from row size or a short local probe. Maincloud
-stays paused; production effectiveness, especially host-side stalls, needs a
-separately authorized bounded measurement after local acceptance. SPEC.md is
-unchanged: physical encoding does not narrow the logical numeric domain.
+No new capacity claim follows from row size or a short local probe. Production
+effectiveness, especially host-side stalls, requires a separately authorized
+bounded measurement after local acceptance; its results are recorded below.
+SPEC.md is unchanged: physical encoding does not narrow the logical numeric domain.
 
 ## Results (2026-10-04)
 
@@ -114,8 +116,55 @@ Evidence:
 - [Preserved candidate binaries](../artifacts/builds/compact-actor-storage/README.md)
 - [Migration and rollback procedure](../docs/actor-storage.md)
 
-Maincloud was checked read-only: still paused at tick 1374, 1M active actors,
-no scheduled ticks. Its earlier run remains FAILED for missed slots; this patch
-does not rehabilitate that evidence. No push, merge, deployment, tier change,
-production migration or reset was performed. A bounded Maincloud comparison
-after explicit paused migration is the next measurement, not a promised 5 Hz win.
+At local acceptance, Maincloud was checked read-only: paused at tick 1374,
+1M active actors, no scheduled ticks. No production change or push had been
+performed at that point. Its earlier run remains FAILED for missed slots;
+this patch does not rehabilitate that evidence.
+
+## Authorized Maincloud result (2026-10-04)
+
+Pushed code commit `252b5c7`; both push and PR CI passed, including backend,
+browser and non-destructive upgrade gates. Published the retained profiling
+build with `--delete-data=never`, then migrated the paused existing world in
+2,000 bounded 500-actor calls. Before/after canonical fingerprints match for
+all 1M logical actors; world state, workload, cash and shares were preserved.
+No reset, tier change or cadence change occurred.
+
+The three-minute 5 Hz continuation completed 747 ticks / 37,350,140 actor
+updates. The server-side stop fired without an external pause fallback, and
+no tick started at or after its deadline. The regular, non-profiling compact
+build is now deployed; a full-population post-run audit passed. Maincloud is
+paused at tick 2121, with all 1M actors compact and ACTIVE.
+
+| Maincloud metric                   | Previous patch | Compact storage |
+| ---------------------------------- | -------------: | --------------: |
+| Effective cadence over 180 s       |       3.917 Hz |        4.150 Hz |
+| Skipped application slots          |            194 |             152 |
+| Mean start interval                |     255.336 ms |      240.886 ms |
+| Start-interval p99                 |     718.140 ms |      274.579 ms |
+| Worst start interval               |     803.540 ms |      942.843 ms |
+| Start intervals at least 400 ms    |              9 |               5 |
+| Recurrence of those long intervals |    82–83 ticks |       146 ticks |
+| Sampled mean reducer body          |     144.895 ms |      152.105 ms |
+
+Throughput improved about 6% and missed slots fell about 22%, but **the run
+still FAILED for missed slots and does not establish 1M / 5 Hz capacity**.
+The worst stall increased. Long-stall spacing increased almost exactly with
+the inverse encoded row size (132/74), supporting the write-volume/commit-log
+hypothesis without proving the managed server's underlying cause. Even
+excluding gaps of 400 ms or more, mean starts were 238.076 ms apart, above
+the 200 ms budget: infrequent stalls are not the only remaining limit.
+
+The reducer body did not get faster on this cloud probe. Sampled median time
+outside the instrumented body fell from 102.413 to 87.044 ms; this includes
+host work, scheduling, queueing and possible idle time, not isolated commit
+time. The current 37 phase samples missed the worst stalls. The runs were
+sequential in the same evolving world, with 4 connected identities previously
+and 3–4 now, and no synthetic viewer/order load. They are not a controlled
+fresh-world A/B or qualification run.
+
+The observed ACTIVE count stayed at 1M, price stayed at $98.33–$103.37, every tick traded,
+and no recapitalization or revival grants occurred. This is short-run health
+evidence, not a long-horizon stability claim. Full receipts, phase logs,
+preservation fingerprints, deployed hashes and limitations are retained in
+the [Maincloud evidence](../artifacts/maincloud/20261004-compact-actor-storage/README.md).

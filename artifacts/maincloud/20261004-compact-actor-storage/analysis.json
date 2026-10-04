@@ -1,0 +1,259 @@
+{
+  "receipt_coverage_and_membership_verified": true,
+  "preserved_manifests": true,
+  "unchanged_workload_hash": true,
+  "connected_identity_count": [
+    "3",
+    "4"
+  ],
+  "matched_profile_intervals": 37,
+  "body_us": {
+    "count": 37,
+    "mean": 152104.71427027028,
+    "min": 146528.342,
+    "p50": 150257.31300000002,
+    "p99": 175166.69,
+    "max": 175166.69
+  },
+  "paired_next_start_gap_us": {
+    "count": 37,
+    "mean": 239814.62162162163,
+    "min": 231593,
+    "p50": 237660,
+    "p99": 284427,
+    "max": 284427
+  },
+  "outside_instrumented_body_us": {
+    "count": 37,
+    "mean": 87709.90735135134,
+    "min": 84096.003,
+    "p50": 87043.97400000002,
+    "p99": 109260.31,
+    "max": 109260.31
+  },
+  "interpretation": "Outside-body duration is NOT isolated commit time or CPU time. Includes uninstrumented reducer entry/return, host transaction/replication/subscription processing, scheduling, queueing and possible idle time. Phase timers include host calls inside the reducer.",
+  "paired": [
+    {
+      "logical_tick": "1389",
+      "body_us": 149305.5,
+      "next_start_gap_us": 237218,
+      "outside_body_us": 87912.5
+    },
+    {
+      "logical_tick": "1410",
+      "body_us": 148402.906,
+      "next_start_gap_us": 233425,
+      "outside_body_us": 85022.09400000001
+    },
+    {
+      "logical_tick": "1431",
+      "body_us": 151848.984,
+      "next_start_gap_us": 239539,
+      "outside_body_us": 87690.016
+    },
+    {
+      "logical_tick": "1452",
+      "body_us": 152494.02599999998,
+      "next_start_gap_us": 239538,
+      "outside_body_us": 87043.97400000002
+    },
+    {
+      "logical_tick": "1473",
+      "body_us": 150257.31300000002,
+      "next_start_gap_us": 237418,
+      "outside_body_us": 87160.68699999998
+    },
+    {
+      "logical_tick": "1494",
+      "body_us": 166531.294,
+      "next_start_gap_us": 259356,
+      "outside_body_us": 92824.706
+    },
+    {
+      "logical_tick": "1515",
+      "body_us": 149882.279,
+      "next_start_gap_us": 237660,
+      "outside_body_us": 87777.72099999999
+    },
+    {
+      "logical_tick": "1536",
+      "body_us": 175166.69,
+      "next_start_gap_us": 284427,
+      "outside_body_us": 109260.31
+    },
+    {
+      "logical_tick": "1557",
+      "body_us": 154322.361,
+      "next_start_gap_us": 242943,
+      "outside_body_us": 88620.639
+    },
+    {
+      "logical_tick": "1578",
+      "body_us": 150951.487,
+      "next_start_gap_us": 237998,
+      "outside_body_us": 87046.513
+    },
+    {
+      "logical_tick": "1599",
+      "body_us": 153991.76700000002,
+      "next_start_gap_us": 242564,
+      "outside_body_us": 88572.23299999998
+    },
+    {
+      "logical_tick": "1600",
+      "body_us": 151038.53100000002,
+      "next_start_gap_us": 237504,
+      "outside_body_us": 86465.46899999998
+    },
+    {
+      "logical_tick": "1621",
+      "body_us": 148629.137,
+      "next_start_gap_us": 233378,
+      "outside_body_us": 84748.86300000001
+    },
+    {
+      "logical_tick": "1642",
+      "body_us": 147345.702,
+      "next_start_gap_us": 231675,
+      "outside_body_us": 84329.29800000001
+    },
+    {
+      "logical_tick": "1663",
+      "body_us": 149374.10199999998,
+      "next_start_gap_us": 234425,
+      "outside_body_us": 85050.89800000002
+    },
+    {
+      "logical_tick": "1684",
+      "body_us": 148148.146,
+      "next_start_gap_us": 232629,
+      "outside_body_us": 84480.85399999999
+    },
+    {
+      "logical_tick": "1705",
+      "body_us": 157176.858,
+      "next_start_gap_us": 247552,
+      "outside_body_us": 90375.14199999999
+    },
+    {
+      "logical_tick": "1726",
+      "body_us": 161241.25699999998,
+      "next_start_gap_us": 252801,
+      "outside_body_us": 91559.74300000002
+    },
+    {
+      "logical_tick": "1747",
+      "body_us": 153193.429,
+      "next_start_gap_us": 241480,
+      "outside_body_us": 88286.571
+    },
+    {
+      "logical_tick": "1768",
+      "body_us": 153870.032,
+      "next_start_gap_us": 252827,
+      "outside_body_us": 98956.968
+    },
+    {
+      "logical_tick": "1789",
+      "body_us": 158082.55,
+      "next_start_gap_us": 247367,
+      "outside_body_us": 89284.45000000001
+    },
+    {
+      "logical_tick": "1810",
+      "body_us": 152512.15899999999,
+      "next_start_gap_us": 239749,
+      "outside_body_us": 87236.84100000001
+    },
+    {
+      "logical_tick": "1831",
+      "body_us": 151668.442,
+      "next_start_gap_us": 237791,
+      "outside_body_us": 86122.55799999999
+    },
+    {
+      "logical_tick": "1852",
+      "body_us": 151710.405,
+      "next_start_gap_us": 238107,
+      "outside_body_us": 86396.595
+    },
+    {
+      "logical_tick": "1873",
+      "body_us": 149844.05000000002,
+      "next_start_gap_us": 234811,
+      "outside_body_us": 84966.94999999998
+    },
+    {
+      "logical_tick": "1894",
+      "body_us": 153385.248,
+      "next_start_gap_us": 238881,
+      "outside_body_us": 85495.75200000001
+    },
+    {
+      "logical_tick": "1915",
+      "body_us": 149814.014,
+      "next_start_gap_us": 234036,
+      "outside_body_us": 84221.986
+    },
+    {
+      "logical_tick": "1936",
+      "body_us": 147022.14,
+      "next_start_gap_us": 232636,
+      "outside_body_us": 85613.85999999999
+    },
+    {
+      "logical_tick": "1957",
+      "body_us": 146528.342,
+      "next_start_gap_us": 234269,
+      "outside_body_us": 87740.658
+    },
+    {
+      "logical_tick": "1978",
+      "body_us": 149448.02300000002,
+      "next_start_gap_us": 235463,
+      "outside_body_us": 86014.97699999998
+    },
+    {
+      "logical_tick": "1999",
+      "body_us": 147420.427,
+      "next_start_gap_us": 232795,
+      "outside_body_us": 85374.573
+    },
+    {
+      "logical_tick": "2000",
+      "body_us": 149138.42500000002,
+      "next_start_gap_us": 233756,
+      "outside_body_us": 84617.57499999998
+    },
+    {
+      "logical_tick": "2021",
+      "body_us": 155709.82200000001,
+      "next_start_gap_us": 242993,
+      "outside_body_us": 87283.17799999999
+    },
+    {
+      "logical_tick": "2042",
+      "body_us": 148346.231,
+      "next_start_gap_us": 232536,
+      "outside_body_us": 84189.769
+    },
+    {
+      "logical_tick": "2063",
+      "body_us": 147913.554,
+      "next_start_gap_us": 232254,
+      "outside_body_us": 84340.446
+    },
+    {
+      "logical_tick": "2084",
+      "body_us": 147496.997,
+      "next_start_gap_us": 231593,
+      "outside_body_us": 84096.003
+    },
+    {
+      "logical_tick": "2105",
+      "body_us": 148661.798,
+      "next_start_gap_us": 237747,
+      "outside_body_us": 89085.20199999999
+    }
+  ]
+}

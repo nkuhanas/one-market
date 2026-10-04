@@ -1,13 +1,17 @@
 # Compact actor storage builds
 
-Retained locally verified binaries; neither has been deployed to Maincloud.
+Retained locally verified binaries from source commit `252b5c7`. The profiling
+build was deployed for the authorized three-minute Maincloud probe; the regular
+build was restored afterward with `--delete-data=never`, preserving all rows.
+Maincloud is paused at tick 2121. See the
+[production evidence](../../maincloud/20261004-compact-actor-storage/README.md).
 SpacetimeDB CLI/runtime/SDK 2.10.1, committed Cargo lockfile. Only the profiling
 build emits sampled phase timers; ordinary publication should use `regular.wasm`.
 
-| File | SHA-256 |
-| --- | --- |
-| `regular.wasm` | `b9cd69c6bdf7b3b16529b60ffd9fed0567a7449ac259c725a600b68b88f71f6c` |
-| `profile.wasm` | `e3d6299f56716aa8c05b56f9714f849d2ab133270fd6956590943c4b961b1bf2` |
+| File                                            | SHA-256                                                            |
+| ----------------------------------------------- | ------------------------------------------------------------------ |
+| `regular.wasm`                                  | `b9cd69c6bdf7b3b16529b60ffd9fed0567a7449ac259c725a600b68b88f71f6c` |
+| `profile.wasm`                                  | `e3d6299f56716aa8c05b56f9714f849d2ab133270fd6956590943c4b961b1bf2` |
 | Baseline `../actor-cost/candidate-profile.wasm` | `54c64c6970696efc8eaeeb5f72e203e3b59ec37a76859940c1d0f980de3bc056` |
 
 See the [delta](../../../deltas/compact-actor-storage_2026-10-04_02-04-15_EST.md)
