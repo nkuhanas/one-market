@@ -102,3 +102,19 @@ export function microsToMillis(us: bigint): number {
 export function formatDollars(value: number): string {
   return usdFormat.format(value);
 }
+
+/** Shares, orders and other whole counts. */
+export function formatShares(value: bigint): string {
+  return countFormat.format(value);
+}
+
+/** Signed money, for P&L columns where the sign carries the meaning. */
+export function formatSignedUsd(cents: bigint, field = 'pnl_cents'): string {
+  const text = usdFormat.format(centsToDollars(cents, field));
+  return cents > 0n ? `+${text}` : text;
+}
+
+/** A tick count expressed as elapsed simulation time at the target cadence. */
+export function ticksToSeconds(ticks: bigint, hz: number): number {
+  return toNumberChecked(ticks, 'ticks') / hz;
+}

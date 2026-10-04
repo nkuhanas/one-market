@@ -1,185 +1,139 @@
 import { useState } from 'react';
-import { priceChartView } from './charts/price-chart';
-import { ActivityTape } from './components/activity-tape';
-import { Channel } from './components/channel';
+import { ActivityFeed } from './components/activity-feed';
+import { ActorsPanel } from './components/actors-panel';
 import { ChaosBanner } from './components/chaos-banner';
-import { EpochMeter } from './components/epoch-meter';
-import { TradePanel } from './components/trade-panel';
-import { previewOverrides } from './dev/preview';
-import {
-  live,
-  mapPending,
-  pending,
-  TARGET_HZ,
-  TICKS_PER_EPOCH,
-  type Pending,
-} from './market/contract';
-import { useLiveMarket } from './market/use-live-market';
-import { formatCount, formatUsd } from './lib/units';
-
-const WAITING: Pending<never> = pending('Waiting for the shared clock');
+import { Header } from './components/header';
+import { MarketHeader } from './components/market-header';
+import { OrderPanel } from './components/order-panel';
+import { PriceChart, type RangeId } from './components/price-chart';
+import { SystemStatus } from './components/system-status';
+import { Metric } from './components/value';
+import { formatCount } from './lib/units';
+import { live, pending, TARGET_HZ } from './market/contract';
+import { useFillRate } from './market/use-fill-rate';
+import { useOneMarket } from './market/use-one-market';
 
 export function App() {
-  const {
-    snapshot,
-    priceHistory,
-    priceHistoryIsClientObserved,
-    verifiedCapacity,
-    news: liveNews,
-    activity: liveActivity,
-    status,
-    error,
-    ping,
-    reconnect,
-  } = useLiveMarket();
-  // Dev-only state preview; Vite drops this branch from production builds.
-  const preview = import.meta.env.DEV ? previewOverrides() : undefined;
-  const news = preview?.news ?? liveNews;
-  const activity = preview?.activity ?? liveActivity;
-  const shock = news.state === 'live' ? news.value : undefined;
+  const market = useOneMarket();
+  const [range, setRange] = useState<RangeId>('live');
+  const { snapshot } = market;
 
-  const [pingMessage, setPingMessage] = useState('');
-  const [pinging, setPinging] = useState(false);
-
-  const chart = priceChartView({
-    samples: priceHistory,
-    clientObserved: priceHistoryIsClientObserved,
-  });
-
-  async function sendPing() {
-    setPinging(true);
-    setPingMessage('');
-    try {
-      await ping();
-      setPingMessage('Ping confirmed');
-    } catch (cause) {
-      setPingMessage(cause instanceof Error ? cause.message : 'Ping failed');
-    } finally {
-      setPinging(false);
-    }
-  }
+  // A rate has to come from the change in a counter over elapsed time. The
+  // cumulative total is not a rate, and the runtime does not publish the
+  // counter's value at the window start, so this browser measures it itself.
+  const fillRate = useFillRate(snapshot?.cumulativeOrdersFilled);
 
   return (
-    <div className={`terminal ${shock ? 'terminal-chaos' : ''}`}>
-      <header className="masthead">
-        <a className="wordmark" href="/">
-          One Market
-        </a>
-        <p className="masthead-note">
-          One market, shared by everyone watching. All money is synthetic.
-        </p>
-        <span
-          className={`link ${status === 'Connected' ? 'link-live' : ''}`}
-          data-testid="connection-status"
-        >
-          {status}
-        </span>
-      </header>
+    <div className={`app ${market.shock ? 'app-chaos' : ''}`}>
+      <Header status={market.status} logicalTick={snapshot?.logicalTick} />
 
-      {shock && <ChaosBanner news={shock} />}
+      <main>
+        {market.shock && <ChaosBanner shock={market.shock} />}
 
-      <section
-        className={`hero hero-${chart.direction}`}
-        aria-label="Live market state"
-      >
-        <div className="hero-plot">{chart.element}</div>
+        <MarketHeader snapshot={snapshot} />
 
-        <div className="hero-face">
-          <div className="hero-price">
-            <h2>ONE</h2>
-            <strong>
-              {snapshot ? (
-                formatUsd(snapshot.priceCents)
-              ) : (
-                <span className="awaiting">No price</span>
-              )}
-            </strong>
-            <p>{chart.caption}</p>
-          </div>
-
-          <div className="hero-clock">
-            <h2>Tick</h2>
-            <strong data-testid="tick">
-              {snapshot ? (
-                formatCount(snapshot.logicalTick)
-              ) : (
-                <span className="awaiting">No clock</span>
-              )}
-            </strong>
-          </div>
+        <div className="trading">
+          <PriceChart
+            samples={market.priceHistory}
+            range={range}
+            onRange={setRange}
+          />
+          <OrderPanel
+            snapshot={snapshot}
+            trader={market.trader}
+            pendingOrder={market.pendingOrder}
+            connected={market.status === 'Connected'}
+            onEnter={market.enterMarket}
+            onPlace={market.placeOrder}
+          />
         </div>
 
-        <div className="hero-meter">
-          <EpochMeter slot={snapshot?.slot ?? -1} />
-          <p>
-            {snapshot
-              ? `Epoch ${formatCount(snapshot.epoch)} · slot ${snapshot.slot + 1} of ${TICKS_PER_EPOCH}`
-              : 'Waiting for the shared clock'}
-            <span className="hero-sep" />
-            {TARGET_HZ} Hz target
-          </p>
+        <section className="metrics" aria-label="Market statistics">
+          <Metric
+            label="Autonomous actors"
+            value={
+              snapshot
+                ? live(formatCount(snapshot.actorCount))
+                : pending('Connecting')
+            }
+            hint={
+              snapshot
+                ? `${formatCount(snapshot.activeActorCount)} trading now`
+                : undefined
+            }
+            tone="accent"
+          />
+          <Metric
+            label="Fills / sec"
+            value={
+              fillRate === undefined
+                ? pending('Measuring')
+                : live(
+                    fillRate.toLocaleString('en-US', {
+                      maximumFractionDigits: 1,
+                    }),
+                  )
+            }
+            hint="Observed by this browser from counter deltas"
+          />
+          <Metric
+            label="Connected identities"
+            value={
+              snapshot
+                ? live(formatCount(snapshot.connectedIdentityCount))
+                : pending('Connecting')
+            }
+            hint="Distinct browsers watching this world"
+          />
+          <Metric
+            label="Humans trading"
+            value={
+              snapshot
+                ? live(formatCount(snapshot.registeredHumanTraderCount))
+                : pending('Connecting')
+            }
+          />
+          <Metric
+            label="Verified capacity"
+            value={
+              market.capacity.state === 'live'
+                ? live(
+                    `${formatCount(market.capacity.value.actorCount)} @ ${Math.round(
+                      1_000_000 / Number(market.capacity.value.tickIntervalUs),
+                    )} Hz`,
+                  )
+                : market.capacity
+            }
+            hint={
+              market.capacity.state === 'live'
+                ? `${market.capacity.value.environment} · ${market.capacity.value.workloadProfile}`
+                : `Never taken from the live population`
+            }
+          />
+        </section>
+
+        <div className="panels">
+          <ActivityFeed activity={market.activity} />
+          <ActorsPanel
+            actors={market.actors}
+            actorCount={snapshot?.actorCount}
+          />
         </div>
-      </section>
 
-      <section className="channels" aria-label="Population and throughput">
-        <Channel
-          label="Autonomous actors"
-          value={snapshot ? live(formatCount(snapshot.actorCount)) : WAITING}
-          note="Persistent policy actors in the world"
+        <SystemStatus
+          snapshot={snapshot}
+          status={market.status}
+          error={market.error}
+          pricePoints={market.priceHistory.length}
+          onPing={market.ping}
+          onReconnect={market.reconnect}
         />
-        <Channel
-          label="Filled orders / sec"
-          value={mapPending(
-            snapshot?.filledOrdersPerSecond ?? WAITING,
-            (rate) => rate.toLocaleString('en-US'),
-          )}
-        />
-        <Channel
-          label="Connected identities"
-          value={mapPending(
-            snapshot?.connectedIdentityCount ?? WAITING,
-            formatCount,
-          )}
-        />
-        <Channel
-          label="Verified capacity"
-          value={mapPending(
-            verifiedCapacity,
-            (result) =>
-              `${formatCount(result.actorCount)} @ ${result.tickHz} Hz`,
-          )}
-        />
-      </section>
+      </main>
 
-      <div className="floor">
-        <ActivityTape activity={activity} />
-        <TradePanel enabled={false} />
-      </div>
-
-      <footer className="footer">
-        <p>
-          Open this page in a second window. Both read the same tick from the
-          same database.
-        </p>
-        <div className="footer-actions">
-          <button
-            disabled={status !== 'Connected' || pinging}
-            onClick={sendPing}
-          >
-            {pinging ? 'Sending…' : 'Ping runtime'}
-          </button>
-          <p className="ping-result" role="status">
-            {pingMessage}
-          </p>
-        </div>
+      <footer className="foot">
+        <span>One Market · one persistent synthetic world</span>
+        <span>All money is synthetic. {TARGET_HZ} Hz target cadence.</span>
       </footer>
-
-      {error && (
-        <div className="error" role="alert">
-          <p>{error}</p>
-          <button onClick={reconnect}>Reconnect</button>
-        </div>
-      )}
     </div>
   );
 }
