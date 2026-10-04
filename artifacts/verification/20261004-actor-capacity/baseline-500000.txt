@@ -1,0 +1,23 @@
+ Container one-market-db-1 Running 
+ Container one-market-db-1 Waiting 
+ Container one-market-db-1 Healthy 
+ Container one-market-tools-run-b7966e296e51 Creating 
+ Container one-market-tools-run-b7966e296e51 Created 
+ Container one-market-tools-run-9d1bdadf569d Creating 
+ Container one-market-tools-run-9d1bdadf569d Created 
+(WASM) Skipping build. Instead we are publishing artifacts/builds/fixed-row.wasm
+You are about to publish to a non-local server: db
+Skipping confirmation due to --yes
+Uploading to http://db:3000 => http://db:3000
+Checking for breaking changes...
+Publishing module...
+Created new database with name: one-market-explore-500000-normal-20261004t021631z-140356, identity: c2006b9ecb136afdabe18e0de43e2a95cc6972fb443165415baa8d0ccfe5df1f
+ Container one-market-tools-run-f0a93f9f0228 Creating 
+ Container one-market-tools-run-f0a93f9f0228 Created 
+EXPLORE NORMAL repeat 1/2: 500000 actors, 5s warmup + 20s measurement, 10 viewers, 5 offered orders/s; run 1; initialization=2356ms
+  offered 0/125; committed ticks 0
+  EXPLORE_FAIL: p99=68956us, updates=7274786, skipped=135, load=true, audit=true; runtime failure or conservation failure before intentional stop; incomplete intended-slot evidence; slot sequence, deadline, or actor coverage mismatch; skipped application slots; P99 start lateness is not below 50ms
+EXPLORE NORMAL repeat 2/2: 500000 actors, 5s warmup + 20s measurement, 10 viewers, 5 offered orders/s; run 2; initialization=2244ms
+  offered 0/125; committed ticks 0
+  EXPLORE_FAIL: p99=74801us, updates=7175090, skipped=139, load=true, audit=true; runtime failure or conservation failure before intentional stop; incomplete intended-slot evidence; slot sequence, deadline, or actor coverage mismatch; skipped application slots; P99 start lateness is not below 50ms
+

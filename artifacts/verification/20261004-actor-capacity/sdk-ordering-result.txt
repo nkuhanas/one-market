@@ -1,0 +1,100 @@
+ Container one-market-web-run-fb6e8333e46e Creating 
+ Container one-market-web-run-fb6e8333e46e Created 
+{
+  "sdk_version": "2.10.1",
+  "node_version": "v24.21.0",
+  "source_sha256": {
+    "decompress": "0ed5b8626644b449e5a65e28b805ce8b7205554bd9d062274fd1ec224d824001",
+    "websocket_decompress_adapter": "85aa161319c48115626d08ada37f82ab9b61621317307f7eed39dd9fe656d007"
+  },
+  "wire_order": [
+    1,
+    2
+  ],
+  "mixed_gzip_then_plain_callback_order": [
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      1
+    ]
+  ],
+  "plain_then_plain_callback_order": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "finding": "The unmodified SDK starts decompression concurrently and invokes the later plain frame callback before the earlier gzip frame callback.",
+  "limitation": "This reproduces the adapter ordering defect with real gzip data. CI did not retain a wire trace, so attribution of its stale cache to this defect remains an evidence-backed hypothesis."
+}

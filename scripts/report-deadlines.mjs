@@ -3,6 +3,8 @@
 // to a particular reducer/thread or establish a causal storage bottleneck.
 import fs from 'node:fs';
 import path from 'node:path';
+import process from 'node:process';
+import console from 'node:console';
 
 const [trace, artifact] = process.argv.slice(2);
 if (!trace || !artifact) {

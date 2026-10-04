@@ -351,3 +351,76 @@ separate worktree. The final candidate was qualified with a non-diagnostic build
 no builds, profiling or smoke/restart checks ran concurrently with measurement.
 Re-auditing live readbacks requires the retained named benchmark databases; a
 fresh clone can reproduce them by running `benchmark` and auditing its new folder.
+
+## Follow-up delta: controls and CI escalation (2026-10-04 UTC)
+
+The sections above describe the preserved fixed-row capacity snapshot. The
+subsequent merged frontend changes are retained unchanged in this follow-up.
+Implementation of the [timestamped delta](../deltas/actor-capacity-optimization_2026-10-03_20-57-22_EST.md)
+is incomplete in draft [PR #3](https://github.com/nkuhanas/one-market/pull/3).
+No direct-index or digest change has been implemented yet, and no new capacity
+has been qualified. The production module, specification, workload, bindings,
+and frontend remain unchanged from the PR's upstream base `cbcf187`.
+
+Fresh controls used the same preserved fixed-row WASM, hash
+`2b3b53fd6f709de7236c600d970805cf35dd80f8c75fd2cb29085048a55dcbcb`, and existing
+production harness. Each uninstrumented NORMAL population used two fresh runs
+with 5s warm-up, 20s measurement, ten viewers, five offered orders/sec, confirmed
+reads, coverage validation and a post-run conservation audit.
+
+|  Actors | P99 start lateness, repeats 1 / 2 (µs) | Skips, repeats 1 / 2 | Short-probe result | Archive under `artifacts/exploration/` |
+| ------: | -------------------------------------: | -------------------: | ------------------ | -------------------------------------- |
+| 325,000 |                        20,506 / 19,391 |                0 / 0 | Both pass          | `20261004T021322Z-124451`              |
+| 337,500 |                        13,814 / 18,188 |                0 / 0 | Both pass          | `20261004T021425Z-129660`              |
+| 350,000 |                        37,745 / 37,201 |                0 / 0 | Both pass          | `20261004T021528Z-135023`              |
+| 500,000 |                        68,956 / 74,801 |            135 / 139 | Both fail          | `20261004T021631Z-140356`              |
+
+Both 500k failures retained offered load and passed the conservation audit;
+measured updates were 7,274,786 and 7,175,090 over 20 wall seconds. These failed
+rates are comparisons for future experiments, not capacity claims.
+
+A separate 350k CHAOS 30+90s diagnostic passed with P99 25,151 µs, no skips,
+31,500,000 measured updates, maintained load and passing conservation. It did
+not reproduce the earlier isolated deadline misses. The process sampler retained
+1,131 approximately 100ms samples and correlated 2,396 receipt windows. Its
+largest lateness was 35,700 µs; the surrounding 318ms process-wide sample window
+included one major fault, about 88 MB of writes, 377ms summed thread CPU time,
+and 2.72ms summed thread runqueue time. The windows overlap and include other
+runtime work: these observations do not prove a storage or scheduler cause.
+Thread churn also limits interpretation of aggregate scheduler counter deltas.
+The instrumented run cannot qualify capacity.
+
+Reproduction (using the `capacity_run` prefix above):
+
+```sh
+capacity_run POPULATION=350000 PROFILE=CHAOS MODULE_WASM=artifacts/builds/fixed-row.wasm \
+  HARNESS_BIN=target/release/one-market-benchmark ./scripts/profile-deadlines
+capacity_run docker compose --project-directory . -f infra/docker-compose.yml run --rm --no-deps web \
+  node scripts/report-deadlines.mjs artifacts/profiling/deadlines-20261004T021050Z-102855 \
+  artifacts/exploration/20261004T021051Z-103017/350000-chaos/chaos-1.json
+# Substitute each control population; failures are expected at 500k.
+capacity_run POPULATION=500000 PROFILE=NORMAL REPEATS=2 MODULE_WASM=artifacts/builds/fixed-row.wasm \
+  HARNESS_BIN=target/release/one-market-benchmark ./scripts/explore
+```
+
+The pause-test change uses owner-authorized HTTP SQL reads and bounded cache
+synchronization. It passed local static checks and three fresh 24-test backend
+runs, including twelve new regression cases. CI nevertheless found persistent
+divergence: server tick 60, disabled/generation 2/FAILED/no schedule, versus cache
+tick 60, enabled/generation 1/RUNNING/one schedule after five seconds. The failure
+is retained rather than hidden with retries or weakened assertions.
+
+The installed TypeScript SDK 2.10.1 decompresses WebSocket messages concurrently
+before its inbound queue. A controlled diagnostic using the unmodified adapter
+and real gzip payloads reversed callback order in ten of ten mixed gzip/plain
+trials; ten plain/plain controls preserved order. This proves an SDK ordering
+defect and provides a strong hypothesis for CI, but no CI wire trace was captured
+to prove that causal link. Evidence, source hashes, logs and reproduction code
+are in `artifacts/verification/20261004-actor-capacity/`.
+
+The PR must remain unmerged. Per the user's conditional merge request, the next
+decision is whether to extend scope to shared client transport ordering or use
+an explicitly documented test-only uncompressed transport workaround. No SDK
+patch, dependency upgrade, compression change, or frontend transport change has
+been made. Independent optimization experiments and final qualification remain
+pending; the existing 325k result is unchanged.

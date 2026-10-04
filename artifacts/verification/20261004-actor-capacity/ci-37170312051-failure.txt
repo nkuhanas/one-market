@@ -1,0 +1,216 @@
+scaffold	Backend authorization, market, and recovery integration	﻿2026-10-04T02:16:07.3125964Z ##[group]Run ./scripts/backend-smoke
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:07.3126339Z ^[[36;1m./scripts/backend-smoke^[[0m
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:07.3190700Z shell: /usr/bin/bash -e {0}
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:07.3190988Z ##[endgroup]
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:07.4203936Z  Container one-market-db-1  Running
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:07.4214955Z  Container one-market-db-1  Waiting
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:07.9245831Z  Container one-market-db-1  Healthy
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:08.3416778Z    Compiling proc-macro2 v1.0.107
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:08.3417373Z    Compiling unicode-ident v1.0.26
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:08.3418000Z    Compiling quote v1.0.47
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:08.3418410Z    Compiling version_check v0.9.5
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:08.4158555Z    Compiling serde_core v1.0.229
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:08.5291655Z    Compiling autocfg v1.5.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:08.6228798Z    Compiling generic-array v0.14.7
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:08.7309613Z    Compiling cfg-if v1.0.5
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:08.7898688Z    Compiling typenum v1.20.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:09.0353472Z    Compiling num-traits v0.2.19
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:09.3141815Z    Compiling syn v2.0.119
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:09.3360717Z    Compiling syn v3.0.6
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:10.2741731Z    Compiling shlex v2.0.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:10.3817706Z    Compiling serde v1.0.229
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:10.5300202Z    Compiling find-msvc-tools v0.1.14
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:10.6842443Z    Compiling itoa v1.0.18
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:10.8188328Z    Compiling rustversion v1.0.23
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:11.1121445Z    Compiling cc v1.6.0
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:11.8636797Z    Compiling serde_derive v1.0.229
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:12.2399760Z    Compiling either v1.18.0
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:12.4158465Z    Compiling heck v0.5.0
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:12.5667064Z    Compiling itertools v0.12.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:12.7274073Z    Compiling blake3 v1.8.7
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:13.3884483Z    Compiling crypto-common v0.1.7
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:13.4428131Z    Compiling block-buffer v0.10.4
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:13.5194553Z    Compiling nohash-hasher v0.2.0
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:13.5590789Z    Compiling anyhow v1.0.104
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:13.7198244Z    Compiling bitflags v2.13.2
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:13.9569964Z    Compiling arrayvec v0.7.8
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:14.1484358Z    Compiling thiserror v1.0.69
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:14.1725851Z    Compiling enum-as-inner v0.6.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:14.2885719Z    Compiling zerocopy v0.8.59
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:14.3417615Z    Compiling thiserror-impl v1.0.69
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:14.4787168Z    Compiling spacetimedb-primitives v2.10.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:14.5936601Z    Compiling digest v0.10.7
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:14.7355987Z    Compiling castaway v0.2.4
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:14.7915961Z    Compiling approx v0.3.2
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:14.8734216Z    Compiling convert_case v0.4.0
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:15.0642543Z    Compiling zmij v1.0.23
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:15.1621297Z    Compiling heck v0.4.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:15.2239623Z    Compiling bytes v1.12.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:15.3588981Z    Compiling ryu v1.0.23
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:15.5363328Z    Compiling keccak v0.1.6
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:15.5678495Z    Compiling humantime v2.4.0
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:15.5876507Z    Compiling constant_time_eq v0.4.2
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:15.6555027Z    Compiling sha3 v0.10.9
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:15.7468300Z    Compiling spacetimedb-bindings-macro v2.10.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:15.9633955Z    Compiling ethnum v1.5.3
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:15.9957729Z    Compiling lean_string v0.5.3
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:16.1090154Z    Compiling derive_more v0.99.20
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:16.3884161Z    Compiling decorum v0.3.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:17.1313049Z    Compiling chrono v0.4.45
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:18.0356788Z    Compiling getrandom v0.2.17
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:18.1092239Z    Compiling smallvec v1.16.2
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:18.2874481Z    Compiling hex v0.4.3
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:18.5219343Z    Compiling serde_json v1.0.151
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:18.6085217Z    Compiling bytemuck v1.25.2
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:18.6568036Z    Compiling second-stack v0.3.5
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:18.7318775Z    Compiling uuid v1.27.0
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:18.7902529Z    Compiling rand_core v0.6.4
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:18.9258800Z    Compiling memchr v2.8.3
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:19.0672393Z    Compiling spacetimedb-sats v2.10.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:19.1220214Z    Compiling http v1.5.0
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:20.5911326Z    Compiling spacetimedb-bindings-sys v2.10.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:20.7045359Z    Compiling log v0.4.34
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:20.8295662Z    Compiling one-market-core v0.1.0 (/workspace/crates/market-core)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:21.4069809Z    Compiling ppv-lite86 v0.2.21
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:21.6083453Z    Compiling rand_chacha v0.3.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:21.7953204Z    Compiling rand v0.8.8
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:22.1717706Z    Compiling spacetimedb-lib v2.10.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:24.2977045Z    Compiling spacetimedb-query-builder v2.10.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:24.4726892Z    Compiling spacetimedb v2.10.1
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:27.0098802Z    Compiling one-market-spacetime v0.1.0 (/workspace/crates/spacetime)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:33.3995136Z     Finished `release` profile [optimized] target(s) in 25.18s
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:33.7199930Z Generating TypeScript module bindings for module spacetimedb
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:33.7201182Z Skipping build. Instead we are inspecting target/test-support/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4321003Z Writing file tests/private-bindings/actor_sample_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4322233Z Writing file tests/private-bindings/actor_state_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4322991Z Writing file tests/private-bindings/admin_allowlist_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4323773Z Writing file tests/private-bindings/benchmark_reader_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4324533Z Writing file tests/private-bindings/benchmark_result_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4325244Z Writing file tests/private-bindings/bucket_manifest_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4326138Z Writing file tests/private-bindings/connection_state_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4327720Z Writing file tests/private-bindings/detailed_benchmark_receipts_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4329533Z Writing file tests/private-bindings/grant_accounting_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4331006Z Writing file tests/private-bindings/human_order_receipt_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4332046Z Writing file tests/private-bindings/human_trader_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4333018Z Writing file tests/private-bindings/market_state_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4341120Z Writing file tests/private-bindings/news_event_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4341906Z Writing file tests/private-bindings/order_watermark_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4342730Z Writing file tests/private-bindings/pending_human_order_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4343436Z Writing file tests/private-bindings/price_point_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4344144Z Writing file tests/private-bindings/public_activity_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4344695Z Writing file tests/private-bindings/run_record_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4345150Z Writing file tests/private-bindings/runtime_config_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4345906Z Writing file tests/private-bindings/test_fault_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4346625Z Writing file tests/private-bindings/tick_schedule_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4347760Z Writing file tests/private-bindings/validated_run_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4348340Z Writing file tests/private-bindings/benchmark_latest_receipt_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4349041Z Writing file tests/private-bindings/benchmark_runs_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4349621Z Writing file tests/private-bindings/my_pending_order_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4350103Z Writing file tests/private-bindings/my_recent_fills_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4350620Z Writing file tests/private-bindings/my_trader_table.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4351328Z Writing file tests/private-bindings/authorize_reader_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4352195Z Writing file tests/private-bindings/benchmark_step_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4352937Z Writing file tests/private-bindings/connected_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4353628Z Writing file tests/private-bindings/disconnected_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4354075Z Writing file tests/private-bindings/enter_market_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4354459Z Writing file tests/private-bindings/initialize_batch_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4354861Z Writing file tests/private-bindings/pause_simulation_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4355482Z Writing file tests/private-bindings/ping_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4355841Z Writing file tests/private-bindings/place_order_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4356260Z Writing file tests/private-bindings/publish_benchmark_result_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4356704Z Writing file tests/private-bindings/recover_simulation_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4357103Z Writing file tests/private-bindings/reset_batch_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4357862Z Writing file tests/private-bindings/reset_market_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4358305Z Writing file tests/private-bindings/set_actor_population_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4358720Z Writing file tests/private-bindings/simulation_tick_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4359097Z Writing file tests/private-bindings/start_run_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4359497Z Writing file tests/private-bindings/test_actor_fixture_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4359919Z Writing file tests/private-bindings/test_corrupt_coverage_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4360596Z Writing file tests/private-bindings/test_delay_callback_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4361191Z Writing file tests/private-bindings/test_set_fault_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4361586Z Writing file tests/private-bindings/test_stale_callback_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4362226Z Writing file tests/private-bindings/trigger_chaos_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4362876Z Writing file tests/private-bindings/validate_run_reducer.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4363483Z Writing file tests/private-bindings/index.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4363860Z Creating directory tests/private-bindings/types
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4364205Z Writing file tests/private-bindings/types/reducers.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4364543Z Creating directory tests/private-bindings/types
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4364881Z Writing file tests/private-bindings/types/procedures.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4365217Z Writing file tests/private-bindings/types.ts
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.4365500Z Generate finished successfully.
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.7435233Z (WASM) Skipping build. Instead we are publishing target/test-support/wasm32-unknown-unknown/release/one_market_spacetime.wasm
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.7435966Z You are about to publish to a non-local server: db
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.7436304Z Skipping confirmation due to --yes
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.7436643Z Uploading to http://db:3000 => http://db:3000
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.7527658Z Checking for breaking changes...
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:34.7554452Z Publishing module...
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:35.1990881Z Created new database with name: one-market-v02-test-1791080194-17310, identity: c2008a7641cfc457f13ca3a9d4de043813157a1e40991c37698e32f07bdf5231
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.2022588Z 
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.2023905Z Running 24 tests using 1 worker
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.2024628Z 
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.6833577Z   ✓   1 tests/backend-sync.spec.ts:21:1 › pause fence waits for delayed pre-pause ticks, not two equal stale samples (39ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.7291291Z   ✓   2 tests/backend-sync.spec.ts:31:1 › pause fence independently waits for the delayed run-status update (32ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.7910328Z   ✓   3 tests/backend-sync.spec.ts:40:1 › pause fence requires matching runtime generation, run ID and schedule (43ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.8387662Z   ✓   4 tests/backend-sync.spec.ts:52:1 › a permanently stale run cache times out without accepting RUNNING (35ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.8529364Z   ✓   5 tests/backend-sync.spec.ts:68:3 › pause fence rejects enabled runtime even with an apparently correct cache (2ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.8698214Z   ✓   6 tests/backend-sync.spec.ts:68:3 › pause fence rejects surviving schedule even with an apparently correct cache (1ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.8847692Z   ✓   7 tests/backend-sync.spec.ts:68:3 › pause fence rejects wrong authoritative status even with an apparently correct cache (2ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.8992184Z   ✓   8 tests/backend-sync.spec.ts:79:1 › post-pause server progress while the cache synchronizes is rejected (2ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.9174677Z   ✓   9 tests/backend-sync.spec.ts:90:1 › cached progress beyond the authoritative fence is never tolerated (1ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.9529297Z   ✓  10 tests/backend-sync.spec.ts:96:1 › pause observation detects real progress despite a frozen client cache (26ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.9643533Z   ✓  11 tests/backend-sync.spec.ts:108:1 › pause fence propagates denied pause/read operations without retrying (2ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:37.9850333Z   ✓  12 tests/backend-sync.spec.ts:129:1 › SQL snapshots preserve all u64 bits and select the current run (1ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:38.0440590Z ℹ️ INFO Connecting to SpacetimeDB WS...
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:38.0492251Z ℹ️ INFO Connecting to SpacetimeDB WS...
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:38.0496969Z ℹ️ INFO Connecting to SpacetimeDB WS...
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:38.2069687Z   ✓  13 tests/backend.spec.ts:100:3 › v0.2 exact-runtime compatibility and transactions › bounded resumable setup, no ticks during setup, and authorization (76ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:38.2330797Z ℹ️ INFO Connecting to SpacetimeDB WS...
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:38.2397959Z ℹ️ INFO Connecting to SpacetimeDB WS...
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:38.2467062Z ℹ️ INFO Connecting to SpacetimeDB WS...
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:38.2518018Z ℹ️ INFO Connecting to SpacetimeDB WS...
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:38.2568695Z ℹ️ INFO Connecting to SpacetimeDB WS...
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:38.2670772Z   ✓  14 tests/backend.spec.ts:138:3 › v0.2 exact-runtime compatibility and transactions › caller-scoped views and private tables reject cross-identity reads (47ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:38.2911734Z   ✓  15 tests/backend.spec.ts:170:3 › v0.2 exact-runtime compatibility and transactions › reservations, durable IDs, limits, and rejected transaction rollback (12ms)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:42.2959534Z   ✓  16 tests/backend.spec.ts:232:3 › v0.2 exact-runtime compatibility and transactions › absolute scheduler commits coverage and trades; manual calls cannot advance it (4.0s)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:42.3214684Z ⚠️ WARN Deleting a row that was not present in the cache
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.3657223Z   ✘  17 tests/backend.spec.ts:278:3 › v0.2 exact-runtime compatibility and transactions › pause and recovery cannot rehabilitate a failed run (5.0s)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.3662002Z   -  18 tests/backend.spec.ts:309:3 › v0.2 exact-runtime compatibility and transactions › authorized receipt view is available without exposing it to other identities
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.3664600Z   -  19 tests/backend.spec.ts:317:3 › v0.2 exact-runtime compatibility and transactions › replayed IDs remain invalid after receipt pruning
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.3667230Z   -  20 tests/backend.spec.ts:343:3 › v0.2 exact-runtime compatibility and transactions › post-write failure rolls back settlement and evidence; stalled tick requires recovery
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.3670309Z   -  21 tests/backend.spec.ts:385:3 › v0.2 exact-runtime compatibility and transactions › late callbacks expose slot gaps; stale generation cannot advance a paused world
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.3674465Z   -  22 tests/backend.spec.ts:411:3 › v0.2 exact-runtime compatibility and transactions › runtime persists PASS, EXITING and COOLDOWN and records a recapitalization grant
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.3678142Z   -  23 tests/backend.spec.ts:477:3 › v0.2 exact-runtime compatibility and transactions › qualification publication requires admin and three verified fresh runs
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.3680952Z   -  24 tests/backend.spec.ts:510:3 › v0.2 exact-runtime compatibility and transactions › incorrect per-actor coverage aborts the tick; reset retains the order watermark
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4046501Z 
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4050034Z 
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4063582Z   1) tests/backend.spec.ts:278:3 › v0.2 exact-runtime compatibility and transactions › pause and recovery cannot rehabilitate a failed run 
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4065688Z 
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4069885Z     AssertionError: pause cache did not converge: server={"logicalTick":"60","enabled":false,"generation":"2","runId":"1","status":"FAILED","skippedSlots":"0","scheduledTicks":0} cache={"logicalTick":"60","enabled":true,"generation":"1","runId":"1","status":"RUNNING","skippedSlots":"0","scheduledTicks":1}
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4070953Z 
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4071346Z        at helpers/paused-state.ts:152
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4071568Z 
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4071649Z       150 |     );
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4071913Z       151 |     if (isDeepStrictEqual(cached, expected)) break;
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4072241Z     > 152 |     assert(
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4072451Z           |     ^
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4072669Z       153 |       performance.now() < deadline,
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4073513Z       154 |       `pause cache did not converge: server=${printable(expected)} cache=${printable(cached)}`,
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4073990Z       155 |     );
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4074329Z         at pauseAndSynchronize (/workspace/tests/helpers/paused-state.ts:152:5)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4074956Z         at /workspace/tests/backend.spec.ts:279:20
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4075183Z 
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4075540Z     Error Context: test-results/backend-v0-2-exact-runtime-842b7-t-rehabilitate-a-failed-run/error-context.md
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4076184Z 
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4077021Z     Error Context: test-results/backend-v0-2-exact-runtime-842b7-t-rehabilitate-a-failed-run/error-context.md
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4080467Z 
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4080780Z   1 failed
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4081975Z     tests/backend.spec.ts:278:3 › v0.2 exact-runtime compatibility and transactions › pause and recovery cannot rehabilitate a failed run 
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4083002Z   7 did not run
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4083335Z   16 passed (10.7s)
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4329402Z npm notice
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4329863Z npm notice New major version of npm available! 11.19.0 -> 12.2.0
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4330449Z npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4330964Z npm notice To update run: npm install -g npm@12.2.0
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.4331449Z npm notice
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.5261337Z 
+scaffold	Backend authorization, market, and recovery integration	2026-10-04T02:16:47.5315222Z ##[error]Process completed with exit code 1.

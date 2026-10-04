@@ -1,15 +1,17 @@
 # Delta: actor-capacity optimizations and pause-test reliability
 
-- Status: proposed; implementation has not started.
+- Status: implementation incomplete; CI fails in draft
+  [PR #3](https://github.com/nkuhanas/one-market/pull/3). Not merged.
 - Created: 2026-10-03 20:57:22 EST (UTC-05:00, fixed standard time, not EDT).
 - Local base: merged `main` at `64de1e6020b0718bf0bf16bc29f202e2b2720a56`.
-- Additional CI evidence: upstream `main` revision
-  `cbcf1871cf579c339306459267a0baa425138f25`; inspected read-only, not merged
-  into this planning branch.
+- Implementation base: upstream `main` revision
+  `cbcf1871cf579c339306459267a0baa425138f25`, including the reviewed CI failure
+  and newer frontend work, preserved on `perf/actor-capacity-delta`.
 - Owner: runtime and benchmark work falls under Chace; public interface changes
   require coordination with Kaleb.
-- Current scope: record the proposal only. This note does not start experiments,
-  change the specification, or authorize a push or deployment.
+- Authorization: the subsequent user goal requests implementation in a separate
+  PR and merge only if clean. The original proposal below remains the acceptance
+  plan; Maincloud deployment and changes to the specification remain excluded.
 
 ## Objective
 
@@ -250,8 +252,9 @@ re-anchor deadlines to obtain a passing result.
 
 Preserve old modules, archives, failed runs, and databases. Experiments use fresh
 explicitly named worlds. Ordinary publish/restart must retain state and exactly
-one tick schedule. No implicit reset, destructive migration, remote push, or
-deployment is included.
+one tick schedule. No implicit reset, destructive migration, or deployment is
+included. The subsequent user goal authorizes this separate PR and merge only
+after clean verification.
 
 ## Verification and measurement plan
 
@@ -308,5 +311,62 @@ as tradeoffs; a WASM memory snapshot is not total database memory.
   planning note. Commit/push/deployment decisions remain separate from creating
   this file.
 
-Implementation results: pending. No new benchmarks or runtime changes were made
-as part of creating this delta.
+## Execution record
+
+Implementation began after the documentation-only request was completed and
+the user explicitly authorized the separate PR. Final acceptance is pending.
+
+- `ced7bd3` preserves the original pre-implementation delta.
+- `eb5dd9e` implements authoritative pause fencing and twelve synchronization
+  regressions. `scripts/check` passed, followed by three fresh backend invocations
+  passing all 24 tests. The original suite also passed once before changes;
+  neither supplied intermittent failure was independently reproduced locally.
+- A failed development run is retained: SpacetimeDB 2.10.1 rejects multi-statement
+  HTTP SQL. The helper now uses four independent read-only queries, preserves
+  integer precision, and rechecks the stopped state after cache convergence and
+  throughout observation. It does not claim those four queries are atomic.
+- `77e9cac` / `c6bed1c` add diagnostic-only process sampling and receipt-window
+  correlation. The unchanged 350k CHAOS 30+90s diagnostic passed with P99
+  25,151 microseconds and zero skips. Its 1,131 process samples correlate 2,396
+  receipts; this does not reproduce or explain the earlier isolated misses.
+- Evidence so far is under `artifacts/verification/20261004-actor-capacity/`,
+  `artifacts/profiling/deadlines-20261004T021050Z-102855/`, and
+  `artifacts/exploration/20261004T021051Z-103017/`. Two uninstrumented NORMAL
+  controls each at 325k, 337.5k, 350k, and 500k are complete. The first three
+  populations passed these short probes; both 500k runs failed. These are not
+  new qualifications. Direct-index and digest experiments have not started.
+
+### CI escalation: transport ordering, not merely cache delay
+
+Both the push and PR checks for `77e9cac` failed at the new pause fence:
+[push run](https://github.com/nkuhanas/one-market/actions/runs/37170309750)
+and [PR run](https://github.com/nkuhanas/one-market/actions/runs/37170312051).
+Static/binding checks and live-browser integration passed; sixteen backend
+tests passed, one failed, and seven serial scenarios could not run.
+
+The authoritative server snapshot was tick 60, disabled, generation 2, run 1
+`FAILED`, and zero scheduled ticks. After five seconds the subscription cache
+was still tick 60, enabled, generation 1, run 1 `RUNNING`, with one schedule.
+The stronger assertions exposed the divergence rather than hiding it.
+
+Inspection of installed SpacetimeDB TypeScript SDK 2.10.1 found asynchronous
+decompression is started independently for each WebSocket message before the
+SDK's ordered inbound queue. A deterministic diagnostic using the unmodified
+adapter/decompressor source and real gzip payloads delivered wire messages
+`[1, 2]` to callbacks as `[2, 1]` in ten of ten trials. Uncompressed controls
+delivered `[1, 2]` in all ten. Source hashes, reproduction code, and output are
+retained in `artifacts/verification/20261004-actor-capacity/` as
+`reproduce-sdk-ordering.mjs` and `sdk-ordering-result.txt`.
+
+This proves the adapter ordering defect. It is a strong explanation for the CI
+divergence, but CI did not retain raw frame traces, so that causal attribution
+is not yet proven. No dependency, application transport, or compression setting
+has been changed. The server pause implementation remains unchanged.
+
+Per the request to circle back if the PR is not clean, do not merge this PR.
+The scope decision to bring back is whether to address ordering in the shared
+client transport (with corresponding browser and transport regression coverage)
+or explicitly use uncompressed connections only in the backend harness while
+leaving the production SDK transport issue documented and unresolved. Neither
+choice may bypass authoritative assertions, weaken load, or change qualification
+criteria. Runtime optimizations and final six-run qualification remain pending.
