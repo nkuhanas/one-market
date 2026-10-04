@@ -298,19 +298,20 @@ main {
 .market-header {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 10px 2px 2px;
+  gap: 16px 24px;
+  padding: 20px 2px 0;
+  border-top: 1px solid var(--line-soft);
 }
 
 .market-identity h1 {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  font-size: 36px;
+  font-size: 26px;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.025em;
 }
 
 .market-kind {
@@ -331,10 +332,9 @@ main {
 }
 
 .market-sub {
-  margin-top: 4px;
-  font-size: 13.5px;
+  margin-top: 2px;
+  font-size: 12.5px;
   color: var(--text-3);
-  max-width: 62ch;
 }
 
 .market-price {
@@ -351,7 +351,7 @@ main {
 .price {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
-  font-size: 48px;
+  font-size: 34px;
   font-weight: 500;
   letter-spacing: -0.035em;
   line-height: 1.05;
@@ -1258,4 +1258,187 @@ button.ghost:hover {
 .readout .mono {
   color: var(--text);
   font-size: 13px;
+}
+
+/* Hero --------------------------------------------------------------------- */
+
+.hero {
+  padding: 48px 0 8px;
+  display: grid;
+  gap: 18px;
+  justify-items: start;
+  max-width: 920px;
+}
+
+.hero-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-3);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.hero-flag::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+
+.hero-flag-on {
+  color: var(--accent);
+  border-color: rgb(34 194 232 / 0.35);
+}
+
+.hero-flag-on::before {
+  background: var(--accent);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+.hero h1 {
+  font-size: clamp(2.4rem, 5.4vw, 4rem);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.hero-lede {
+  font-size: clamp(1rem, 1.5vw, 1.1875rem);
+  line-height: 1.55;
+  color: var(--text-2);
+  max-width: 62ch;
+}
+
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 40px;
+  margin-top: 6px;
+}
+
+.hero-stats dt {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-bottom: 2px;
+}
+
+.hero-stats dd {
+  font-size: clamp(1.25rem, 2.4vw, 1.625rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  margin-top: 8px;
+}
+
+.hero-cta {
+  background: var(--accent-solid);
+  color: var(--accent-ink);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 13px 26px;
+  border-radius: 10px;
+  transition: filter 180ms ease;
+}
+
+.hero-cta:hover {
+  filter: brightness(1.08);
+}
+
+.hero-link {
+  color: var(--text-2);
+  text-decoration: none;
+  font-size: 14.5px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--line);
+}
+
+.hero-link:hover {
+  color: var(--text);
+}
+
+/* Explainer ---------------------------------------------------------------- */
+
+.explain {
+  display: grid;
+  gap: 24px;
+  padding-top: 16px;
+}
+
+.explain-head h2 {
+  font-size: clamp(1.5rem, 2.8vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.explain-head p {
+  margin-top: 8px;
+  color: var(--text-2);
+  max-width: 64ch;
+  font-size: 15px;
+}
+
+.explain-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 12px;
+}
+
+.explain-steps li {
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  padding: 18px 20px 20px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+/* These are a sequence, so they are numbered. */
+.explain-index {
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.explain-steps h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.explain-steps p {
+  font-size: 13.5px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+
+.explain-note {
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  padding: 18px 20px 20px;
+}
+
+.explain-note h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.explain-note p {
+  font-size: 13.5px;
+  color: var(--text-2);
+  max-width: 78ch;
+  line-height: 1.55;
 }

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { ActivityFeed } from './components/activity-feed';
 import { ActorsPanel } from './components/actors-panel';
 import { ChaosBanner } from './components/chaos-banner';
+import { Explainer } from './components/explainer';
+import { Hero } from './components/hero';
 import { Header } from './components/header';
 import { MarketHeader } from './components/market-header';
 import { OrderPanel } from './components/order-panel';
@@ -29,6 +31,12 @@ export function App() {
 
       <main>
         {market.shock && <ChaosBanner shock={market.shock} />}
+
+        <Hero
+          snapshot={snapshot}
+          fillRate={fillRate}
+          connected={market.status === 'Connected'}
+        />
 
         <MarketHeader snapshot={snapshot} />
 
@@ -120,6 +128,8 @@ export function App() {
             actorCount={snapshot?.actorCount}
           />
         </div>
+
+        <Explainer />
 
         <SystemStatus
           snapshot={snapshot}
