@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { centsToDollars, formatCount, formatUsd } from '../lib/units';
 import type { PriceSample } from '../market/contract';
 import { EmptyState } from './value';
@@ -37,6 +37,7 @@ export const PriceChart = memo(function PriceChart({
   range: RangeId;
   onRange: (id: RangeId) => void;
 }) {
+  const [cursor, setCursor] = useState<number>();
   const window = RANGES.find((r) => r.id === range)!.ticks;
   const scoped = useMemo(
     () =>
@@ -67,6 +68,8 @@ export const PriceChart = memo(function PriceChart({
     });
     const line = `M${pts.join(' L')}`;
     return {
+      drawn,
+      values,
       line,
       area: `${line} L${VIEW_W},${VIEW_H} L0,${VIEW_H} Z`,
       flat,
@@ -107,16 +110,66 @@ export const PriceChart = memo(function PriceChart({
       {plot ? (
         <>
           <div className="chart-body">
-            <svg
-              viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-              preserveAspectRatio="none"
+            <div
+              className="plot"
               role="img"
-              aria-label={`Price from ${formatUsd(plot.first.priceCents)} to ${formatUsd(plot.last.priceCents)} across ${scoped.length} ticks`}
-              className={plot.flat ? 'flat' : plot.rising ? 'up' : 'down'}
+              tabIndex={0}
+              aria-label={`Price from ${formatUsd(plot.first.priceCents)} to ${formatUsd(plot.last.priceCents)} across ${scoped.length} ticks, ${plot.flat ? 'unchanged' : plot.rising ? 'rising' : 'falling'}`}
+              onMouseLeave={() => setCursor(undefined)}
+              onBlur={() => setCursor(undefined)}
+              onMouseMove={(event) => {
+                const box = event.currentTarget.getBoundingClientRect();
+                const ratio = (event.clientX - box.left) / box.width;
+                setCursor(
+                  Math.min(
+                    plot.drawn.length - 1,
+                    Math.max(0, Math.round(ratio * (plot.drawn.length - 1))),
+                  ),
+                );
+              }}
+              onKeyDown={(event) => {
+                if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')
+                  return;
+                event.preventDefault();
+                const step = event.key === 'ArrowLeft' ? -1 : 1;
+                setCursor((current) => {
+                  const base = current ?? plot.drawn.length - 1;
+                  return Math.min(
+                    plot.drawn.length - 1,
+                    Math.max(0, base + step),
+                  );
+                });
+              }}
             >
-              <path className="chart-area" d={plot.area} />
-              <path className="chart-line" d={plot.line} />
-            </svg>
+              <svg
+                viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+                preserveAspectRatio="none"
+                aria-hidden="true"
+                className={plot.flat ? 'flat' : plot.rising ? 'up' : 'down'}
+              >
+                <path className="chart-area" d={plot.area} />
+                <path className="chart-line" d={plot.line} />
+              </svg>
+              {cursor !== undefined && plot.drawn[cursor] && (
+                <div
+                  className="crosshair"
+                  style={{
+                    left: `${(cursor / (plot.drawn.length - 1)) * 100}%`,
+                  }}
+                  aria-hidden="true"
+                />
+              )}
+              {cursor !== undefined && plot.drawn[cursor] && (
+                <p className="readout" aria-live="polite" aria-atomic="true">
+                  <span className="mono">
+                    {formatUsd(plot.drawn[cursor].priceCents)}
+                  </span>
+                  <span>
+                    tick {formatCount(plot.drawn[cursor].logicalTick)}
+                  </span>
+                </p>
+              )}
+            </div>
             <div className="chart-scale">
               <span>{formatUsd(BigInt(Math.round(plot.high * 100)))}</span>
               <span>{formatUsd(BigInt(Math.round(plot.low * 100)))}</span>

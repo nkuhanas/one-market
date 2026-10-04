@@ -3,7 +3,7 @@ import { TARGET_HZ, type ConnectionStatus } from '../market/contract';
 
 const SECTIONS = [
   { id: 'market', label: 'Market' },
-  { id: 'actors', label: 'Actors' },
+  { id: 'actors', label: 'Agents' },
   { id: 'activity', label: 'Activity' },
   { id: 'system', label: 'System' },
 ];
@@ -19,7 +19,13 @@ export function Header({
   return (
     <header className="header">
       <a className="brand" href="#market">
-        <span className="brand-mark" aria-hidden="true" />
+        <img
+          className="brand-mark"
+          src="/one-market-mark.png"
+          alt=""
+          width={197}
+          height={128}
+        />
         One Market
       </a>
 
@@ -32,6 +38,16 @@ export function Header({
       </nav>
 
       <div className="header-system">
+        {/* The tick changes twenty times a second and is deliberately not a
+            live region. Connection state is the one status worth announcing,
+            and it is announced once, atomically, with context. */}
+        <span className="sr-only" aria-live="polite" aria-atomic="true">
+          {liveNow
+            ? 'Connected to the live market'
+            : status === 'Connecting'
+              ? 'Connecting to the market'
+              : 'Market connection lost'}
+        </span>
         <span
           className={`live ${liveNow ? 'live-on' : ''}`}
           data-testid="connection-status"

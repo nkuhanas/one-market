@@ -19,7 +19,7 @@ export const ActorsPanel = memo(function ActorsPanel({
   return (
     <section className="panel" id="actors">
       <div className="panel-head">
-        <h2>Autonomous actors</h2>
+        <h2>Autonomous agents</h2>
         <span className="panel-note">
           {actors.length > 0 && actorCount !== undefined
             ? `Sample of ${actors.length} from the population`
@@ -30,8 +30,8 @@ export const ActorsPanel = memo(function ActorsPanel({
       {actors.length === 0 ? (
         <EmptyState
           compact
-          title="No actors in the world"
-          body="Each actor holds its own cash, shares and policy weights, and is stepped once per epoch. They appear here once the population is initialized."
+          title="No agents in the world"
+          body="Each agent holds its own cash, shares and policy weights, and is stepped once per epoch. They appear here once the population is initialized."
         />
       ) : (
         <ol className="rows">

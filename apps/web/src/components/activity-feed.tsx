@@ -23,9 +23,11 @@ function Row({ entry }: { entry: ActivityEntry }) {
       <li className={`row${wiped ? ' row-wiped' : ''}`}>
         <span className="row-tick mono">{formatCount(entry.logicalTick)}</span>
         <span className="row-who">
-          {human ? 'Human' : 'Actor'}{' '}
+          {human ? 'Human' : 'Agent'}{' '}
           <span className="mono">{entry.participantId}</span>
         </span>
+        {/* Section 12 fixes the wipeout wording, and it must not imply that
+            the agent's shares have finished liquidating. */}
         <span className={`row-kind${wiped ? ' kind-wiped' : ''}`}>{label}</span>
         <span className="row-detail mono">
           {formatSignedUsd(entry.lifetimePnlCents)} lifetime
@@ -38,7 +40,7 @@ function Row({ entry }: { entry: ActivityEntry }) {
     <li className="row">
       <span className="row-tick mono">{formatCount(entry.logicalTick)}</span>
       <span className="row-who">
-        {human ? 'Human' : 'Actor'}{' '}
+        {human ? 'Human' : 'Agent'}{' '}
         <span className="mono">{entry.participantId}</span>
       </span>
       <span className={`row-kind ${buy ? 'kind-buy' : 'kind-sell'}`}>
