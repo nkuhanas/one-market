@@ -97,8 +97,14 @@ There is deliberately no history-pruning shortcut that permits replay.
 
 ## Administrative and evidence boundary
 
+`trigger_chaos()` is public for any connected identity; entering the market is
+not required. The world must be READY. Active-shock requests succeed idempotently,
+without extending the event or creating another. A new shock immediately updates
+public news and `market_state.chaos_active` and invalidates current qualification.
+It never starts ticks: on a paused world, actors wait for an explicit owner start.
+
 Only the initial publisher is an administrator. Anonymous clients cannot change
-population, initialize/reset, start/pause/recover/manual-step, trigger CHAOS,
+population, initialize/reset, start/pause/recover/manual-step, adopt workload rules,
 select cadence, prune evidence, authorize evidence readers, validate runs, or publish results. Even the publisher
 cannot invoke `simulation_tick` as a client: it checks scheduler origin. The
 manual `benchmark_step` wrapper is admin-only and refuses while scheduling is on.
@@ -121,3 +127,9 @@ selecting the same profile is a no-op (use `recover_simulation` for that paused
 segment instead). Existing-world starts are non-qualifying. Call selection before
 the initial start to configure a fresh benchmark world. See the capacity worklog
 for measured profiles and populations; availability is not qualification.
+
+For an upgraded compiled workload that must stay paused, first call
+`adopt_workload_paused(expected_configuration_hash)` as owner, then select the
+profile (including `4hz`, 250,000 µs). Adoption rejects running worlds, remaining
+schedules, and unexpected hashes. It retains historical evidence and leaves the
+existing world waiting for a later explicit non-qualifying start.

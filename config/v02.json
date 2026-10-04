@@ -1,10 +1,11 @@
 {
-  "version": "one-market-v02-cadence-profiles-1",
+  "version": "one-market-v02-public-chaos-4hz-1",
   "default_cadence": "20hz",
   "cadence_profiles": [
     { "id": "20hz", "tick_interval_us": 50000 },
     { "id": "10hz", "tick_interval_us": 100000 },
-    { "id": "5hz", "tick_interval_us": 200000 }
+    { "id": "5hz", "tick_interval_us": 200000 },
+    { "id": "4hz", "tick_interval_us": 250000 }
   ],
   "buckets": 20,
   "min_price_cents": 1,

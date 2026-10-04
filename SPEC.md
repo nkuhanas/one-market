@@ -137,6 +137,7 @@ profile    tick_interval_us    target epoch wall time
 20hz       50,000              1 second (default)
 10hz       100,000             2 seconds
 5hz        200,000             4 seconds
+4hz        250,000             5 seconds
 ```
 
 The versioned profile registry in `config/v02.json` is the source of cadence.
@@ -189,7 +190,8 @@ Each actor is stepped and its row materially updated **exactly once per complete
 At a maintained 20 Hz cadence, `1,000,000` actors imply approximately `50,000`
 actor steps per tick and `1,000,000` baseline actor updates/sec. With the same
 20 buckets at 10 Hz, each actor steps every two target seconds and the expected
-update rate halves; at 5 Hz it quarters. These are workload arithmetic, not
+update rate halves; at 5 Hz it quarters, and at 4 Hz it is one fifth (an actor
+step every five target seconds). These are workload arithmetic, not
 measured capacity. Verify actual bucket sizes and committed coverage.
 
 Faster cadence classes are a stretch goal. The published headline always uses a fixed, versioned scheduling profile.
@@ -483,7 +485,18 @@ Lifetime P&L: -$381,291
 
 ## 10. CHAOS
 
-`CHAOS` is both a demonstration mechanic and a stress workload. It is **admin-only**.
+`CHAOS` is both a demonstration mechanic and a stress workload. Any connected
+SDK identity may trigger the public demo shock; no admin permission or trader
+registration is required. The server requires a READY world and permits one
+active shock at a time. Repeated or concurrent clicks during that shock succeed
+idempotently: they neither create another event nor extend its logical end tick.
+A new manual shock invalidates any current qualification segment.
+
+The public active flag and news event update immediately, including while paused.
+Triggering CHAOS never starts the scheduler, advances a tick or settles an order;
+actors respond only as logical ticks execute. A paused shock remains staged until
+an owner explicitly starts/resumes the simulation. Other administrative controls
+and private-data permissions remain unchanged.
 
 A shock introduces an obviously fictional scandal, for example:
 
@@ -666,17 +679,18 @@ Public human surface:
 ```text
 enter_market()
 place_order(client_order_id, side, quantity, limit_price_cents)
+trigger_chaos()             // READY world; active-shock clicks are idempotent
 ```
 
 Admin-authorized surface:
 
 ```text
-trigger_chaos(...)
 set_actor_population(...)
 reset_market(...)
 publish_benchmark_result(...)
 benchmark_step(...)          // optional; refuses while scheduled simulation is enabled
 set_cadence_profile(profile)  // paused/empty only; never starts the simulation
+adopt_workload_paused(expected_configuration_hash) // READY, paused, no schedules
 prune_run_evidence(run_id, confirmation) // explicit bounded completed-evidence pruning
 ```
 
@@ -686,7 +700,16 @@ Scheduler-only wrapper:
 simulation_tick(scheduled_tick_record)
 ```
 
-Keep a scheduler-origin guard on the scheduled wrapper as defense in depth. Any manual benchmark-step wrapper must require admin authorization and refuse to operate while scheduled simulation is enabled. Normal viewers and human traders must not advance ticks, reset the world, change population, publish benchmark results, or trigger CHAOS.
+Keep a scheduler-origin guard on the scheduled wrapper as defense in depth. Any manual benchmark-step wrapper must require admin authorization and refuse to operate while scheduled simulation is enabled. Normal viewers and human traders may trigger CHAOS but must not advance ticks, reset the world, change population/cadence, adopt workload changes, or publish benchmark results.
+
+Paused workload adoption requires the expected compiled configuration hash and
+rejects any live runtime, tick schedule or timed-stop schedule. A changed workload
+closes the current evidence segment as FAILED while retaining its original hashes,
+receipts and failure history. It updates the world configuration without touching
+actors, balances, logical ticks or existing dynamics, and leaves no current run.
+Existing-world continuation requires a later explicit non-qualifying `start_run`.
+Same-hash adoption is a no-op. Unlike `recover_simulation`, adoption never resumes
+or enqueues ticks, even transiently. Publishing alone does not adopt new rules.
 
 The 2.0 migration guide describes scheduled functions as private by default, with manual calls available to owners and collaborators. The Rust reducer reference still recommends a caller-origin check. Resolve observed access behavior against the exact deployed stack and acceptance tests in section 19 rather than guessing which documentation page wins. [Migration guide](https://spacetimedb.com/docs/upgrade/#scheduled-functions-are-now-private), [Rust reducer reference](https://docs.rs/spacetimedb/latest/spacetimedb/attr.reducer.html#restricting-scheduled-reducers).
 
@@ -712,7 +735,7 @@ All persistent actors receive a row update once per completed 20-tick logical ep
 
 | Parameter    | Qualification setting                                       |
 | ------------ | ----------------------------------------------------------- |
-| Tick target  | Selected fixed profile: 20, 10 or 5 Hz; default 20 Hz       |
+| Tick target  | Selected fixed profile: 20, 10, 5 or 4 Hz; default 20 Hz    |
 | Buckets      | 20; every actor stepped once per logical epoch              |
 | Warm-up      | 30 seconds                                                  |
 | Measurement  | 180 seconds                                                 |
@@ -794,7 +817,7 @@ Keep one primary headline: **Verified capacity: N persistent actors @ H Hz**,
 backed by the selected qualified environment, market workload and cadence.
 Profile comparisons and the three fresh confirmation runs belong in Benchmark
 details. Local results cannot stand in for Maincloud qualification. NORMAL/CHAOS
-are market workload profiles; 20hz/10hz/5hz are independent cadence profiles.
+are market workload profiles; 20hz/10hz/5hz/4hz are independent cadence profiles.
 
 ---
 
@@ -937,10 +960,13 @@ Against the exact local and deployed stacks, establish that an ordinary anonymou
 
 - Advance ticks through either scheduled or manual wrappers.
 - Reset the simulation or change population.
-- Publish benchmark results or trigger CHAOS.
+- Publish benchmark results, select cadence, or adopt workload changes.
 - Read another human's private trader, pending order, or fill history, including through caller-scoped views.
 
 Also verify that scheduler-origin calls succeed, the optional manual-step wrapper is admin-only and refuses while scheduled simulation is enabled, confirmed reads behave as configured, and the chosen client SDK uses per-call results rather than old global callbacks. Document observed behavior instead of choosing between conflicting documentation descriptions.
+
+Verify an ordinary non-trader can trigger CHAOS, observers see the same event,
+concurrent clicks do not extend it, and a paused world never resumes on activation.
 
 ### Integration milestone
 
@@ -1034,7 +1060,7 @@ A judge should be able to:
 3. Enter with a synthetic bankroll and place a buy or sell with a visible slippage allowance.
 4. See their own acceptance/fill status and the shared effects of actual settlement.
 5. See **Verified capacity: N persistent actors @ H Hz** from a cadence-specific qualified result.
-6. Watch an admin trigger CHAOS and observe policies, auctions, fills, and drawdown stop-outs respond while clients remain synchronized.
+6. Trigger CHAOS as an ordinary visitor and observe policies, auctions, fills, and drawdown stop-outs respond while clients remain synchronized and the simulation is running.
 
 A crash is not guaranteed. If sellers have no buyers, the demo must honestly show a frozen price and incomplete exits. The public experience stays simple: **one market, a huge actor count, join from your phone, place a trade, then watch CHAOS hit.**
 

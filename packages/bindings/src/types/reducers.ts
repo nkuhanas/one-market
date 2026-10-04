@@ -6,6 +6,7 @@
 import { type Infer as __Infer } from "spacetimedb";
 
 // Import all reducer arg schemas
+import AdoptWorkloadPausedReducer from "../adopt_workload_paused_reducer";
 import AuthorizeReaderReducer from "../authorize_reader_reducer";
 import BenchmarkStepReducer from "../benchmark_step_reducer";
 import ContinueTimedRunReducer from "../continue_timed_run_reducer";
@@ -27,6 +28,7 @@ import StartTimedRunReducer from "../start_timed_run_reducer";
 import TriggerChaosReducer from "../trigger_chaos_reducer";
 import ValidateRunReducer from "../validate_run_reducer";
 
+export type AdoptWorkloadPausedParams = __Infer<typeof AdoptWorkloadPausedReducer>;
 export type AuthorizeReaderParams = __Infer<typeof AuthorizeReaderReducer>;
 export type BenchmarkStepParams = __Infer<typeof BenchmarkStepReducer>;
 export type ContinueTimedRunParams = __Infer<typeof ContinueTimedRunReducer>;

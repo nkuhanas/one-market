@@ -4,7 +4,7 @@ source "$(dirname "$0")/common.sh"
 population="${POPULATION:-1000}"
 profile="${PROFILE:-NORMAL}"
 cadence="${CADENCE:-20hz}"
-case "$cadence" in 20hz|10hz|5hz) ;; *) printf 'CADENCE must be 20hz, 10hz or 5hz\n' >&2; exit 1;; esac
+case "$cadence" in 20hz|10hz|5hz|4hz) ;; *) printf 'CADENCE must be 20hz, 10hz, 5hz or 4hz\n' >&2; exit 1;; esac
 case "$profile" in NORMAL|CHAOS) ;; *) printf 'PROFILE must be NORMAL or CHAOS\n' >&2; exit 1;; esac
 compose up -d --wait db
 # A preserved module may be selected for before/after comparisons. It is never

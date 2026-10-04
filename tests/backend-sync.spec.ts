@@ -140,3 +140,21 @@ test('SQL snapshots preserve all u64 bits and select the current run', () => {
     skippedSlots: 9007199254740993n,
   });
 });
+
+test('paused adoption can leave no current run without hiding missing evidence', () => {
+  const rows = (run: number) =>
+    JSON.stringify([
+      { rows: [[42]] },
+      { rows: [[false, 4, run]] },
+      { rows: [[2, 'FAILED', 1]] },
+      { rows: [] },
+    ]);
+  expect(parseSnapshot(rows(0))).toEqual({
+    ...paused,
+    generation: 4n,
+    runId: 0n,
+    status: 'NONE',
+    skippedSlots: 0n,
+  });
+  expect(() => parseSnapshot(rows(3))).toThrow('current run missing');
+});

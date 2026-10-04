@@ -17,6 +17,7 @@ pub mod actor_state_type;
 pub mod actor_status_type;
 pub mod admin_allowlist_table;
 pub mod admin_allowlist_type;
+pub mod adopt_workload_paused_reducer;
 pub mod authorize_reader_reducer;
 pub mod benchmark_latest_receipt_table;
 pub mod benchmark_reader_table;
@@ -105,6 +106,7 @@ pub use actor_state_type::ActorState;
 pub use actor_status_type::ActorStatus;
 pub use admin_allowlist_table::*;
 pub use admin_allowlist_type::AdminAllowlist;
+pub use adopt_workload_paused_reducer::adopt_workload_paused;
 pub use authorize_reader_reducer::authorize_reader;
 pub use benchmark_latest_receipt_table::*;
 pub use benchmark_reader_table::*;
@@ -190,6 +192,9 @@ pub use validated_run_type::ValidatedRun;
 /// to indicate which reducer caused the event.
 
 pub enum Reducer {
+    AdoptWorkloadPaused {
+        expected_configuration_hash: String,
+    },
     AuthorizeReader {
         identity: __sdk::Identity,
     },
@@ -271,6 +276,7 @@ impl __sdk::InModule for Reducer {
 impl __sdk::Reducer for Reducer {
     fn reducer_name(&self) -> &'static str {
         match self {
+            Reducer::AdoptWorkloadPaused { .. } => "adopt_workload_paused",
             Reducer::AuthorizeReader { .. } => "authorize_reader",
             Reducer::BenchmarkStep => "benchmark_step",
             Reducer::Connected => "connected",
@@ -301,6 +307,11 @@ impl __sdk::Reducer for Reducer {
     #[allow(clippy::clone_on_copy)]
     fn args_bsatn(&self) -> Result<Vec<u8>, __sats::bsatn::EncodeError> {
         match self {
+            Reducer::AdoptWorkloadPaused {
+                expected_configuration_hash,
+            } => __sats::bsatn::to_vec(&adopt_workload_paused_reducer::AdoptWorkloadPausedArgs {
+                expected_configuration_hash: expected_configuration_hash.clone(),
+            }),
             Reducer::AuthorizeReader { identity } => {
                 __sats::bsatn::to_vec(&authorize_reader_reducer::AuthorizeReaderArgs {
                     identity: identity.clone(),

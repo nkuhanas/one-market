@@ -1,11 +1,8 @@
 import { useState } from 'react';
 
 /**
- * The admin shock control (SPEC.md sections 10 and 13).
- *
- * The runtime authorises `trigger_chaos` against its private admin allowlist,
- * so this is only ever an offer to call it. Anyone who finds it and is not an
- * admin gets the refusal straight from the server.
+ * Public shock control. The server coalesces clicks during an active shock;
+ * no administrator permission or trader registration is required.
  *
  * It lives inside the collapsed diagnostics panel because firing the shock
  * calls `fail_run` and invalidates the benchmark in progress.
@@ -27,7 +24,7 @@ export function ChaosControl({
     setMessage('');
     try {
       await onTrigger();
-      setMessage('Shock released. Watch the agents respond.');
+      setMessage('Shock released. Agents react when the simulation ticks.');
     } catch (cause) {
       setMessage(
         cause instanceof Error

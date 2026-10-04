@@ -141,7 +141,7 @@ The [client contract](docs/client-contract.md) defines public market/feed tables
 identity-scoped human views, and reducer calls. JavaScript uses `bigint` for
 64-bit quantities. Deprecated `tick` and `price` aliases keep the current observer
 working. One private absolute-time schedule targets the original 50 ms deadline
-grid at the default 20 Hz, or the selected profile's 100/200 ms grid at 10/5 Hz.
+grid at the default 20 Hz, or the selected profile's 100/200/250 ms grid at 10/5/4 Hz.
 Scheduler-origin and admin guards protect clock/control reducers.
 Missed slots, pause, and recovery invalidate qualification; they never erase
 failure evidence. Ordinary publication/restart preserves rows and scheduling.
@@ -177,8 +177,8 @@ putting publishing credentials in the frontend environment.
 
 ## Cadence profiles
 
-`config/v02.json` defines `20hz` (default), `10hz`, and `5hz`. All use 20 actor
-buckets: each actor steps once per 1/2/4 target seconds respectively. Economic
+`config/v02.json` defines `20hz` (default), `10hz`, `5hz`, and `4hz`. All use 20 actor
+buckets: each actor steps once per 1/2/4/5 target seconds respectively. Economic
 durations stay in logical ticks, so they slow down too. Human rate limits and
 benchmark measurement windows remain wall-clock based. The frontend reads the
 server's cadence and uses actual timestamps for chart minute ranges.
@@ -209,6 +209,14 @@ ticks survive; old evidence retains its original cadence. A continuation cannot
 qualify capacity. For same-profile pause recovery, use `recover_simulation`.
 See the [cadence delta](deltas/selectable-cadence-profiles_2026-10-04_00-09-08_EST.md)
 for safeguards and measured results.
+
+For a changed compiled workload, `adopt_workload_paused(expected_configuration_hash)`
+lets the owner adopt it without resuming, before selecting a cadence. It preserves
+actors and historical evidence and requires a later explicit start. Public
+`trigger_chaos` needs no admin/trader role; repeated clicks share the active shock,
+and activation while paused never advances the simulation. The
+[4 Hz/public CHAOS delta](deltas/4hz-public-chaos_2026-10-04_02-43-53_EST.md)
+records the production change and its verification, not a new capacity claim.
 
 Publish the additive module before deploying the matching frontend: the new
 client subscribes to `cadence_state`, which older modules do not expose. Local

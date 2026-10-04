@@ -153,11 +153,11 @@ mod tests {
         assert_eq!(c.default_cadence().id, "20hz");
         assert_eq!(c.buckets, 20);
         let mut hashes = std::collections::HashSet::new();
-        // 5 Hz is prepared and arithmetic-tested, not used to run a simulation.
         for (id, hz, epoch_us) in [
             ("20hz", 20, 1_000_000),
             ("10hz", 10, 2_000_000),
             ("5hz", 5, 4_000_000),
+            ("4hz", 4, 5_000_000),
         ] {
             let cadence = c.cadence(id).unwrap();
             assert_eq!(cadence.ticks_for_seconds(1).unwrap(), hz);
