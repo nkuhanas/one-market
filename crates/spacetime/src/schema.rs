@@ -125,6 +125,7 @@ impl OptionalTick {
 #[derive(Clone)]
 pub struct ActorState {
     #[primary_key]
+    #[index(direct)]
     pub actor_id: u64,
     #[index(btree)]
     pub bucket: u8,
