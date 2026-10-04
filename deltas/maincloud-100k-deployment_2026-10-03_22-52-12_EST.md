@@ -2,7 +2,8 @@
 
 - Created: 2026-10-03 22:52:12 EST (UTC-05:00, fixed standard time).
 - Branch: `feat/maincloud-100k-deployment`, based on `main` at `563f0ae`.
-- Status: planned before implementation and publication.
+- Status: implemented; fresh Rust database and 100k simulation live. The plan
+  was committed before implementation and publication.
 - Intended fresh database: `one-market-100k-20261004-035212`.
 - Server: `https://maincloud.spacetimedb.com`.
 
@@ -52,3 +53,61 @@ versions, or qualification gates.
 - Commit focused changes, push the branch/PR, reconcile any new `main` changes,
   and merge the exact tested head only after current-head CI passes. No force
   push or protection bypass. Record results and any remaining limitation below.
+
+## Deployment evidence
+
+- Published 2026-10-04 UTC using the existing authenticated owner and
+  `--delete-data=never`. The fresh database identity is
+  `c200e95eb69477bcf73f4c84aa7a9828dd8ccd623978bef401244483771e7739`.
+  Its host type is `Wasm`, with the expected 21 tables and 19 reducers and no
+  test-support reducers. The old `one-market-prod-5okg3` placeholder was not
+  overwritten. Managed runtime version was not exposed in response headers;
+  the build/CLI/client are pinned to 2.10.1.
+- Production WASM SHA-256:
+  `c1b23e38e9bcf821f88a2fb06b1fbc5c3659d3fb01c8dc2ba92a074a54f42e9c`.
+  No Rust, policy, schema, generated-binding or SPEC changes were needed.
+- Initialized 100,000 actors in 200 batches of 500, seed `20261003`. The
+  20 bucket manifests total exactly 100,000. Initial cash accounting is
+  500,000,000,000 cents; initial share supply is 50,000,000 shares.
+- Run 1 is NORMAL, `qualification=false`. The first status sample had
+  tick 15, 100,000 active actors, one schedule and zero skipped slots.
+  At 04:05:18 UTC tick 702 was RUNNING with the same population and scheduler,
+  zero skipped slots, and price 10,019 cents. A subsequent retained window of
+  710 price points ranged from 9,941 to 10,053 cents, with trading at every
+  point and no one-cent floor hits. This is a startup observation, not a
+  capacity qualification or guarantee of long-term market behavior.
+- Anonymous queries for private runtime/actor tables were rejected (HTTP 400);
+  an invalid, non-mutating population-control probe was rejected with
+  `admin authorization required` (HTTP 530). Owner checks passed.
+- Ignored local `.env` now points to the fresh world, with all private keys
+  preserved. The local frontend connected over Maincloud WebSocket, displayed
+  100,000 actors and advancing ticks, and correctly reported no qualified run.
+  Browser screenshots are retained locally under `output/playwright/`.
+- Vercel access was verified against existing project
+  `prj_N0QPToGjIIEVCj03Ca4LKB1WuWUG`, linked to `nkuhanas/one-market`.
+  Only the two public connection variables were changed: production and
+  this branch's preview. The hosted deployment must be rebuilt and verified
+  against the final merged commit; credentials are not in Git or frontend code.
+- Docker `check` passed, including 9 deployment-helper tests, actual Compose
+  local/cloud isolation, lint/typecheck/build, Rust tests (25 passed, one
+  archive-only test ignored), formatting, Clippy and binding freshness.
+  Docker `smoke` passed restart/republish persistence and all 3 browser tests.
+  Its dedicated local 200-actor test world was paused afterward without
+  deleting rows. CI additionally runs backend authorization/recovery tests.
+
+## Operations and handoff
+
+The Maincloud simulation is intentionally left running. For inspection or an
+explicit pause, export the selected target first:
+
+```sh
+export MAINCLOUD_SERVER=https://maincloud.spacetimedb.com
+export MAINCLOUD_DATABASE=one-market-100k-20261004-035212
+./scripts/maincloud-status
+CONFIRM_MAINCLOUD=pause ./scripts/maincloud-status pause
+```
+
+Pausing preserves data and stops the simulation scheduler, but does not remove
+the database or eliminate storage charges. Recovery is a separate explicit
+operation and does not rehabilitate failed benchmark evidence. Do not reset
+or resize this live world to run unrelated local checks.

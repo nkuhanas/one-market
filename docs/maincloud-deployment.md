@@ -62,6 +62,20 @@ frontend settings never redirect local publication, initialization or browser
 tests. Vite reads the repository-root environment, including when started
 through the npm workspace.
 
+For Vercel, use the existing `nkuhanas-projects/one-market` project linked to
+this repository, with `apps/web` as its root and `main` as its production branch.
+Set only these two public values for production and the intended preview
+branch; leave other project settings and environment variables unchanged.
+Private `VERCEL_TOKEN` credentials belong only in the ignored local environment,
+never in Vite settings or the hosted application. Environment changes require a
+new deployment; verify the production domain after the Git integration builds
+the merged commit.
+
+The initial 100k deployment uses database `one-market-100k-20261004-035212`.
+Its public frontend is `https://www.one-market.tech`; deployment evidence and
+the module hash are recorded in
+[`deltas/maincloud-100k-deployment_2026-10-03_22-52-12_EST.md`](../deltas/maincloud-100k-deployment_2026-10-03_22-52-12_EST.md).
+
 ## Inspect and stop
 
 ```sh
