@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { formatCount } from '../lib/units';
+import { ChaosControl } from './chaos-control';
 import {
   TARGET_HZ,
   TICKS_PER_EPOCH,
@@ -17,14 +18,18 @@ export function SystemStatus({
   status,
   error,
   pricePoints,
+  showChaos,
   onPing,
+  onTriggerChaos,
   onReconnect,
 }: {
   snapshot?: MarketSnapshot;
   status: ConnectionStatus;
   error: string;
   pricePoints: number;
+  showChaos: boolean;
   onPing: () => Promise<void>;
+  onTriggerChaos: () => Promise<void>;
   onReconnect: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -121,6 +126,14 @@ export function SystemStatus({
             </div>
           </dl>
         </div>
+      )}
+
+      {showChaos && (
+        <ChaosControl
+          chaosActive={snapshot?.chaosActive ?? false}
+          connected={status === 'Connected'}
+          onTrigger={onTriggerChaos}
+        />
       )}
 
       {error && (

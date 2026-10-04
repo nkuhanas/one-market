@@ -173,6 +173,7 @@ export interface OneMarket {
     quantity: bigint;
     limitPriceCents: bigint;
   }): Promise<void>;
+  triggerChaos(): Promise<void>;
   reconnect(): void;
 }
 
@@ -353,6 +354,12 @@ export function useOneMarket(): OneMarket {
     [],
   );
 
+  const triggerChaos = useCallback(async () => {
+    if (!connection.current?.isActive)
+      throw new Error('Connect to the market first.');
+    await connection.current.reducers.triggerChaos({});
+  }, []);
+
   const reconnect = useCallback(() => setAttempt((value) => value + 1), []);
 
   return {
@@ -370,6 +377,7 @@ export function useOneMarket(): OneMarket {
     ping,
     enterMarket,
     placeOrder,
+    triggerChaos,
     reconnect,
   };
 }

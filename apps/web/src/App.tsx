@@ -18,6 +18,11 @@ import { useOneMarket } from './market/use-one-market';
 export function App() {
   const market = useOneMarket();
   const [range, setRange] = useState<RangeId>('live');
+  // The runtime authorises the shock against its private admin allowlist. This
+  // flag only decides whether the control is offered, never whether it works.
+  const [showChaos] = useState(() =>
+    new URLSearchParams(window.location.search).has('admin'),
+  );
   const { snapshot } = market;
 
   // A rate has to come from the change in a counter over elapsed time. The
@@ -136,7 +141,9 @@ export function App() {
           status={market.status}
           error={market.error}
           pricePoints={market.priceHistory.length}
+          showChaos={showChaos}
           onPing={market.ping}
+          onTriggerChaos={market.triggerChaos}
           onReconnect={market.reconnect}
         />
       </main>
