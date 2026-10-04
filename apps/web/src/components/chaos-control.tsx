@@ -29,7 +29,7 @@ export function ChaosControl({
     setMessage('');
     try {
       await onTrigger();
-      setMessage('Shock released. Watch the actors respond.');
+      setMessage('Shock released. Watch the agents respond.');
     } catch (cause) {
       setMessage(
         cause instanceof Error
@@ -46,7 +46,7 @@ export function ChaosControl({
       <div>
         <h3>Chaos</h3>
         <p>
-          Releases a fixed news shock into every actor&apos;s signal. It does
+          Releases a fixed news shock into every agent&apos;s signal. It does
           not move the price directly, and it fails the active benchmark run.
         </p>
       </div>

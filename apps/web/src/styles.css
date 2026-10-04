@@ -18,20 +18,20 @@
  */
 
 @font-face {
-  font-family: 'Red Hat Display';
-  src: url('/fonts/rhd-400.woff2') format('woff2');
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-400.woff2') format('woff2');
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Red Hat Display';
-  src: url('/fonts/rhd-500.woff2') format('woff2');
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-500.woff2') format('woff2');
   font-weight: 500;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Red Hat Display';
-  src: url('/fonts/rhd-700.woff2') format('woff2');
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-700.woff2') format('woff2');
   font-weight: 700;
   font-display: swap;
 }
@@ -67,9 +67,8 @@
   --up: #22c55e;
   --down: #ff5a5a;
 
-  --sans:
-    'Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --mono: 'Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono: 'Red Hat Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --radius: 14px;
   color-scheme: dark;
@@ -81,10 +80,46 @@
   box-sizing: border-box;
 }
 
-html,
+html {
+  background: var(--bg);
+}
+
+/*
+ * Atmosphere, drawn from the mark's own gradient rather than a generic wash:
+ * cyan where the page begins, mint trailing off to the right, and a cool
+ * settling tone at the foot. Fixed, so it behaves like a ground the content
+ * moves over rather than a panel that scrolls with it.
+ *
+ * It lives on the body because a background set on both html and body stops
+ * the body propagating to the canvas, which leaves it painting over anything
+ * sitting behind it.
+ */
 body {
   margin: 0;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(
+      62% 46% at 6% 10%,
+      rgb(34 194 232 / 0.22) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      52% 38% at 96% 2%,
+      rgb(118 244 188 / 0.14) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      64% 36% at 84% 46%,
+      rgb(18 179 217 / 0.1) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      100% 46% at 46% 100%,
+      rgb(34 194 232 / 0.09) 0%,
+      transparent 62%
+    );
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: var(--text);
   font-family: var(--sans);
   font-size: 15px;
@@ -158,6 +193,7 @@ input {
 }
 
 .app {
+  position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -1111,6 +1147,14 @@ button.ghost:hover {
 
 /* Responsive --------------------------------------------------------------- */
 
+/* The backdrop only bleeds past the gutter where there is a gutter to spare. */
+@media (min-width: 721px) {
+  .hero-backdrop {
+    inset: 0 -24px auto;
+    width: calc(100% + 48px);
+  }
+}
+
 @media (max-width: 1100px) {
   .trading {
     grid-template-columns: 1fr;
@@ -1266,11 +1310,71 @@ button.ghost:hover {
 /* Hero --------------------------------------------------------------------- */
 
 .hero {
-  padding: 48px 0 8px;
+  position: relative;
+  isolation: isolate;
+  padding: 92px 0 72px;
   display: grid;
-  gap: 18px;
-  justify-items: start;
-  max-width: 920px;
+  gap: 20px;
+  justify-items: center;
+  text-align: center;
+  max-width: none;
+}
+
+/* The live price line stands in for the atmospheric image a marketing hero
+   usually carries. It is the product, so there is no reason to show a picture
+   of one instead. A scrim keeps the copy legible wherever the line crosses it. */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    46% 44% at 50% 44%,
+    rgb(13 14 18 / 0.82) 0%,
+    rgb(13 14 18 / 0.5) 55%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.hero-backdrop {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  z-index: -2;
+  opacity: 0.38;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 45%,
+    #000 78%,
+    transparent
+  );
+}
+
+.hero-backdrop-line {
+  fill: none;
+  stroke: var(--text-2);
+  stroke-width: 1.25;
+  vector-effect: non-scaling-stroke;
+}
+
+.hero-backdrop-area {
+  fill: rgb(168 174 185 / 0.07);
+}
+
+.hero-backdrop.up .hero-backdrop-line {
+  stroke: var(--up);
+}
+.hero-backdrop.up .hero-backdrop-area {
+  fill: rgb(34 197 94 / 0.08);
+}
+.hero-backdrop.down .hero-backdrop-line {
+  stroke: var(--down);
+}
+.hero-backdrop.down .hero-backdrop-area {
+  fill: rgb(255 90 90 / 0.08);
 }
 
 .hero-flag {
@@ -1278,7 +1382,7 @@ button.ghost:hover {
   align-items: center;
   gap: 8px;
   font-size: 12.5px;
-  color: var(--text-3);
+  color: var(--text-2);
   border: 1px solid var(--line);
   background: var(--surface);
   padding: 5px 12px;
@@ -1306,7 +1410,8 @@ button.ghost:hover {
 .hero-lockup {
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
+  gap: 18px;
 }
 
 .hero-mark {
@@ -1315,14 +1420,14 @@ button.ghost:hover {
 }
 
 .hero h1 {
-  font-size: clamp(2.6rem, 6vw, 4.5rem);
-  line-height: 1;
-  letter-spacing: -0.04em;
+  font-size: clamp(3rem, 7.5vw, 5.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
   font-weight: 700;
 }
 
 .hero-tagline {
-  font-size: clamp(1.25rem, 2.6vw, 1.75rem);
+  font-size: clamp(1.25rem, 2.6vw, 1.875rem);
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -1333,19 +1438,20 @@ button.ghost:hover {
   font-size: clamp(1rem, 1.5vw, 1.1875rem);
   line-height: 1.55;
   color: var(--text-2);
-  max-width: 62ch;
+  max-width: 58ch;
 }
 
 .hero-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px 40px;
-  margin-top: 6px;
+  justify-content: center;
+  gap: 14px 48px;
+  margin-top: 10px;
 }
 
 .hero-stats dt {
   font-size: 12px;
-  color: var(--text-3);
+  color: var(--text-2);
   margin-bottom: 2px;
 }
 
@@ -1357,37 +1463,29 @@ button.ghost:hover {
 
 .hero-actions {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 20px;
-  margin-top: 8px;
+  justify-content: center;
+  margin-top: 10px;
 }
 
 .hero-cta {
-  background: var(--accent-solid);
-  color: var(--accent-ink);
+  background: var(--text);
+  color: #06080c;
   text-decoration: none;
   font-weight: 700;
-  font-size: 15px;
-  padding: 13px 26px;
+  font-size: 16px;
+  padding: 15px 34px;
   border-radius: 10px;
   transition: filter 180ms ease;
 }
 
-.hero-cta:hover {
-  filter: brightness(1.08);
-}
-
-.hero-link {
+.hero-reassure {
+  font-size: 12.5px;
   color: var(--text-2);
-  text-decoration: none;
-  font-size: 14.5px;
-  padding: 10px 2px;
-  border-bottom: 1px solid var(--line);
+  max-width: 50ch;
 }
 
-.hero-link:hover {
-  color: var(--text);
+.hero-cta:hover {
+  filter: brightness(0.92);
 }
 
 /* Explainer ---------------------------------------------------------------- */
@@ -1411,57 +1509,124 @@ button.ghost:hover {
   font-size: 15px;
 }
 
-.explain-steps {
+.carousel {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
-  gap: 12px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
 }
 
-.explain-steps li {
+.carousel-window {
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.carousel-track li {
+  flex: 0 0 100%;
   background: var(--surface);
   border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  padding: 18px 20px 20px;
+  border-radius: 14px;
+  padding: 36px 40px 40px;
   display: grid;
-  gap: 8px;
-  align-content: start;
+  gap: 10px;
+  align-content: center;
+  min-height: 190px;
 }
 
-/* These are a sequence, so they are numbered. */
-.explain-index {
+.carousel-index {
   color: var(--accent);
   font-size: 12px;
 }
 
-.explain-steps h3 {
-  font-size: 15px;
+.carousel-track h3 {
+  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-.explain-steps p {
-  font-size: 13.5px;
+.carousel-track p {
+  font-size: clamp(0.9375rem, 1.5vw, 1.0625rem);
   color: var(--text-2);
-  line-height: 1.55;
+  max-width: 60ch;
+  line-height: 1.5;
 }
 
-.explain-note {
+button.carousel-arrow {
   background: var(--surface);
   border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  padding: 18px 20px 20px;
-}
-
-.explain-note h3 {
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.explain-note p {
-  font-size: 13.5px;
+  border-radius: 50%;
   color: var(--text-2);
-  max-width: 78ch;
-  line-height: 1.55;
+  font-size: 22px;
+  line-height: 1;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+button.carousel-arrow:hover {
+  color: var(--text);
+  border-color: var(--line);
+}
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+button.dot {
+  width: 28px;
+  height: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-3);
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+button.dot:hover {
+  background: var(--text-3);
+}
+
+button.dot-on {
+  background: var(--accent);
+}
+
+.explain-foot {
+  font-size: 12.5px;
+  color: var(--text-3);
+  max-width: 72ch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-track {
+    transition: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .carousel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  button.carousel-arrow {
+    display: none;
+  }
+
+  .carousel-track li {
+    padding: 24px 22px 28px;
+  }
 }
 
 /* Chaos control ------------------------------------------------------------ */
@@ -1520,4 +1685,49 @@ button.danger:disabled {
 .chaos-control-note {
   font-size: 12px;
   color: var(--accent);
+}
+
+/* Scroll reveal ------------------------------------------------------------ */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 380ms ease,
+    transform 380ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+[data-reveal].revealed {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+button.carousel-play {
+  background: transparent;
+  border: 0;
+  color: var(--text-3);
+  font-size: 10px;
+  line-height: 1;
+  padding: 4px 6px;
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+button.carousel-play:hover {
+  color: var(--text);
 }

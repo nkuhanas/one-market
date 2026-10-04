@@ -12,11 +12,13 @@ import { SystemStatus } from './components/system-status';
 import { Metric } from './components/value';
 import { formatCount } from './lib/units';
 import { live, pending, TARGET_HZ } from './market/contract';
+import { useScrollReveal } from './lib/use-reveal';
 import { useFillRate } from './market/use-fill-rate';
 import { useOneMarket } from './market/use-one-market';
 
 export function App() {
   const market = useOneMarket();
+  useScrollReveal();
   const [range, setRange] = useState<RangeId>('live');
   // The runtime authorises the shock against its private admin allowlist. This
   // flag only decides whether the control is offered, never whether it works.
@@ -41,6 +43,7 @@ export function App() {
           snapshot={snapshot}
           fillRate={fillRate}
           connected={market.status === 'Connected'}
+          samples={market.priceHistory}
         />
 
         <MarketHeader snapshot={snapshot} />
@@ -62,9 +65,9 @@ export function App() {
           />
         </div>
 
-        <section className="metrics" aria-label="Market statistics">
+        <section className="metrics" aria-label="Market statistics" data-reveal>
           <Metric
-            label="Autonomous actors"
+            label="Autonomous agents"
             value={
               snapshot
                 ? live(formatCount(snapshot.actorCount))
@@ -126,7 +129,7 @@ export function App() {
           />
         </section>
 
-        <div className="panels">
+        <div className="panels" data-reveal>
           <ActivityFeed activity={market.activity} />
           <ActorsPanel
             actors={market.actors}

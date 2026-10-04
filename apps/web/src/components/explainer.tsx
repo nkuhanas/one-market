@@ -1,58 +1,149 @@
-import { TARGET_HZ, TICKS_PER_EPOCH } from '../market/contract';
+import { useEffect, useRef, useState } from 'react';
+import { TARGET_HZ } from '../market/contract';
 
-const STEPS = [
+const SLIDES = [
   {
     title: 'One shared world',
-    body: 'The market is a single row of authoritative state in SpacetimeDB, not a copy per visitor. Every browser subscribes to the same world, so two windows side by side always agree.',
+    body: 'Not a copy each. One row of state, and every browser is watching it.',
   },
   {
-    title: 'Actors decide for themselves',
-    body: 'Each actor holds its own cash, shares and policy weights — momentum, mean reversion, contrarian, news. They are small deterministic policies, not language models, which is what makes a very large population affordable.',
+    title: 'Agents decide for themselves',
+    body: 'Each one has its own cash, shares and strategy. Small policies, not language models.',
   },
   {
     title: 'One auction per tick',
-    body: 'Every tick collects the intents of the actors that are due, plus any human orders, and clears them in a single uniform-price auction. Nothing rests on a book: unfilled orders expire and the price is whatever the crossing produced.',
+    body: 'Every order clears at a single price. Nothing rests on a book.',
   },
   {
     title: 'Losses are real',
-    body: 'An actor that falls far enough below its own peak is forced to liquidate and sit out before it can be recapitalised. Nobody is propping the price up, so a sell-off with no buyers can freeze the market outright.',
+    body: 'Fall far enough and you are liquidated. Nobody props the price up.',
   },
 ];
 
+/** How long each slide holds before the next one arrives. */
+const DWELL_MS = 5200;
+
 export function Explainer() {
+  const [index, setIndex] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  const [held, setHeld] = useState(false);
+
+  const go = (next: number) => setIndex((next + SLIDES.length) % SLIDES.length);
+
+  // Pointer and keyboard focus both hold the carousel, and so does leaving the
+  // tab, so it never advances while someone is reading it or not looking.
+  const paused = !playing || held;
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = setInterval(() => {
+      if (pausedRef.current || document.hidden) return;
+      setIndex((current) => (current + 1) % SLIDES.length);
+    }, DWELL_MS);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <section className="explain" id="how">
-      <header className="explain-head">
+      <div className="explain-head" data-reveal>
         <h2>How it works</h2>
         <p>
-          The market is the readable surface. The experiment underneath is how
-          many persistent actors one database can keep stepping at {TARGET_HZ}{' '}
-          Hz before it falls behind.
-        </p>
-      </header>
-
-      <ol className="explain-steps">
-        {STEPS.map((step, index) => (
-          <li key={step.title}>
-            <span className="explain-index mono">
-              {String(index + 1).padStart(2, '0')}
-            </span>
-            <h3>{step.title}</h3>
-            <p>{step.body}</p>
-          </li>
-        ))}
-      </ol>
-
-      <div className="explain-note">
-        <h3>About the capacity claim</h3>
-        <p>
-          Actors are stepped in {TICKS_PER_EPOCH} buckets, so every actor is
-          updated once per epoch whether it trades or not. Any capacity figure
-          shown on this page comes from a qualified benchmark run under a fixed
-          workload — never from however many actors happen to be running right
-          now. Until such a run exists, that figure stays empty.
+          A market anyone can read, run by agents at {TARGET_HZ} ticks a second.
         </p>
       </div>
+
+      <div
+        className="carousel"
+        role="group"
+        aria-roledescription="carousel"
+        aria-label="How it works"
+        data-reveal
+        onMouseEnter={() => setHeld(true)}
+        onMouseLeave={() => setHeld(false)}
+        onFocusCapture={() => setHeld(true)}
+        onBlurCapture={() => setHeld(false)}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowLeft') go(index - 1);
+          if (event.key === 'ArrowRight') go(index + 1);
+        }}
+      >
+        <button
+          type="button"
+          className="carousel-arrow"
+          aria-label="Previous"
+          onClick={() => go(index - 1)}
+        >
+          ‹
+        </button>
+
+        <div className="carousel-window">
+          <ol
+            className="carousel-track"
+            style={{ transform: `translateX(-${index * 100}%)` }}
+          >
+            {SLIDES.map((slide, i) => (
+              <li
+                key={slide.title}
+                aria-hidden={i !== index}
+                aria-roledescription="slide"
+                aria-label={`${i + 1} of ${SLIDES.length}`}
+              >
+                <span className="carousel-index mono">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3>{slide.title}</h3>
+                <p>{slide.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <button
+          type="button"
+          className="carousel-arrow"
+          aria-label="Next"
+          onClick={() => go(index + 1)}
+        >
+          ›
+        </button>
+      </div>
+
+      <div className="carousel-controls">
+        <div
+          className="carousel-dots"
+          role="tablist"
+          aria-label="Choose a step"
+        >
+          {SLIDES.map((slide, i) => (
+            <button
+              key={slide.title}
+              type="button"
+              role="tab"
+              aria-selected={i === index}
+              aria-label={slide.title}
+              className={i === index ? 'dot dot-on' : 'dot'}
+              onClick={() => setIndex(i)}
+            />
+          ))}
+        </div>
+        {/* Auto-advancing content needs a way to stop it that does not depend on
+            hovering, so keyboard and touch users get an explicit control. */}
+        <button
+          type="button"
+          className="carousel-play"
+          aria-label={playing ? 'Pause' : 'Play'}
+          onClick={() => setPlaying((value) => !value)}
+        >
+          {playing ? '❙❙' : '▶'}
+        </button>
+      </div>
+
+      <p className="explain-foot" data-reveal>
+        Any capacity figure here comes from a measured benchmark run, never from
+        however many agents happen to be running right now.
+      </p>
     </section>
   );
 }

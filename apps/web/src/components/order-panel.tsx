@@ -101,7 +101,7 @@ export function OrderPanel({
         <div className="order-join">
           <p>
             Enter with a synthetic bankroll and trade in the same auction as the
-            autonomous actors.
+            autonomous agents.
           </p>
           <button
             type="button"

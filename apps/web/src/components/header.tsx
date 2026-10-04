@@ -3,7 +3,7 @@ import { TARGET_HZ, type ConnectionStatus } from '../market/contract';
 
 const SECTIONS = [
   { id: 'market', label: 'Market' },
-  { id: 'actors', label: 'Actors' },
+  { id: 'actors', label: 'Agents' },
   { id: 'activity', label: 'Activity' },
   { id: 'system', label: 'System' },
 ];
