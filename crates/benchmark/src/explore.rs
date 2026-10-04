@@ -2,6 +2,7 @@
 //! market-core::evidence::validate with its unchanged fixed 30s + 180s gate.
 use one_market_core::{
     bucket,
+    config::{config, Cadence},
     evidence::{Receipt, Validation},
     extend_digest,
     schedule::deadline,
@@ -24,11 +25,11 @@ impl Window {
             || measurement_seconds < 5
             || warmup_seconds
                 .checked_add(measurement_seconds)
-                .is_none_or(|s| s > 200)
+                .is_none_or(|s| s > 800)
             || !(1..=3).contains(&repeats)
         {
             return Err(
-                "exploration requires 1+s warmup, 5+s measurement, <=200s total, 1..3 repeats"
+                "exploration requires 1+s warmup, 5+s measurement, <=800s total and retained slot evidence, 1..3 repeats"
                     .into(),
             );
         }
@@ -42,6 +43,9 @@ impl Window {
 
 #[derive(Serialize, Deserialize)]
 pub struct Metrics {
+    pub cadence_profile: String,
+    pub tick_interval_us: u64,
+    pub bucket_count: u8,
     pub validation: Validation,
     pub actor_updates_per_second: f64,
     pub submitted_orders_per_second: f64,
@@ -63,15 +67,22 @@ pub fn measure(
     runtime_failed: bool,
     load_valid: bool,
     healthy: bool,
+    cadence: &Cadence,
 ) -> Metrics {
-    let end_slot = (window.warmup_seconds + window.measurement_seconds) * 20;
+    let c = config();
+    let warmup_ticks = cadence
+        .ticks_for_seconds(window.warmup_seconds)
+        .expect("validated cadence");
+    let end_slot = cadence
+        .ticks_for_seconds(window.warmup_seconds + window.measurement_seconds)
+        .expect("validated cadence");
     let mut rows: Vec<_> = receipts
         .iter()
         .filter(|r| r.intended_slot <= end_slot)
         .collect();
     rows.sort_unstable_by_key(|r| r.logical_tick);
-    let mut counts = [0u64; 20];
-    let mut digests = vec![vec![0; 32]; 20];
+    let mut counts = vec![0u64; usize::from(c.buckets)];
+    let mut digests = vec![vec![0; 32]; usize::from(c.buckets)];
     for id in 1..=population {
         let b = bucket(id) as usize;
         counts[b] += 1;
@@ -91,7 +102,7 @@ pub fn measure(
         reasons.push("incomplete intended-slot evidence".into());
     }
     let valid = rows.iter().enumerate().all(|(i, r)| {
-        let b = (r.logical_tick % 20) as usize;
+        let b = (r.logical_tick % u64::from(c.buckets)) as usize;
         r.run_id == run_id
             && r.logical_tick == i as u64
             && Some(r.intended_slot) == r.logical_tick.checked_add(1)
@@ -101,7 +112,8 @@ pub fn measure(
             && r.membership_digest == digests[b]
             && r.previous_steps_valid
             && r.policy_evaluations <= r.actor_steps
-            && deadline(origin, r.intended_slot).ok() == Some(r.intended_at_us)
+            && deadline(origin, r.intended_slot, cadence.tick_interval_us).ok()
+                == Some(r.intended_at_us)
             && i128::from(r.invoked_at_us) - i128::from(r.intended_at_us)
                 == i128::from(r.start_lateness_us)
             && r.schedule_debt_us == r.start_lateness_us
@@ -115,7 +127,7 @@ pub fn measure(
     }
     let mut lateness: Vec<_> = rows
         .iter()
-        .filter(|r| r.intended_slot > window.warmup_seconds * 20)
+        .filter(|r| r.intended_slot > warmup_ticks)
         .map(|r| r.start_lateness_us)
         .collect();
     lateness.sort_unstable();
@@ -124,11 +136,29 @@ pub fn measure(
     } else {
         lateness[(lateness.len() * 99).div_ceil(100) - 1]
     };
-    if p99 >= 50_000 {
-        reasons.push("P99 start lateness is not below 50ms".into());
+    if p99 >= cadence.tick_interval_us {
+        reasons.push("P99 start lateness is not below the selected tick interval".into());
+    }
+    let measured_slots: Vec<_> = rows
+        .iter()
+        .filter(|r| r.intended_slot > warmup_ticks)
+        .collect();
+    let debt_window = cadence.ticks_for_seconds(1).expect("validated cadence") as usize;
+    if measured_slots.len() >= 2 * debt_window {
+        let first: u128 = measured_slots[..debt_window]
+            .iter()
+            .map(|r| u128::from(r.schedule_debt_us))
+            .sum();
+        let last: u128 = measured_slots[measured_slots.len() - debt_window..]
+            .iter()
+            .map(|r| u128::from(r.schedule_debt_us))
+            .sum();
+        if last >= first + debt_window as u128 * u128::from(cadence.tick_interval_us) {
+            reasons.push("growing schedule debt".into());
+        }
     }
     // Actual invocation timestamps define throughput, including missed work.
-    // Never divide updates by completed ticks and pretend those took 50ms each.
+    // Never divide updates by completed ticks and pretend target cadence held.
     let start_us = origin + (window.warmup_seconds * 1_000_000) as i64;
     let end_us = start_us + (window.measurement_seconds * 1_000_000) as i64;
     let measured: Vec<_> = receipts
@@ -140,6 +170,9 @@ pub fn measure(
     let filled = measured.iter().map(|r| r.orders_filled).sum::<u64>();
     let shares = measured.iter().map(|r| r.matched_share_volume).sum::<u64>();
     Metrics {
+        cadence_profile: cadence.id.clone(),
+        tick_interval_us: cadence.tick_interval_us,
+        bucket_count: c.buckets,
         validation: Validation {
             status: if reasons.is_empty() {
                 "EXPLORE_PASS"
@@ -180,7 +213,8 @@ mod tests {
         (0..120)
             .map(|tick| {
                 let b = (tick % 20) as usize;
-                let intended = deadline(0, tick + 1).unwrap();
+                let intended =
+                    deadline(0, tick + 1, config().default_cadence().tick_interval_us).unwrap();
                 Receipt {
                     run_id: 1,
                     intended_slot: tick + 1,
@@ -209,7 +243,17 @@ mod tests {
         let rows = complete_receipts(200);
         let window = Window::new(1, 5, 1).unwrap();
         let validate = |r: &[Receipt], failed, load, healthy| {
-            measure(r, 1, 200, 0, window, failed, load, healthy)
+            measure(
+                r,
+                1,
+                200,
+                0,
+                window,
+                failed,
+                load,
+                healthy,
+                &config().default_cadence(),
+            )
         };
         let good = validate(&rows, false, true, true);
         assert_eq!(good.validation.status, "EXPLORE_PASS");
@@ -269,10 +313,33 @@ mod tests {
     }
 
     #[test]
+    fn ten_hz_counts_wall_seconds_and_keeps_coverage_and_slot_gates() {
+        let cadence = config().cadence("10hz").unwrap();
+        let window = Window::new(2, 6, 1).unwrap();
+        let mut rows = complete_receipts(200);
+        rows.truncate(80);
+        for r in &mut rows {
+            r.intended_at_us = deadline(0, r.intended_slot, cadence.tick_interval_us).unwrap();
+            r.invoked_at_us = r.intended_at_us + 60_000;
+            r.start_lateness_us = 60_000;
+            r.schedule_debt_us = 60_000;
+        }
+        let measure =
+            |r: &[Receipt]| super::measure(r, 1, 200, 0, window, false, true, true, &cadence);
+        let good = measure(&rows);
+        assert_eq!(good.validation.status, "EXPLORE_PASS");
+        assert_eq!(good.expected_slots, 80);
+        assert_eq!(good.actor_updates_per_second, 100.0);
+        assert_eq!(good.filled_orders_per_second, 20.0);
+        rows[30].skipped_slots = 1;
+        assert_eq!(measure(&rows).validation.status, "EXPLORE_FAIL");
+    }
+
+    #[test]
     fn rejects_unbounded_windows_and_never_qualifies_missing_evidence() {
         assert!(Window::new(0, 20, 1).is_err());
         assert!(Window::new(u64::MAX, 20, 1).is_err());
-        assert!(Window::new(30, 180, 1).is_err());
+        assert!(Window::new(30, 780, 1).is_err());
         assert!(Window::new(5, 20, 4).is_err());
         let m = measure(
             &[],
@@ -283,6 +350,7 @@ mod tests {
             false,
             true,
             true,
+            &config().default_cadence(),
         );
         assert_eq!(m.validation.status, "EXPLORE_FAIL");
         assert_eq!(m.actor_updates_per_second, 0.0);

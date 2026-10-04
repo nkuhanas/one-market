@@ -9,10 +9,11 @@ cash are integer cents; SDK timestamps carry microseconds since Unix epoch.
 
 ## Observation
 
-Production viewers subscribe to these six bounded queries:
+Production viewers subscribe to these seven bounded queries:
 
 ```sql
 SELECT * FROM market_state
+SELECT * FROM cadence_state
 SELECT * FROM price_point
 SELECT * FROM public_activity
 SELECT * FROM news_event
@@ -23,6 +24,7 @@ SELECT * FROM benchmark_result
 | Source             | Meaning / bound                                                                                                                                                                                                                    |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `market_state`     | Singleton `id=0`; completed logical ticks/epochs, current and previous traded prices, last matched volume, volatility, population counts, cumulative workload counters, rate timestamps, CHAOS flag, setup phase, base config hash |
+| `cadence_state`    | Singleton `id=0`; selected profile, `tick_interval_us`, and `bucket_count`; drives cadence labels, not an independently hard-coded frontend target                                                                                 |
 | `price_point`      | Last 3,600 ticks; actual price and matched volume, including zero-volume frozen prices                                                                                                                                             |
 | `public_activity`  | At most 500 deterministic samples, at most one record per 50 ms; not a trade archive or throughput counter                                                                                                                         |
 | `news_event`       | Last 16 news events; fixed direction/severity/confidence and start/end logical ticks                                                                                                                                               |
@@ -33,6 +35,11 @@ The old observer can keep using `tick` and `price`; they alias `logical_tick` an
 `price_cents`. A receipt's zero-based logical tick describes the tick being
 executed; the market row reports the number completed (one greater immediately
 after that receipt). An epoch is 20 logical ticks.
+Its target duration is one second at 20 Hz, two at 10 Hz, four at 5 Hz.
+Use `PricePoint.recorded_at` for minute chart windows and horizontal spacing,
+including history spanning pauses or cadence changes. Missing cadence metadata
+renders as pending, never a guessed live target. Capacity selection matches the
+current cadence; the result still explicitly names its environment/workload.
 
 Compute rates from two cumulative-counter snapshots divided by their actual
 elapsed timestamp interval, preferably at least the advertised 1,000,000 us
@@ -92,7 +99,7 @@ There is deliberately no history-pruning shortcut that permits replay.
 
 Only the initial publisher is an administrator. Anonymous clients cannot change
 population, initialize/reset, start/pause/recover/manual-step, trigger CHAOS,
-authorize evidence readers, validate runs, or publish results. Even the publisher
+select cadence, prune evidence, authorize evidence readers, validate runs, or publish results. Even the publisher
 cannot invoke `simulation_tick` as a client: it checks scheduler origin. The
 manual `benchmark_step` wrapper is admin-only and refuses while scheduling is on.
 
@@ -108,5 +115,9 @@ resumable; ticking begins only in READY. Pausing or recovering invalidates the
 active qualification. Reset requires the explicit `RESET WORLD` confirmation and
 bounded `reset_batch` calls; it is never an implicit startup action.
 
-Kaleb's frontend is intentionally unchanged. The next frontend work can consume
-these tables and views without a REST service or a separate simulation.
+Owner cadence workflow: `pause_simulation`, `set_cadence_profile("10hz")`, then
+`start_run("NORMAL", module_sha256, false)`. Selecting while enabled is rejected;
+selecting the same profile is a no-op (use `recover_simulation` for that paused
+segment instead). Existing-world starts are non-qualifying. Call selection before
+the initial start to configure a fresh benchmark world. See the capacity worklog
+for measured profiles and populations; availability is not qualification.

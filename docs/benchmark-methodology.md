@@ -40,8 +40,11 @@ state. Full cash/share conservation audits run only after measurement stops.
 ## Fixed load and timeline
 
 Each repeat uses 30 seconds warm-up, then 180 seconds measurement: 4,200 intended
-50 ms slots, including 3,600 measured ticks. Ten ordinary viewer connections
-maintain the six production queries in the client contract throughout the run.
+50 ms slots at default 20 Hz, including 3,600 measured ticks. At 10 Hz these
+counts are 2,100/1,800; a prepared 5 Hz profile would use 1,050/900. Select with
+`CADENCE=20hz|10hz|5hz`; market `PROFILE=NORMAL|CHAOS` is independent.
+Three ordinary viewer connections maintain the seven production queries (including
+cadence metadata) in the client contract throughout the run.
 One additional ordinary human identity offers one-share orders every 200 ms on
 a fixed wall-clock schedule (1,050 attempts total), alternating BUY at 10,100
 cents and SELL at 9,900. The generator does not wait for acknowledgments to offer
@@ -59,7 +62,7 @@ lasting 1,200 logical ticks with 8,000 bps severity and 10,000 bps confidence.
 Neither profile guarantees a crash or a liquid market. Without actual buyers,
 price freezes and exits remain incomplete.
 
-The intended deadline is `origin + slot * 50,000 us`, assigned before invocation.
+The intended deadline is `origin + slot * selected_tick_interval_us`, assigned before invocation.
 No callback re-anchors the grid. A late callback executes one tick and records
 skipped following slots; it does not silently catch up. Failed transactional ticks
 do not commit receipts or reschedule; a timeout is visible and recovery requires
@@ -79,12 +82,15 @@ validates all retained receipts. Aggregate update counts alone are insufficient.
 A confirmation passes only with complete coverage, zero skipped slots, no
 established reducer failure, fixed offered/viewer load, healthy confirmed-read
 connections, no growing debt, and measured P99 start lateness strictly below
-50,000 us. At population 200, a successful measured window contains exactly
-36,000 actor updates (200 per epoch for 180 epochs). Three fresh PASSED runs with
-matching population/seed/profile/build are required before publication.
+the selected tick interval (50,000 us at 20 Hz, 100,000 at 10 Hz). At population
+200, a successful 20 Hz measurement contains exactly 36,000 actor updates;
+10 Hz contains 18,000. Validators sum expected due-bucket membership, including
+partial epochs, rather than assuming population updates once per second.
+Three fresh PASSED runs with matching population/seed/profile/cadence/build
+are required before publication.
 Debt is invocation lateness against the original grid, never a re-anchored clock.
-The validator also compares the mean debt of the first and last 20 measured
-ticks; growth of more than one 50 ms slot fails. Any individual skipped slot
+The validator also compares the mean debt of the first and last target-second
+windows (20 or 10 ticks); growth of at least one selected slot fails. Any individual skipped slot
 already fails independently, including during warm-up.
 
 Missing evidence or a disconnected collector is INCONCLUSIVE unless another
@@ -129,11 +135,18 @@ are distinct from the start-lateness qualification gate.
 ## Exploration, comparison, and artifact audit
 
 `./scripts/explore` runs explicitly non-qualifying local probes. Defaults are
-5 seconds warm-up and 20 seconds measurement, with the same ten viewers and
+5 seconds warm-up and 20 seconds measurement, with the same three viewers and
 five offered human orders/second. `WARMUP_SECONDS`, `MEASUREMENT_SECONDS`, and
 `REPEATS` control probes only; production qualification remains 30+180 seconds
 and three fresh confirmations. Short-run success is `EXPLORE_PASS`, never a
 public qualified result. Preserve failed probes as well as passes.
+Artifacts include cadence ID, interval, bucket count and a cadence-sensitive
+workload hash. Profile switching is never allowed within a measured run. The
+current client subscribes to one extra bounded metadata singleton compared with
+historical six-query archives; those workload hashes are deliberately different.
+The user reduced the fixed viewer count from ten to three during the cadence
+investigation. Earlier ten-viewer probes retain their original configuration and
+hashes; they are not relabeled or combined with three-viewer capacity evidence.
 
 For CHAOS, use a long enough probe to reach the unchanged shock at slot 1,200;
 the investigation uses `WARMUP_SECONDS=30 MEASUREMENT_SECONDS=90`. Never move
@@ -143,6 +156,14 @@ window and divides by actual window seconds, not by completed ticks. This is
 not an exact commit-completion timestamp measurement. Receipt CSVs, explicit
 window lengths, reasons, initialization duration, and module/workload hashes
 are retained under `artifacts/exploration/`.
+That 120-second total is the historical 20 Hz probe. At 10 Hz the shock begins
+at 120 seconds and ends around 240 seconds; use e.g. 30+330 seconds to include
+its full duration and aftermath. Economic/revival/news horizons remain logical
+ticks, so cadence comparisons trade per-actor responsiveness for population.
+Exploration permits at most 800 wall seconds, and refuses any window exceeding
+8,192 retained receipts at its selected cadence. At 5 Hz the fixed CHAOS shock
+begins at 240 target seconds and lasts another 240; a shorter NORMAL test does
+not establish CHAOS capacity.
 
 `MODULE_WASM=artifacts/builds/baseline-v02.wasm ./scripts/explore` selects the
 preserved original binary. The script regenerates an isolated private Rust

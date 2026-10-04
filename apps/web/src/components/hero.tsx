@@ -1,6 +1,7 @@
 import { centsToDollars, formatCount, formatUsd } from '../lib/units';
 import {
-  TARGET_HZ,
+  cadenceLabel,
+  type Cadence,
   type MarketSnapshot,
   type PriceSample,
 } from '../market/contract';
@@ -42,11 +43,13 @@ function backdrop(samples: readonly PriceSample[]) {
  */
 export function Hero({
   snapshot,
+  cadence,
   fillRate,
   connected,
   samples,
 }: {
   snapshot?: MarketSnapshot;
+  cadence?: Cadence;
   fillRate?: number;
   connected: boolean;
   samples: readonly PriceSample[];
@@ -84,9 +87,9 @@ export function Hero({
 
       <p className="hero-lede">
         A single synthetic market, shared by everyone who opens this page.
-        Autonomous policy agents trade it continuously at {TARGET_HZ} times a
-        second, and you can trade against them with a synthetic bankroll. Open
-        it on another device and you are looking at the same world.
+        Autonomous policy agents share a clock ({cadenceLabel(cadence)}), and
+        you can trade against them with a synthetic bankroll. Open it on another
+        device and you are looking at the same world.
       </p>
 
       <dl className="hero-stats">

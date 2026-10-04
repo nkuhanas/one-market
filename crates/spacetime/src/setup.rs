@@ -115,6 +115,7 @@ pub fn reset_market(ctx: &ReducerContext, confirmation: String) -> Result<()> {
     if confirmation != "RESET WORLD" {
         return Err("explicit RESET WORLD confirmation required".into());
     }
+    crate::timed_run::clear(ctx);
     let mut r = runtime(ctx)?;
     crate::runtime::fail_run(ctx, r.run_id, "world reset")?;
     r.enabled = false;
@@ -189,11 +190,21 @@ pub fn reset_batch(ctx: &ReducerContext) -> Result<()> {
         {
             ctx.db.run_record().run_id().delete(run.run_id);
             ctx.db.validated_run().run_id().delete(run.run_id);
+            ctx.db.run_cadence().run_id().delete(run.run_id);
         } else {
             evidence_done = false;
         }
     }
     if empty && evidence_done {
+        crate::timing::ensure(ctx);
+        let mut cadence = ctx
+            .db
+            .cadence_state()
+            .id()
+            .find(0)
+            .ok_or("cadence missing")?;
+        cadence.requires_explicit_start = false;
+        ctx.db.cadence_state().id().update(cadence);
         let connected = market(ctx)?.connected_identity_count;
         ctx.db
             .market_state()

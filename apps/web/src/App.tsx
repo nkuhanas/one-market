@@ -12,7 +12,7 @@ import { PriceChart, type RangeId } from './components/price-chart';
 import { SystemStatus } from './components/system-status';
 import { Metric } from './components/value';
 import { formatCount } from './lib/units';
-import { live, pending, TARGET_HZ } from './market/contract';
+import { cadenceLabel, live, pending } from './market/contract';
 import { useScrollReveal } from './lib/use-reveal';
 import { useFillRate } from './market/use-fill-rate';
 import { useOneMarket } from './market/use-one-market';
@@ -37,13 +37,18 @@ export function App() {
     <div className={`app ${market.shock ? 'app-chaos' : ''}`}>
       <CursorTrail />
 
-      <Header status={market.status} logicalTick={snapshot?.logicalTick} />
+      <Header
+        status={market.status}
+        logicalTick={snapshot?.logicalTick}
+        cadence={market.cadence}
+      />
 
       <main>
         {market.shock && <ChaosBanner shock={market.shock} />}
 
         <Hero
           snapshot={snapshot}
+          cadence={market.cadence}
           fillRate={fillRate}
           connected={market.status === 'Connected'}
           samples={market.priceHistory}
@@ -140,10 +145,11 @@ export function App() {
           />
         </div>
 
-        <Explainer />
+        <Explainer cadence={market.cadence} />
 
         <SystemStatus
           snapshot={snapshot}
+          cadence={market.cadence}
           status={market.status}
           error={market.error}
           pricePoints={market.priceHistory.length}
@@ -156,7 +162,7 @@ export function App() {
 
       <footer className="foot">
         <span>One Market · one persistent synthetic world</span>
-        <span>All money is synthetic. {TARGET_HZ} Hz target cadence.</span>
+        <span>All money is synthetic. {cadenceLabel(market.cadence)}.</span>
       </footer>
     </div>
   );

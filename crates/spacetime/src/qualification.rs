@@ -1,7 +1,7 @@
-use crate::{access::admin, schema::*};
+use crate::{access::admin, schema::*, timing};
 use one_market_core::{
-    config::{config, workload_hash},
-    evidence::{validate, Receipt},
+    config::{config, workload_hash_at_cadence},
+    evidence::{validate_at_cadence, Receipt},
     Result,
 };
 use spacetimedb::{reducer, ReducerContext, Table};
@@ -64,7 +64,8 @@ pub fn validate_run(
         .filter(run_id)
         .map(Receipt::from)
         .collect();
-    let validation = validate(
+    let cadence = timing::for_run(ctx, run_id, &config())?;
+    let validation = validate_at_cadence(
         &receipts,
         run_id,
         run.population,
@@ -72,6 +73,7 @@ pub fn validate_run(
         run.status == "FAILED",
         load_valid,
         connection_healthy,
+        &cadence,
     );
     run.status = validation.status;
     run.failure_reason = validation.reasons.join("; ");
@@ -135,12 +137,15 @@ pub fn publish_benchmark_result(
         runs.push(run);
     }
     let first = &runs[0];
+    let cadence = timing::for_run(ctx, first.run_id, &c)?;
     if runs.iter().any(|r| {
         r.population != first.population
             || r.seed != first.seed
             || r.profile != first.profile
             || r.build_hash != first.build_hash
-            || r.configuration_hash != workload_hash(r.population, r.seed, &r.profile)
+            || timing::for_run(ctx, r.run_id, &c).ok().as_ref() != Some(&cadence)
+            || r.configuration_hash
+                != workload_hash_at_cadence(r.population, r.seed, &r.profile, &cadence)
     }) {
         return Err("confirmation workload/build mismatch".into());
     }
@@ -150,7 +155,7 @@ pub fn publish_benchmark_result(
         environment,
         workload_profile: first.profile.clone(),
         actor_count: first.population,
-        tick_interval_us: c.tick_interval_us,
+        tick_interval_us: cadence.tick_interval_us,
         bucket_count: c.buckets,
         warmup_seconds: c.warmup_seconds,
         measurement_seconds: c.measurement_seconds,
@@ -167,7 +172,12 @@ pub fn publish_benchmark_result(
             .map(|v| v.start_lateness_p99_us)
             .max()
             .ok_or("no runs")?,
-        configuration_hash: workload_hash(first.population, first.seed, &first.profile),
+        configuration_hash: workload_hash_at_cadence(
+            first.population,
+            first.seed,
+            &first.profile,
+            &cadence,
+        ),
         build_hash: first.build_hash.clone(),
         evidence_hash,
         run_ids,

@@ -3,6 +3,8 @@ source "$(dirname "$0")/common.sh"
 
 population="${POPULATION:-1000}"
 profile="${PROFILE:-NORMAL}"
+cadence="${CADENCE:-20hz}"
+case "$cadence" in 20hz|10hz|5hz) ;; *) printf 'CADENCE must be 20hz, 10hz or 5hz\n' >&2; exit 1;; esac
 case "$profile" in NORMAL|CHAOS) ;; *) printf 'PROFILE must be NORMAL or CHAOS\n' >&2; exit 1;; esac
 compose up -d --wait db
 # A preserved module may be selected for before/after comparisons. It is never
@@ -33,15 +35,15 @@ if [[ -z "${HARNESS_BIN:-}" ]]; then
 fi
 module_hash="$(compose run --rm --no-deps tools sha256sum "$module" | cut -d ' ' -f 1)"
 stamp="$(date -u +%Y%m%dT%H%M%SZ)-$$"
-database="one-market-explore-${population}-${profile,,}-${stamp,,}"
+database="one-market-explore-${cadence}-${population}-${profile,,}-${stamp,,}"
 compose run --rm --no-deps tools spacetime --root-dir /state publish \
   --server http://db:3000 --bin-path "$module" --no-config --delete-data=never \
   --yes=remote,migrate,skip-login "$database"
-output="artifacts/exploration/$stamp/${population}-${profile,,}"
+output="artifacts/exploration/$stamp/${cadence}-${population}-${profile,,}"
 result=0
 compose run --rm --no-deps tools "$harness" \
   --uri http://db:3000 --database "$database" --token-file /state/config/cli.toml \
-  --build-hash "$module_hash" --population "$population" --profile "$profile" \
+  --build-hash "$module_hash" --population "$population" --profile "$profile" --cadence "$cadence" \
   --environment LOCAL --mode explore --warmup-seconds "${WARMUP_SECONDS:-5}" \
   --measurement-seconds "${MEASUREMENT_SECONDS:-20}" --repeats "${REPEATS:-1}" \
   --output "$output" || result=$?

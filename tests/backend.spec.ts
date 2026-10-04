@@ -83,6 +83,9 @@ test.describe
       'SELECT * FROM market_dynamics',
       'SELECT * FROM bucket_health',
       'SELECT * FROM actor_recovery',
+      'SELECT * FROM cadence_state',
+      'SELECT * FROM run_cadence',
+      'SELECT * FROM timed_run_stop',
     ]);
     for (const client of [alice, bob]) {
       await subscribe(client, [
@@ -112,6 +115,15 @@ test.describe
     ).rejects.toThrow();
     await expect(alice.reducers.triggerChaos({})).rejects.toThrow();
     await expect(alice.reducers.benchmarkStep({})).rejects.toThrow();
+    await expect(
+      alice.reducers.setCadenceProfile({ profile: '10hz' }),
+    ).rejects.toThrow();
+    await expect(
+      alice.reducers.pruneRunEvidence({
+        runId: 1n,
+        confirmation: 'PRUNE RUN 1',
+      }),
+    ).rejects.toThrow();
     await expect(
       alice.reducers.authorizeReader({ identity: alice.identity! }),
     ).rejects.toThrow();
@@ -161,6 +173,8 @@ test.describe
       'human_order_receipt',
       'actor_state',
       'actor_recovery',
+      'run_cadence',
+      'timed_run_stop',
       'detailed_benchmark_receipts',
     ]) {
       const outsider = await connect();
@@ -751,5 +765,228 @@ test.describe
         limitPriceCents: 1n,
       }),
     ).rejects.toThrow();
+  });
+
+  test('cadence switches preserve the world and create honest independent timing segments', async () => {
+    expect(owner.db.cadenceState.id.find(0)!.profile).toBe('20hz');
+    await expect(
+      owner.reducers.setCadenceProfile({ profile: '11hz' }),
+    ).rejects.toThrow();
+    const initialActors = [...owner.db.actorState.iter()];
+    await owner.reducers.setCadenceProfile({ profile: '10hz' });
+    await expect
+      .poll(() => owner.db.cadenceState.id.find(0)!.profile)
+      .toBe('10hz');
+    expect([...owner.db.actorState.iter()]).toEqual(initialActors);
+    expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+    await owner.reducers.startRun({
+      profile: 'NORMAL',
+      buildHash,
+      qualification: false,
+    });
+    await expect.poll(() => row().logicalTick).toBeGreaterThan(5n);
+    await expect(
+      owner.reducers.setCadenceProfile({ profile: '20hz' }),
+    ).rejects.toThrow();
+    const stopped = await pause();
+    const firstId = stopped.runId;
+    const firstRun = owner.db.runRecord.runId.find(firstId)!;
+    const firstTiming = owner.db.runCadence.runId.find(firstId)!;
+    expect(firstTiming.tickIntervalUs).toBe(100000n);
+    expect(firstTiming.firstLogicalTick).toBe(0n);
+    const receipts = [...owner.db.detailedBenchmarkReceipts.iter()].filter(
+      (r) => r.runId === firstId,
+    );
+    expect(receipts.length).toBeGreaterThan(0);
+    for (const receipt of receipts) {
+      expect(receipt.intendedAt.microsSinceUnixEpoch).toBe(
+        firstRun.origin.microsSinceUnixEpoch +
+          receipt.intendedSlot * firstTiming.tickIntervalUs,
+      );
+    }
+    // Same-profile selection is idempotent, and recovery stays on this grid.
+    await owner.reducers.setCadenceProfile({ profile: '10hz' });
+    expect(owner.db.runtimeConfig.id.find(0)!.runId).toBe(firstId);
+    await owner.reducers.recoverSimulation({});
+    await expect
+      .poll(() => row().logicalTick)
+      .toBeGreaterThan(stopped.logicalTick);
+    await pause();
+    const tick = row().logicalTick;
+    const actors = [...owner.db.actorState.iter()];
+    const accounting = owner.db.grantAccounting.id.find(0)!;
+    await alice.reducers.placeOrder({
+      clientOrderId: 999n,
+      side: 'BUY',
+      quantity: 1n,
+      limitPriceCents: 1n,
+    });
+    await expect.poll(() => [...alice.db.myPendingOrder.iter()].length).toBe(1);
+    await expect
+      .poll(() => [...alice.db.myTrader.iter()][0].reservedCashCents)
+      .toBe(1n);
+    const pendingOrder = [...alice.db.myPendingOrder.iter()][0];
+    const human = [...alice.db.myTrader.iter()][0];
+    const dynamics = owner.db.marketDynamics.id.find(0)!;
+    await owner.reducers.setCadenceProfile({ profile: '20hz' });
+    await expect.poll(() => owner.db.runtimeConfig.id.find(0)!.runId).toBe(0n);
+    expect(row().logicalTick).toBe(tick);
+    expect([...owner.db.actorState.iter()]).toEqual(actors);
+    expect(owner.db.grantAccounting.id.find(0)).toEqual(accounting);
+    expect([...alice.db.myTrader.iter()][0]).toEqual(human);
+    expect([...alice.db.myPendingOrder.iter()][0]).toEqual(pendingOrder);
+    expect(owner.db.marketDynamics.id.find(0)).toEqual(dynamics);
+    expect(owner.db.runRecord.runId.find(firstId)!.completedAt).toBeDefined();
+    expect(owner.db.runRecord.runId.find(firstId)!.configurationHash).toBe(
+      firstRun.configurationHash,
+    );
+    expect(owner.db.runRecord.runId.find(firstId)!.origin).toEqual(
+      firstRun.origin,
+    );
+    const oldEvidence = [...owner.db.detailedBenchmarkReceipts.iter()].filter(
+      (r) => r.runId === firstId,
+    );
+    await expect(owner.reducers.recoverSimulation({})).rejects.toThrow();
+    await expect(
+      owner.reducers.startRun({
+        profile: 'NORMAL',
+        buildHash,
+        qualification: true,
+      }),
+    ).rejects.toThrow();
+    await owner.reducers.startRun({
+      profile: 'NORMAL',
+      buildHash,
+      qualification: false,
+    });
+    await expect.poll(() => row().logicalTick).toBeGreaterThan(tick + 20n);
+    expect([...owner.db.tickSchedule.iter()]).toHaveLength(1);
+    const next = await pause();
+    expect(next.runId).not.toBe(firstId);
+    const nextRun = owner.db.runRecord.runId.find(next.runId)!;
+    const nextTiming = owner.db.runCadence.runId.find(next.runId)!;
+    expect(nextRun.qualification).toBe(false);
+    expect(nextRun.configurationHash).not.toBe(firstRun.configurationHash);
+    expect(nextTiming.firstLogicalTick).toBe(tick);
+    expect(nextTiming.tickIntervalUs).toBe(50000n);
+    const nextReceipts = [...owner.db.detailedBenchmarkReceipts.iter()].filter(
+      (r) => r.runId === next.runId,
+    );
+    for (const receipt of nextReceipts) {
+      expect(receipt.intendedAt.microsSinceUnixEpoch).toBe(
+        nextRun.origin.microsSinceUnixEpoch +
+          receipt.intendedSlot * nextTiming.tickIntervalUs,
+      );
+      expect(receipt.previousStepsValid).toBe(true);
+    }
+    expect(
+      [...owner.db.detailedBenchmarkReceipts.iter()].filter(
+        (r) => r.runId === firstId,
+      ),
+    ).toEqual(oldEvidence);
+    await expect(
+      owner.reducers.pruneRunEvidence({
+        runId: next.runId,
+        confirmation: `PRUNE RUN ${next.runId}`,
+      }),
+    ).rejects.toThrow();
+    await expect(
+      owner.reducers.pruneRunEvidence({
+        runId: firstId,
+        confirmation: 'wrong',
+      }),
+    ).rejects.toThrow();
+    await owner.reducers.pruneRunEvidence({
+      runId: firstId,
+      confirmation: `PRUNE RUN ${firstId}`,
+    });
+    await expect.poll(() => owner.db.runRecord.runId.find(firstId)).toBeNull();
+    expect(owner.db.runCadence.runId.find(firstId)).toBeNull();
+    expect(row().logicalTick).toBe(next.logicalTick);
+    expect([...owner.db.actorState.iter()]).toHaveLength(20);
+  });
+
+  test('timed 5 Hz runs arm atomically and stop on their server deadline', async () => {
+    await owner.reducers.setCadenceProfile({ profile: '5hz' });
+    await expect.poll(() => owner.db.runtimeConfig.id.find(0)!.runId).toBe(0n);
+    const before = row().logicalTick;
+    const args = { profile: 'NORMAL', buildHash, durationSeconds: 1n };
+    await expect(alice.reducers.startTimedRun(args)).rejects.toThrow();
+    for (const durationSeconds of [0n, 3601n, 18446744073709551615n]) {
+      await expect(
+        owner.reducers.startTimedRun({ ...args, durationSeconds }),
+      ).rejects.toThrow();
+    }
+    expect(owner.db.runtimeConfig.id.find(0)!.enabled).toBe(false);
+    expect([...owner.db.timedRunStop.iter()]).toHaveLength(0);
+    expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+    await owner.reducers.startTimedRun(args);
+    await expect.poll(() => [...owner.db.timedRunStop.iter()].length).toBe(1);
+    const stop = [...owner.db.timedRunStop.iter()][0];
+    const run = owner.db.runRecord.runId.find(stop.runId)!;
+    expect(run.qualification).toBe(false);
+    expect(owner.db.runCadence.runId.find(stop.runId)!.tickIntervalUs).toBe(
+      200000n,
+    );
+    expect(stop.deadline.microsSinceUnixEpoch).toBe(
+      run.origin.microsSinceUnixEpoch + 1000000n,
+    );
+    await expect(
+      owner.reducers.stopTimedRun({ scheduled: stop }),
+    ).rejects.toThrow();
+    await expect(
+      alice.reducers.stopTimedRun({ scheduled: stop }),
+    ).rejects.toThrow();
+    await expect(owner.reducers.startTimedRun(args)).rejects.toThrow();
+    await expect.poll(() => row().logicalTick).toBeGreaterThan(before);
+    await expect
+      .poll(() => owner.db.runtimeConfig.id.find(0)!.enabled)
+      .toBe(false);
+    const stopped = await readServer();
+    await expect.poll(readCache).toEqual(stopped);
+    expect([...owner.db.timedRunStop.iter()]).toHaveLength(0);
+    expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+    expect([...owner.db.actorState.iter()]).toHaveLength(20);
+    expect(owner.db.runRecord.runId.find(stop.runId)!.status).toBe('FAILED');
+    const receipts = [...owner.db.detailedBenchmarkReceipts.iter()].filter(
+      (r) => r.runId === stop.runId,
+    );
+    expect(receipts.length).toBeGreaterThan(0);
+    for (const receipt of receipts) {
+      expect(receipt.invokedAt.microsSinceUnixEpoch).toBeLessThan(
+        stop.deadline.microsSinceUnixEpoch,
+      );
+    }
+    await assertRemainsPaused(stopped, readServer, readCache);
+  });
+
+  test('early pause cancels the deadline and cannot stop a later run', async () => {
+    await owner.reducers.setCadenceProfile({ profile: '10hz' });
+    await owner.reducers.startTimedRun({
+      profile: 'NORMAL',
+      buildHash,
+      durationSeconds: 1n,
+    });
+    await expect.poll(() => [...owner.db.timedRunStop.iter()].length).toBe(1);
+    const cancelled = [...owner.db.timedRunStop.iter()][0];
+    await pause();
+    await expect.poll(() => [...owner.db.timedRunStop.iter()].length).toBe(0);
+    await owner.reducers.setCadenceProfile({ profile: '5hz' });
+    await owner.reducers.startRun({
+      profile: 'NORMAL',
+      buildHash,
+      qualification: false,
+    });
+    await expect.poll(() => row().logicalTick).toBeGreaterThan(0n);
+    // 20 ticks at 5 Hz pass the cancelled timer's one-second deadline even if
+    // the test machine is delayed; no sleep-based cache snapshot assertion.
+    const before = row().logicalTick;
+    await expect
+      .poll(() => row().logicalTick, { timeout: 10000 })
+      .toBeGreaterThan(before + 20n);
+    expect(owner.db.runtimeConfig.id.find(0)!.enabled).toBe(true);
+    expect(owner.db.runtimeConfig.id.find(0)!.runId).not.toBe(cancelled.runId);
+    expect([...owner.db.timedRunStop.iter()]).toHaveLength(0);
+    await pause();
   });
 });

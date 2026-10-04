@@ -26,26 +26,47 @@ export function mapPending<T, U>(
   return value.state === 'live' ? live(format(value.value)) : value;
 }
 
-/** Retention limits and cadence constants, from sections 5 and 12. */
+/** Retention limits, from section 12. Clock metadata comes from the server. */
 export const PRICE_HISTORY_TICKS = 3600;
 export const ACTIVITY_FEED_LIMIT = 500;
 export const ACTOR_SAMPLE_LIMIT = 64;
-export const TICKS_PER_EPOCH = 20;
-export const TARGET_HZ = 20;
+
+export interface Cadence {
+  readonly profile: string;
+  readonly tickIntervalUs: bigint;
+  readonly bucketCount: number;
+}
+
+export function cadenceLabel(cadence?: Cadence): string {
+  return cadence
+    ? `${1_000_000 / Number(cadence.tickIntervalUs)} Hz target`
+    : 'Cadence pending';
+}
 
 export type ConnectionStatus = 'Connecting' | 'Connected' | 'Disconnected';
 export type OrderSide = 'BUY' | 'SELL';
 
 export interface PriceSample {
   readonly logicalTick: bigint;
+  readonly recordedAtUs: bigint;
   readonly priceCents: bigint;
   readonly matchedShareVolume: bigint;
+}
+
+/** Use server timestamps, not tick counts, across cadence changes and pauses. */
+export function priceWindow(
+  samples: readonly PriceSample[],
+  seconds: number,
+): readonly PriceSample[] {
+  const last = samples.at(-1);
+  if (!last || !Number.isFinite(seconds)) return samples;
+  const since = last.recordedAtUs - BigInt(seconds) * 1_000_000n;
+  return samples.filter((sample) => sample.recordedAtUs >= since);
 }
 
 export interface MarketSnapshot {
   readonly logicalTick: bigint;
   readonly epoch: bigint;
-  readonly slot: number;
   readonly priceCents: bigint;
   readonly previousTradedPriceCents: bigint;
   readonly matchedShareVolume: bigint;
@@ -98,6 +119,28 @@ export interface CapacityResult {
   readonly tickIntervalUs: bigint;
   readonly environment: string;
   readonly workloadProfile: string;
+}
+
+export function selectCapacity(
+  rows: readonly (CapacityResult & { status: string; completedAt?: unknown })[],
+  cadence?: Cadence,
+): Pending<CapacityResult> {
+  const qualified = rows.filter(
+    (row) =>
+      row.status === 'PASSED' &&
+      row.completedAt !== undefined &&
+      row.tickIntervalUs === cadence?.tickIntervalUs,
+  );
+  if (qualified.length === 0) return pending('No qualified run yet');
+  const best = qualified.reduce((a, b) =>
+    b.actorCount > a.actorCount ? b : a,
+  );
+  return live({
+    actorCount: best.actorCount,
+    tickIntervalUs: best.tickIntervalUs,
+    environment: best.environment,
+    workloadProfile: best.workloadProfile,
+  });
 }
 
 export interface Trader {

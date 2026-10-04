@@ -94,6 +94,30 @@ the module hash are recorded in
 
 ## Inspect and stop
 
+For a deliberately bounded live session, initialize the selected world while
+paused, select its cadence, and use the owner-only
+`start_timed_run("NORMAL", module_sha256, 180)` instead of `start_run`.
+Initialization must finish before that call; `initialize-maincloud` currently
+starts an unbounded session and is not the bounded-session entry point.
+
+The timed reducer atomically starts a non-qualifying run and records a private
+one-shot stop at `run.origin + duration_seconds`. Durations are 1–3,600 seconds.
+It survives operator disconnect and database restart. The scheduled callback
+pauses the world; the tick path also refuses new work at/after the deadline.
+An in-flight transaction is allowed to finish, so host stalls can delay the
+observable pause. Explicit pause/reset cancels the timer; explicit recovery
+cancels it too and is not a timed-session restart. Inspect `timed_run_stop`
+with owner credentials before start monitoring, and confirm `enabled=false`,
+zero tick/stop schedules and a stable authoritative tick afterward. Keep an
+external owner-pause fallback; do not infer stop from the frontend cache alone.
+
+Changing an existing population is destructive and separate from publishing.
+Only after explicit approval, pause it, call `reset_market("RESET WORLD")`,
+and call bounded `reset_batch` until EMPTY. Configure population/seed, select
+cadence while EMPTY, and call `initialize_batch` until READY. Capture evidence
+first; benchmark receipts and aggregate snapshots do not back up deleted actor
+and human accounts. Never insert an implicit reset into publishing or startup.
+
 ```sh
 ./scripts/maincloud-status
 CONFIRM_MAINCLOUD=pause ./scripts/maincloud-status pause

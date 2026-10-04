@@ -71,7 +71,7 @@ for (const input of process.argv.slice(2)) {
     .readdirSync(input, { recursive: true })
     .filter((f) => /(?:normal|chaos)-\d+\.json$/.test(f));
   const rows = [
-    'artifact,population,profile,run,status,p99_us,skips,updates_per_sec,orders_per_sec,fills_per_sec,initialization_ms,reason,build_hash,configuration_hash,mean_txn_ms,mean_wasm_ms,mean_update_ms,wasm_memory_bytes',
+    'artifact,population,profile,cadence,tick_interval_us,viewers,warmup_seconds,measurement_seconds,run,status,p99_us,skips,updates_per_sec,orders_per_sec,fills_per_sec,initialization_ms,reason,build_hash,configuration_hash,mean_txn_ms,mean_wasm_ms,mean_update_ms,wasm_memory_bytes',
   ];
   for (const file of files.sort()) {
     const a = JSON.parse(fs.readFileSync(path.join(input, file), 'utf8'));
@@ -82,6 +82,11 @@ for (const input of process.argv.slice(2)) {
         file,
         a.population,
         a.profile,
+        a.cadence_profile ?? '20hz',
+        a.tick_interval_us ?? 50_000,
+        a.subscriber_count,
+        a.warmup_seconds,
+        a.measurement_seconds,
         a.run_id,
         a.validation.status,
         a.validation.start_lateness_p99_us,

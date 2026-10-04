@@ -1,0 +1,21 @@
+{
+  "artifact_hashes": [
+    "1c9eac0a20b029fb0978b41a2c116d3e4f8ef250ce2b98da4e3f8ea528b71e00"
+  ],
+  "bucket_count": 20,
+  "build_hash": "8f763839d849afe0481c2fcfe817aec1c2a6f1a16fd134c9c3eabd2c726b8072",
+  "cadence_profile": "10hz",
+  "configuration_hash": "6575894eaa362742de8a6bf1533cd7c5e7079887fcacc7d8f31743583d32f7fc",
+  "environment": "LOCAL",
+  "measurement_seconds": 30,
+  "mode": "EXPLORE",
+  "population": 750000,
+  "profile": "NORMAL",
+  "repeats": 1,
+  "run_ids": [
+    1
+  ],
+  "status": "EXPLORE_PASS",
+  "tick_interval_us": 100000,
+  "warmup_seconds": 10
+}

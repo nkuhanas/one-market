@@ -4,7 +4,7 @@ use crate::{
     invoke,
 };
 use one_market_core::{
-    config::{config, workload_hash, CONFIG_JSON},
+    config::{config, workload_hash_at_cadence, CONFIG_JSON},
     evidence::{self, Receipt, Validation},
 };
 use serde::{Deserialize, Serialize};
@@ -29,6 +29,7 @@ pub struct Options {
     pub build_hash: String,
     pub population: u64,
     pub profile: String,
+    pub cadence_profile: String,
     pub environment: String,
     pub output: PathBuf,
     pub exploration: Option<crate::explore::Window>,
@@ -55,6 +56,12 @@ pub struct Artifact {
     pub database: String,
     pub environment: String,
     pub profile: String,
+    #[serde(default = "legacy_cadence")]
+    pub cadence_profile: String,
+    #[serde(default = "legacy_interval")]
+    pub tick_interval_us: u64,
+    #[serde(default = "legacy_buckets")]
+    pub bucket_count: u8,
     pub run_id: u64,
     pub population: u64,
     pub seed: u64,
@@ -79,6 +86,17 @@ pub struct Artifact {
     pub receipt_arrival_times_us: Vec<(u64, i64)>,
     pub offers: Vec<Offer>,
     pub receipts: Vec<Receipt>,
+}
+
+// Deserialization of immutable historical archives, not runtime defaults.
+fn legacy_cadence() -> String {
+    "20hz".into()
+}
+fn legacy_interval() -> u64 {
+    50_000
+}
+fn legacy_buckets() -> u8 {
+    20
 }
 
 pub fn clock_us() -> i64 {
@@ -272,6 +290,7 @@ fn host_metrics(options: &Options, repeat: u64, phase: &str) -> Result<()> {
 
 pub fn run(options: Options) -> Result<bool> {
     let c = config();
+    let cadence = c.cadence(&options.cadence_profile)?;
     let warmup_seconds = options
         .exploration
         .map_or(c.warmup_seconds, |w| w.warmup_seconds);
@@ -282,6 +301,10 @@ pub fn run(options: Options) -> Result<bool> {
         .exploration
         .map_or(c.confirmation_runs, |w| w.repeats);
     let qualification = options.exploration.is_none();
+    let expected_slots = cadence.ticks_for_seconds(warmup_seconds + measurement_seconds)?;
+    if expected_slots > c.tick_receipt_retention {
+        return Err("measurement would exceed retained tick evidence".into());
+    }
     let build_metadata = metadata()?;
     if options.population == 0 || options.population > c.population_max {
         return Err("invalid population".into());
@@ -309,6 +332,12 @@ pub fn run(options: Options) -> Result<bool> {
             "qualification requires a new empty database; refusing to overwrite an existing world"
                 .into(),
         );
+    }
+    #[cfg(not(feature = "probe-bindings"))]
+    invoke!(owner, set_cadence_profile_then(cadence.id.clone()))?;
+    #[cfg(feature = "probe-bindings")]
+    if cadence.id != "20hz" {
+        return Err("historical probe bindings support only the historical 20hz cadence".into());
     }
     let mut run_ids = vec![];
     let mut artifact_hashes = vec![];
@@ -436,7 +465,8 @@ pub fn run(options: Options) -> Result<bool> {
             .run_id()
             .find(&expected_id)
             .ok_or("run missing")?;
-        let expected_workload = workload_hash(options.population, c.seed, &options.profile);
+        let expected_workload =
+            workload_hash_at_cadence(options.population, c.seed, &options.profile, &cadence);
         if record.configuration_hash != expected_workload {
             // A preserved WASM must be paired with its own frozen workload.
             // Do not label an old module's behavior with this harness's rules.
@@ -458,7 +488,7 @@ pub fn run(options: Options) -> Result<bool> {
         let offers = Arc::new(Mutex::new(Vec::<Offer>::new()));
         let duration = warmup_seconds + measurement_seconds;
         let count = duration * c.offered_orders_per_second;
-        println!("{} {} repeat {repeat}/{repeats}: {} actors, {warmup_seconds}s warmup + {measurement_seconds}s measurement, 10 viewers, 5 offered orders/s; run {}; initialization={}ms",if qualification {"QUALIFY"} else {"EXPLORE"}, options.profile,options.population,expected_id,initialization_us / 1000);
+        println!("{} {} repeat {repeat}/{repeats}: {} actors, {warmup_seconds}s warmup + {measurement_seconds}s measurement, {} viewers, {} offered orders/s; run {}; initialization={}ms",if qualification {"QUALIFY"} else {"EXPLORE"}, options.profile,options.population,c.viewers,c.offered_orders_per_second,expected_id,initialization_us / 1000);
         for i in 0..count {
             let intended_offset_us = i * 1_000_000 / c.offered_orders_per_second;
             let deadline = origin + Duration::from_micros(intended_offset_us);
@@ -534,7 +564,7 @@ pub fn run(options: Options) -> Result<bool> {
                         if qualification {
                             r.completed_at.is_some()
                         } else {
-                            r.last_slot >= duration * 20
+                            r.last_slot >= expected_slots
                         }
                     })
             },
@@ -618,12 +648,13 @@ pub fn run(options: Options) -> Result<bool> {
                 failed_before_stop || !audit_ok,
                 workload,
                 healthy,
+                &cadence,
             )
         });
         let validation = if let Some(metrics) = &exploratory_metrics {
             metrics.validation.clone()
         } else {
-            evidence::validate(
+            evidence::validate_at_cadence(
                 &receipts,
                 expected_id,
                 options.population,
@@ -631,20 +662,29 @@ pub fn run(options: Options) -> Result<bool> {
                 latest.status == "FAILED" || !audit_ok,
                 workload,
                 healthy,
+                &cadence,
             )
         };
         let artifact = Artifact {
-            format_version: 2,
+            format_version: 3,
             mode: if qualification { "QUALIFY" } else { "EXPLORE" }.into(),
             initialization_us,
             exploratory_metrics,
             database: options.database.clone(),
             environment: options.environment.clone(),
             profile: options.profile.clone(),
+            cadence_profile: cadence.id.clone(),
+            tick_interval_us: cadence.tick_interval_us,
+            bucket_count: c.buckets,
             run_id: expected_id,
             population: options.population,
             seed: c.seed,
-            configuration_hash: workload_hash(options.population, c.seed, &options.profile),
+            configuration_hash: workload_hash_at_cadence(
+                options.population,
+                c.seed,
+                &options.profile,
+                &cadence,
+            ),
             build_hash: options.build_hash.clone(),
             runtime_version: if options.environment == "LOCAL" {
                 "2.10.1".into()
@@ -714,8 +754,9 @@ pub fn run(options: Options) -> Result<bool> {
     let summary = serde_json::json!({"mode":if qualification {"QUALIFY"} else {"EXPLORE"},
         "warmup_seconds":warmup_seconds,"measurement_seconds":measurement_seconds,"repeats":repeats,
         "profile":options.profile,"population":options.population,"environment":options.environment,
+        "cadence_profile":cadence.id,"tick_interval_us":cadence.tick_interval_us,"bucket_count":c.buckets,
         "status":if all_passed {if qualification {"PASSED"} else {"EXPLORE_PASS"}} else {"NOT_QUALIFIED"},"run_ids":run_ids,"artifact_hashes":artifact_hashes,
-        "configuration_hash":workload_hash(options.population,c.seed,&options.profile),"build_hash":options.build_hash});
+        "configuration_hash":workload_hash_at_cadence(options.population,c.seed,&options.profile,&cadence),"build_hash":options.build_hash});
     let bytes = serde_json::to_vec_pretty(&summary).map_err(|e| e.to_string())?;
     let hash = blake3::hash(&bytes).to_hex().to_string();
     fs::write(options.output.join("summary.json"), bytes).map_err(|e| e.to_string())?;

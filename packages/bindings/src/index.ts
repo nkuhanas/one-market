@@ -41,12 +41,15 @@ import InitializeBatchReducer from "./initialize_batch_reducer";
 import PauseSimulationReducer from "./pause_simulation_reducer";
 import PingReducer from "./ping_reducer";
 import PlaceOrderReducer from "./place_order_reducer";
+import PruneRunEvidenceReducer from "./prune_run_evidence_reducer";
 import PublishBenchmarkResultReducer from "./publish_benchmark_result_reducer";
 import RecoverSimulationReducer from "./recover_simulation_reducer";
 import ResetBatchReducer from "./reset_batch_reducer";
 import ResetMarketReducer from "./reset_market_reducer";
 import SetActorPopulationReducer from "./set_actor_population_reducer";
+import SetCadenceProfileReducer from "./set_cadence_profile_reducer";
 import StartRunReducer from "./start_run_reducer";
+import StartTimedRunReducer from "./start_timed_run_reducer";
 import TriggerChaosReducer from "./trigger_chaos_reducer";
 import ValidateRunReducer from "./validate_run_reducer";
 
@@ -58,6 +61,7 @@ import BenchmarkLatestReceiptRow from "./benchmark_latest_receipt_table";
 import BenchmarkResultRow from "./benchmark_result_table";
 import BenchmarkRunsRow from "./benchmark_runs_table";
 import BucketHealthRow from "./bucket_health_table";
+import CadenceStateRow from "./cadence_state_table";
 import MarketDynamicsRow from "./market_dynamics_table";
 import MarketStateRow from "./market_state_table";
 import MyPendingOrderRow from "./my_pending_order_table";
@@ -104,6 +108,17 @@ const tablesSchema = __schema({
       { name: 'bucket_health_bucket_key', constraint: 'unique', columns: ['bucket'] },
     ],
   }, BucketHealthRow),
+  cadenceState: __table({
+    name: 'cadence_state',
+    indexes: [
+      { accessor: 'id', name: 'cadence_state_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'cadence_state_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, CadenceStateRow),
   marketDynamics: __table({
     name: 'market_dynamics',
     indexes: [
@@ -205,12 +220,15 @@ const reducersSchema = __reducers(
   __reducerSchema("pause_simulation", PauseSimulationReducer),
   __reducerSchema("ping", PingReducer),
   __reducerSchema("place_order", PlaceOrderReducer),
+  __reducerSchema("prune_run_evidence", PruneRunEvidenceReducer),
   __reducerSchema("publish_benchmark_result", PublishBenchmarkResultReducer),
   __reducerSchema("recover_simulation", RecoverSimulationReducer),
   __reducerSchema("reset_batch", ResetBatchReducer),
   __reducerSchema("reset_market", ResetMarketReducer),
   __reducerSchema("set_actor_population", SetActorPopulationReducer),
+  __reducerSchema("set_cadence_profile", SetCadenceProfileReducer),
   __reducerSchema("start_run", StartRunReducer),
+  __reducerSchema("start_timed_run", StartTimedRunReducer),
   __reducerSchema("trigger_chaos", TriggerChaosReducer),
   __reducerSchema("validate_run", ValidateRunReducer),
 );
@@ -227,6 +245,8 @@ type __SchemaWithTableAccessorAliases = Omit<typeof tablesSchema.schemaType, "ta
     readonly "benchmark_result": Omit<typeof tablesSchema.schemaType.tables["benchmarkResult"], "accessorName"> & { readonly accessorName: "benchmark_result" };
     /** @deprecated Use `bucketHealth` instead. This alias will be removed in the next major version. */
     readonly "bucket_health": Omit<typeof tablesSchema.schemaType.tables["bucketHealth"], "accessorName"> & { readonly accessorName: "bucket_health" };
+    /** @deprecated Use `cadenceState` instead. This alias will be removed in the next major version. */
+    readonly "cadence_state": Omit<typeof tablesSchema.schemaType.tables["cadenceState"], "accessorName"> & { readonly accessorName: "cadence_state" };
     /** @deprecated Use `marketDynamics` instead. This alias will be removed in the next major version. */
     readonly "market_dynamics": Omit<typeof tablesSchema.schemaType.tables["marketDynamics"], "accessorName"> & { readonly accessorName: "market_dynamics" };
     /** @deprecated Use `marketState` instead. This alias will be removed in the next major version. */
@@ -268,6 +288,7 @@ const tableAccessorAliases = {
   "actor_sample": "actorSample",
   "benchmark_result": "benchmarkResult",
   "bucket_health": "bucketHealth",
+  "cadence_state": "cadenceState",
   "market_dynamics": "marketDynamics",
   "market_state": "marketState",
   "news_event": "newsEvent",
@@ -304,6 +325,8 @@ export type DbView = __DbViewBase & {
   readonly "benchmark_result": __DbViewBase["benchmarkResult"];
   /** @deprecated Use `bucketHealth` instead. This alias will be removed in the next major version. */
   readonly "bucket_health": __DbViewBase["bucketHealth"];
+  /** @deprecated Use `cadenceState` instead. This alias will be removed in the next major version. */
+  readonly "cadence_state": __DbViewBase["cadenceState"];
   /** @deprecated Use `marketDynamics` instead. This alias will be removed in the next major version. */
   readonly "market_dynamics": __DbViewBase["marketDynamics"];
   /** @deprecated Use `marketState` instead. This alias will be removed in the next major version. */
@@ -334,6 +357,8 @@ export type Tables = __TablesBase & {
   readonly "benchmark_result": __TablesBase["benchmarkResult"];
   /** @deprecated Use `bucketHealth` instead. This alias will be removed in the next major version. */
   readonly "bucket_health": __TablesBase["bucketHealth"];
+  /** @deprecated Use `cadenceState` instead. This alias will be removed in the next major version. */
+  readonly "cadence_state": __TablesBase["cadenceState"];
   /** @deprecated Use `marketDynamics` instead. This alias will be removed in the next major version. */
   readonly "market_dynamics": __TablesBase["marketDynamics"];
   /** @deprecated Use `marketState` instead. This alias will be removed in the next major version. */

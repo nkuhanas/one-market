@@ -59,6 +59,12 @@ fn qualification_archive_matches_raw_evidence() {
         );
         let summary_bytes = fs::read(directory.join("summary.json")).unwrap();
         let summary: serde_json::Value = serde_json::from_slice(&summary_bytes).unwrap();
+        let cadence = c
+            .cadence(summary["cadence_profile"].as_str().unwrap_or("20hz"))
+            .unwrap();
+        let expected_ticks = cadence
+            .ticks_for_seconds(c.warmup_seconds + c.measurement_seconds)
+            .unwrap();
         assert_eq!(
             summary["status"], "PASSED",
             "{profile} summary is not qualified"
@@ -84,13 +90,16 @@ fn qualification_archive_matches_raw_evidence() {
         assert_eq!(public["actor_count"], summary["population"]);
         assert_eq!(public["run_ids"], summary["run_ids"]);
         for (field, expected) in [
-            ("tick_interval_us", 50_000),
-            ("bucket_count", 20),
+            ("tick_interval_us", cadence.tick_interval_us),
+            ("bucket_count", u64::from(c.buckets)),
             ("warmup_seconds", 30),
             ("measurement_seconds", 180),
             ("repeat_count", 3),
-            ("subscriber_count", 10),
-            ("offered_human_orders_per_second", 5),
+            ("subscriber_count", c.viewers),
+            (
+                "offered_human_orders_per_second",
+                c.offered_orders_per_second,
+            ),
             ("skipped_application_slots", 0),
         ] {
             assert_eq!(public[field], expected);
@@ -117,6 +126,7 @@ fn qualification_archive_matches_raw_evidence() {
             assert_eq!(news[0]["confidence_bps"], c.chaos_confidence_bps);
         }
         let mut worst_p99 = 0;
+        let mut total_updates = 0u64;
         for repeat in 1..=3 {
             let prefix = directory.join(format!("{}-{repeat}", profile.to_lowercase()));
             let bytes = fs::read(prefix.with_extension("json")).unwrap();
@@ -125,7 +135,9 @@ fn qualification_archive_matches_raw_evidence() {
                 blake3::hash(&bytes).to_hex().as_str(),
                 summary["artifact_hashes"][repeat - 1]
             );
-            assert_eq!(a.format_version, 2);
+            assert!([2, 3].contains(&a.format_version));
+            assert_eq!(a.cadence_profile, cadence.id);
+            assert_eq!(a.tick_interval_us, cadence.tick_interval_us);
             assert_eq!(a.mode, "QUALIFY");
             assert!(a.exploratory_metrics.is_none());
             assert_eq!(a.environment, "LOCAL");
@@ -134,8 +146,8 @@ fn qualification_archive_matches_raw_evidence() {
             let record = records.iter().find(|r| r["run_id"] == a.run_id).unwrap();
             assert_eq!(record["status"], "PASSED");
             assert_eq!(record["qualification"], true);
-            assert_eq!(record["committed_ticks"], 4200);
-            assert_eq!(record["last_slot"], 4200);
+            assert_eq!(record["committed_ticks"], expected_ticks);
+            assert_eq!(record["last_slot"], expected_ticks);
             assert_eq!(record["skipped_slots"], 0);
             assert_eq!(record["population"], a.population);
             assert_eq!(record["build_hash"], a.build_hash);
@@ -154,11 +166,14 @@ fn qualification_archive_matches_raw_evidence() {
             assert_eq!(summary["build_hash"], build_hash);
             assert_eq!(
                 a.configuration_hash,
-                workload_hash(a.population, a.seed, profile)
+                workload_hash_at_cadence(a.population, a.seed, profile, &cadence)
             );
             assert_eq!(summary["configuration_hash"], a.configuration_hash);
             assert_eq!((a.warmup_seconds, a.measurement_seconds), (30, 180));
-            assert_eq!((a.subscriber_count, a.offered_orders_per_second), (10, 5));
+            assert_eq!(
+                (a.subscriber_count, a.offered_orders_per_second),
+                (c.viewers, c.offered_orders_per_second)
+            );
             assert_eq!(a.subscription_queries, c.observer_queries);
             assert!(
                 a.confirmed_reads
@@ -189,14 +204,14 @@ fn qualification_archive_matches_raw_evidence() {
                     .as_deref()
                     .is_some_and(|e| e.starts_with("SDK error:") || e.starts_with("send error:")));
             }
-            assert_eq!(a.receipts.len(), 4200);
-            assert_eq!(a.receipt_arrival_times_us.len(), 4200);
+            assert_eq!(a.receipts.len() as u64, expected_ticks);
+            assert_eq!(a.receipt_arrival_times_us.len() as u64, expected_ticks);
             for (tick, (observed, _)) in a.receipt_arrival_times_us.iter().enumerate() {
                 assert_eq!(*observed, tick as u64);
             }
             // Recompute all deadline, sequence, ordered membership, per-bucket
             // coverage, P99 and schedule-debt gates from retained raw receipts.
-            let validation = evidence::validate(
+            let validation = evidence::validate_at_cadence(
                 &a.receipts,
                 a.run_id,
                 a.population,
@@ -204,6 +219,7 @@ fn qualification_archive_matches_raw_evidence() {
                 false,
                 true,
                 true,
+                &cadence,
             );
             assert_eq!(
                 validation.status, "PASSED",
@@ -223,6 +239,7 @@ fn qualification_archive_matches_raw_evidence() {
                 validation.start_lateness_p99_us
             );
             worst_p99 = worst_p99.max(validation.start_lateness_p99_us);
+            total_updates += validation.measured_actor_updates;
             for epoch in a.receipts.chunks_exact(20) {
                 assert_eq!(
                     epoch.iter().map(|r| r.actor_rows_updated).sum::<u64>(),
@@ -230,7 +247,7 @@ fn qualification_archive_matches_raw_evidence() {
                 );
             }
             let csv = fs::read_to_string(prefix.with_extension("csv")).unwrap();
-            assert_eq!(csv.lines().count(), 4201);
+            assert_eq!(csv.lines().count() as u64, expected_ticks + 1);
             assert_eq!(csv.lines().next().unwrap(), "run_id,slot,tick,intended_us,invoked_us,lateness_us,skipped,bucket,actor_steps,actor_updates,policy_evaluations,orders_submitted,orders_filled,matched_shares");
             for (line, r) in csv.lines().skip(1).zip(&a.receipts) {
                 assert!(r.orders_filled <= r.orders_submitted);
@@ -262,9 +279,12 @@ fn qualification_archive_matches_raw_evidence() {
                 .iter()
                 .filter(|r| r.invoked_at_us >= start && r.invoked_at_us < end)
                 .collect();
-            assert_eq!(measured.len(), 3600);
+            assert_eq!(
+                measured.len() as u64,
+                cadence.ticks_for_seconds(c.measurement_seconds).unwrap()
+            );
             let updates = measured.iter().map(|r| r.actor_rows_updated).sum::<u64>();
-            assert_eq!(updates, a.population * 180);
+            assert_eq!(updates, validation.measured_actor_updates);
             reports.push(serde_json::json!({
                 "profile":profile,"repeat":repeat,"population":a.population,
                 "database":a.database,"initialization_us":a.initialization_us,
@@ -280,10 +300,7 @@ fn qualification_archive_matches_raw_evidence() {
             }));
         }
         assert_eq!(public["start_lateness_p_99_us"], worst_p99);
-        assert_eq!(
-            public["committed_actor_updates"],
-            population.unwrap() * 180 * 3
-        );
+        assert_eq!(public["committed_actor_updates"], total_updates);
         println!(
             "Verified {profile}: all three raw artifacts, hashes, CSVs and server readbacks agree."
         );

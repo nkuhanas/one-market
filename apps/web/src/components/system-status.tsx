@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { formatCount } from '../lib/units';
 import { ChaosControl } from './chaos-control';
 import {
-  TARGET_HZ,
-  TICKS_PER_EPOCH,
+  cadenceLabel,
+  type Cadence,
   type ConnectionStatus,
   type MarketSnapshot,
 } from '../market/contract';
@@ -15,6 +15,7 @@ import {
  */
 export function SystemStatus({
   snapshot,
+  cadence,
   status,
   error,
   pricePoints,
@@ -24,6 +25,7 @@ export function SystemStatus({
   onReconnect,
 }: {
   snapshot?: MarketSnapshot;
+  cadence?: Cadence;
   status: ConnectionStatus;
   error: string;
   pricePoints: number;
@@ -35,7 +37,11 @@ export function SystemStatus({
   const [open, setOpen] = useState(false);
   const [pingMessage, setPingMessage] = useState('');
   const [pinging, setPinging] = useState(false);
-  const slot = snapshot?.slot ?? -1;
+  const buckets = cadence?.bucketCount ?? 0;
+  const slot =
+    snapshot && buckets > 0
+      ? Number(snapshot.logicalTick % BigInt(buckets))
+      : -1;
 
   async function sendPing() {
     setPinging(true);
@@ -54,7 +60,7 @@ export function SystemStatus({
     <section className="system" id="system">
       <div className="system-bar">
         <div className="epoch" aria-hidden="true">
-          {Array.from({ length: TICKS_PER_EPOCH }, (_, index) => (
+          {Array.from({ length: buckets }, (_, index) => (
             <span
               key={index}
               className={
@@ -68,11 +74,11 @@ export function SystemStatus({
           ))}
         </div>
         <p className="system-line">
-          {snapshot
-            ? `Epoch ${formatCount(snapshot.epoch)}, slot ${slot + 1} of ${TICKS_PER_EPOCH}`
+          {snapshot && cadence
+            ? `Epoch ${formatCount(snapshot.epoch)}, slot ${slot + 1} of ${buckets}`
             : 'Waiting for the shared clock'}
           <span className="dot" />
-          {TARGET_HZ} Hz target
+          {cadenceLabel(cadence)}
           <span className="dot" />
           {snapshot?.phase ?? '—'}
         </p>

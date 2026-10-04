@@ -10,11 +10,14 @@ mod schema;
 mod setup;
 #[cfg(feature = "test-support")]
 mod test_support;
+mod timed_run;
+mod timing;
 
 use one_market_core::{config::config, Result};
 pub use runtime::simulation_tick;
 use schema::*;
 use spacetimedb::{reducer, ReducerContext, Table, Timestamp};
+pub use timed_run::stop_timed_run;
 
 fn market(ctx: &ReducerContext) -> Result<MarketState> {
     ctx.db
@@ -79,6 +82,7 @@ pub fn init(ctx: &ReducerContext) {
         identity: ctx.sender(),
     });
     ctx.db.market_state().insert(fresh_market(ctx.timestamp, 0));
+    timing::ensure(ctx);
     revival::ensure(ctx, config().initial_price_cents);
     ctx.db.runtime_config().insert(RuntimeConfig {
         id: 0,

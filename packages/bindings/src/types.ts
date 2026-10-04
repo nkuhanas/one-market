@@ -114,6 +114,15 @@ export const BucketManifest = __t.object("BucketManifest", {
 });
 export type BucketManifest = __Infer<typeof BucketManifest>;
 
+export const CadenceState = __t.object("CadenceState", {
+  id: __t.u8(),
+  profile: __t.string(),
+  tickIntervalUs: __t.u64(),
+  bucketCount: __t.u8(),
+  requiresExplicitStart: __t.bool(),
+});
+export type CadenceState = __Infer<typeof CadenceState>;
+
 export const ConnectionState = __t.object("ConnectionState", {
   connectionId: __t.connectionId(),
   identity: __t.identity(),
@@ -264,6 +273,15 @@ export const PublicActivity = __t.object("PublicActivity", {
 });
 export type PublicActivity = __Infer<typeof PublicActivity>;
 
+export const RunCadence = __t.object("RunCadence", {
+  runId: __t.u64(),
+  profile: __t.string(),
+  tickIntervalUs: __t.u64(),
+  bucketCount: __t.u8(),
+  firstLogicalTick: __t.u64(),
+});
+export type RunCadence = __Infer<typeof RunCadence>;
+
 export const RunRecord = __t.object("RunRecord", {
   runId: __t.u64(),
   status: __t.string(),
@@ -336,6 +354,15 @@ export const TickSchedule = __t.object("TickSchedule", {
   intendedSlot: __t.u64(),
 });
 export type TickSchedule = __Infer<typeof TickSchedule>;
+
+export const TimedRunStop = __t.object("TimedRunStop", {
+  scheduledId: __t.u64(),
+  scheduledAt: __t.scheduleAt(),
+  deadline: __t.timestamp(),
+  runId: __t.u64(),
+  generation: __t.u64(),
+});
+export type TimedRunStop = __Infer<typeof TimedRunStop>;
 
 export const ValidatedRun = __t.object("ValidatedRun", {
   runId: __t.u64(),

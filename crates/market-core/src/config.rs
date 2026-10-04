@@ -5,7 +5,8 @@ pub const CONFIG_JSON: &str = include_str!("../../../config/v02.json");
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Config {
     pub version: String,
-    pub tick_interval_us: u64,
+    pub default_cadence: String,
+    pub cadence_profiles: Vec<Cadence>,
     pub buckets: u8,
     pub min_price_cents: u64,
     pub max_price_cents: u64,
@@ -75,6 +76,42 @@ pub struct Config {
     pub observer_queries: Vec<String>,
 }
 
+/// The versioned registry is the only source of scheduler intervals.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Cadence {
+    pub id: String,
+    pub tick_interval_us: u64,
+}
+
+impl Cadence {
+    pub fn ticks_for_seconds(&self, seconds: u64) -> crate::Result<u64> {
+        if self.tick_interval_us == 0 || 1_000_000 % self.tick_interval_us != 0 {
+            return Err("cadence must divide a wall-clock second exactly".into());
+        }
+        seconds
+            .checked_mul(1_000_000 / self.tick_interval_us)
+            .ok_or_else(|| "tick count overflow".into())
+    }
+}
+
+impl Config {
+    pub fn cadence(&self, id: &str) -> crate::Result<Cadence> {
+        let selected = self
+            .cadence_profiles
+            .iter()
+            .find(|c| c.id == id)
+            .ok_or("unknown cadence profile")?
+            .clone();
+        selected.ticks_for_seconds(1)?;
+        Ok(selected)
+    }
+
+    pub fn default_cadence(&self) -> Cadence {
+        self.cadence(&self.default_cadence)
+            .expect("compiled default cadence must be valid")
+    }
+}
+
 pub fn config() -> Config {
     serde_json::from_str(CONFIG_JSON).expect("compiled versioned configuration must be valid")
 }
@@ -85,18 +122,53 @@ pub fn configuration_hash() -> String {
 
 /// Includes the selected population, seed and profile, not just static defaults.
 pub fn workload_hash(population: u64, seed: u64, profile: &str) -> String {
+    workload_hash_at_cadence(population, seed, profile, &config().default_cadence())
+}
+
+pub fn workload_hash_at_cadence(
+    population: u64,
+    seed: u64,
+    profile: &str,
+    cadence: &Cadence,
+) -> String {
     let mut hasher = blake3::Hasher::new();
-    hasher.update(b"one-market-workload-v1\0");
+    hasher.update(b"one-market-workload-v2\0");
     hasher.update(CONFIG_JSON.as_bytes());
     hasher.update(&population.to_le_bytes());
     hasher.update(&seed.to_le_bytes());
     hasher.update(profile.as_bytes());
+    hasher.update(b"\0cadence\0");
+    hasher.update(cadence.id.as_bytes());
+    hasher.update(&cadence.tick_interval_us.to_le_bytes());
     hasher.finalize().to_hex().to_string()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cadence_registry_and_hashes_are_explicit() {
+        let c = config();
+        assert_eq!(c.default_cadence().id, "20hz");
+        assert_eq!(c.buckets, 20);
+        let mut hashes = std::collections::HashSet::new();
+        // 5 Hz is prepared and arithmetic-tested, not used to run a simulation.
+        for (id, hz, epoch_us) in [
+            ("20hz", 20, 1_000_000),
+            ("10hz", 10, 2_000_000),
+            ("5hz", 5, 4_000_000),
+        ] {
+            let cadence = c.cadence(id).unwrap();
+            assert_eq!(cadence.ticks_for_seconds(1).unwrap(), hz);
+            assert_eq!(cadence.tick_interval_us * u64::from(c.buckets), epoch_us);
+            assert!(cadence.ticks_for_seconds(u64::MAX).is_err());
+            assert!(hashes.insert(workload_hash_at_cadence(
+                375_000, c.seed, "NORMAL", &cadence
+            )));
+        }
+        assert!(c.cadence("11hz").is_err());
+    }
 
     #[test]
     fn frozen_revival_defaults_have_time_for_a_full_eligible_cohort_cycle() {

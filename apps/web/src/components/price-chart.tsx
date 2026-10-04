@@ -1,18 +1,18 @@
 import { memo, useMemo, useState } from 'react';
 import { centsToDollars, formatCount, formatUsd } from '../lib/units';
-import type { PriceSample } from '../market/contract';
+import { priceWindow, type PriceSample } from '../market/contract';
 import { EmptyState } from './value';
 
 const VIEW_W = 1000;
 const VIEW_H = 320;
-/** Capped so a redraw stays cheap while the runtime commits at 20 Hz. */
+/** Capped so redraw cost is independent of runtime cadence. */
 const MAX_POINTS = 320;
 
 export const RANGES = [
-  { id: 'live', label: 'Live', ticks: 600 },
-  { id: '1m', label: '1M', ticks: 1200 },
-  { id: '5m', label: '5M', ticks: 6000 },
-  { id: 'all', label: 'All', ticks: Number.POSITIVE_INFINITY },
+  { id: 'live', label: 'Live', seconds: 30 },
+  { id: '1m', label: '1M', seconds: 60 },
+  { id: '5m', label: '5M', seconds: 300 },
+  { id: 'all', label: 'All', seconds: Number.POSITIVE_INFINITY },
 ] as const;
 
 export type RangeId = (typeof RANGES)[number]['id'];
@@ -38,14 +38,8 @@ export const PriceChart = memo(function PriceChart({
   onRange: (id: RangeId) => void;
 }) {
   const [cursor, setCursor] = useState<number>();
-  const window = RANGES.find((r) => r.id === range)!.ticks;
-  const scoped = useMemo(
-    () =>
-      Number.isFinite(window) && samples.length > window
-        ? samples.slice(samples.length - window)
-        : samples,
-    [samples, window],
-  );
+  const window = RANGES.find((r) => r.id === range)!.seconds;
+  const scoped = useMemo(() => priceWindow(samples, window), [samples, window]);
 
   const plot = useMemo(() => {
     const drawn = downsample(scoped);
@@ -61,8 +55,20 @@ export const PriceChart = memo(function PriceChart({
     const pad = (high - low || Math.max(high, 1)) * 0.15;
     const floor = low - pad;
     const ceil = high + pad;
+    const elapsed =
+      drawn[drawn.length - 1].recordedAtUs - drawn[0].recordedAtUs;
+    const positions = drawn.map((sample, i) =>
+      elapsed > 0n
+        ? (Number(
+            ((sample.recordedAtUs - drawn[0].recordedAtUs) * 1_000_000n) /
+              elapsed,
+          ) /
+            1_000_000) *
+          VIEW_W
+        : (i / (values.length - 1)) * VIEW_W,
+    );
     const pts = values.map((v, i) => {
-      const x = (i / (values.length - 1)) * VIEW_W;
+      const x = positions[i];
       const y = VIEW_H - ((v - floor) / (ceil - floor)) * VIEW_H;
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     });
@@ -70,6 +76,7 @@ export const PriceChart = memo(function PriceChart({
     return {
       drawn,
       values,
+      positions,
       line,
       area: `${line} L${VIEW_W},${VIEW_H} L0,${VIEW_H} Z`,
       flat,
@@ -119,11 +126,14 @@ export const PriceChart = memo(function PriceChart({
               onBlur={() => setCursor(undefined)}
               onMouseMove={(event) => {
                 const box = event.currentTarget.getBoundingClientRect();
-                const ratio = (event.clientX - box.left) / box.width;
+                const x = ((event.clientX - box.left) / box.width) * VIEW_W;
                 setCursor(
-                  Math.min(
-                    plot.drawn.length - 1,
-                    Math.max(0, Math.round(ratio * (plot.drawn.length - 1))),
+                  plot.positions.reduce(
+                    (best, at, index) =>
+                      Math.abs(at - x) < Math.abs(plot.positions[best] - x)
+                        ? index
+                        : best,
+                    0,
                   ),
                 );
               }}
@@ -154,7 +164,7 @@ export const PriceChart = memo(function PriceChart({
                 <div
                   className="crosshair"
                   style={{
-                    left: `${(cursor / (plot.drawn.length - 1)) * 100}%`,
+                    left: `${(plot.positions[cursor] / VIEW_W) * 100}%`,
                   }}
                   aria-hidden="true"
                 />

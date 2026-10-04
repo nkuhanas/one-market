@@ -1,8 +1,10 @@
-use crate::{access::admin, lifecycle, market, now_us, revival, runtime, schema::*, timestamp};
+use crate::{
+    access::admin, lifecycle, market, now_us, revival, runtime, schema::*, timestamp, timing,
+};
 use one_market_core::{
     add,
     auction::{self, Order},
-    config::{config, configuration_hash, workload_hash},
+    config::{config, configuration_hash, workload_hash_at_cadence},
     equity, extend_digest, mix,
     policy::{self, Signals, Weights},
     schedule, Result,
@@ -21,12 +23,13 @@ pub fn fail_run(ctx: &ReducerContext, id: u64, reason: &str) -> Result<()> {
     Ok(())
 }
 
-fn enqueue(ctx: &ReducerContext, r: &RuntimeConfig) -> Result<()> {
+fn enqueue(ctx: &ReducerContext, r: &RuntimeConfig, interval_us: u64) -> Result<()> {
     ctx.db.tick_schedule().insert(TickSchedule {
         scheduled_id: 0,
         scheduled_at: ScheduleAt::Time(timestamp(schedule::deadline(
             r.origin.to_micros_since_unix_epoch(),
             r.next_slot,
+            interval_us,
         )?)),
         generation: r.generation,
         intended_slot: r.next_slot,
@@ -47,19 +50,40 @@ pub fn start_run(
         return Err("diagnostic profiling builds cannot qualify capacity".into());
     }
     let mut r = runtime(ctx)?;
-    if r.phase != "READY" || r.enabled || market(ctx)?.logical_tick != 0 || r.run_id != 0 {
-        return Err("start requires a fresh initialized world".into());
+    let m = market(ctx)?;
+    if r.phase != "READY" || r.enabled || r.run_id != 0 {
+        return Err(
+            "start requires a fresh initialized world or an explicitly selected new cadence".into(),
+        );
+    }
+    if qualification
+        && (m.logical_tick != 0
+            || ctx
+                .db
+                .cadence_state()
+                .id()
+                .find(0)
+                .is_some_and(|s| s.requires_explicit_start))
+    {
+        return Err("qualification requires a fresh initialized world".into());
+    }
+    if m.configuration_hash != configuration_hash() {
+        return Err("explicit workload adoption required".into());
     }
     if profile != "NORMAL" && profile != "CHAOS" {
         return Err("unknown workload profile".into());
     }
     revival::ensure(ctx, market(ctx)?.price_cents);
+    timing::ensure(ctx);
+    let c = config();
+    let cadence = timing::selected(ctx, &c)?;
     if build_hash.len() != 64 || !build_hash.bytes().all(|b| b.is_ascii_hexdigit()) {
         return Err("64-character module hash required".into());
     }
     if ctx.db.run_record().count() >= config().detailed_run_retention {
-        return Err("prune old evidence through reset batches first".into());
+        return Err("archive and explicitly prune completed run evidence first".into());
     }
+    crate::timed_run::clear(ctx);
     r.origin = timestamp(
         now_us(ctx)
             .checked_add(1_000_000)
@@ -70,6 +94,13 @@ pub fn start_run(
     r.next_slot = 1;
     r.enabled = true;
     r.generation = add(r.generation, 1)?;
+    ctx.db.run_cadence().insert(RunCadence {
+        run_id: r.run_id,
+        profile: cadence.id.clone(),
+        tick_interval_us: cadence.tick_interval_us,
+        bucket_count: c.buckets,
+        first_logical_tick: m.logical_tick,
+    });
     ctx.db.run_record().insert(RunRecord {
         run_id: r.run_id,
         status: "RUNNING".into(),
@@ -79,7 +110,7 @@ pub fn start_run(
         origin: r.origin,
         population: r.initialized,
         seed: r.seed,
-        configuration_hash: workload_hash(r.initialized, r.seed, &profile),
+        configuration_hash: workload_hash_at_cadence(r.initialized, r.seed, &profile, &cadence),
         build_hash,
         skipped_slots: 0,
         committed_ticks: 0,
@@ -88,7 +119,15 @@ pub fn start_run(
         max_lateness_us: 0,
         completed_at: None,
     });
-    enqueue(ctx, &r)?;
+    let mut state = ctx
+        .db
+        .cadence_state()
+        .id()
+        .find(0)
+        .ok_or("cadence missing")?;
+    state.requires_explicit_start = false;
+    ctx.db.cadence_state().id().update(state);
+    enqueue(ctx, &r, cadence.tick_interval_us)?;
     ctx.db.runtime_config().id().update(r);
     Ok(())
 }
@@ -96,10 +135,15 @@ pub fn start_run(
 #[reducer]
 pub fn pause_simulation(ctx: &ReducerContext) -> Result<()> {
     admin(ctx)?;
+    pause(ctx, "simulation paused")
+}
+
+pub(crate) fn pause(ctx: &ReducerContext, reason: &str) -> Result<()> {
     let mut r = runtime(ctx)?;
-    fail_run(ctx, r.run_id, "simulation paused")?;
+    fail_run(ctx, r.run_id, reason)?;
     r.enabled = false;
     r.generation = add(r.generation, 1)?;
+    crate::timed_run::clear(ctx);
     for row in ctx.db.tick_schedule().iter() {
         ctx.db
             .tick_schedule()
@@ -126,6 +170,7 @@ pub fn recover_simulation(ctx: &ReducerContext) -> Result<()> {
     if run.completed_at.is_some() {
         return Err("completed runs cannot resume".into());
     }
+    crate::timed_run::clear(ctx);
     // Explicit owner recovery can adopt new rules without resetting inventory.
     // Preserve the old run hashes: this mixed-version continuation is FAILED,
     // not new benchmark evidence, and its reason records the adopted workload.
@@ -136,29 +181,31 @@ pub fn recover_simulation(ctx: &ReducerContext) -> Result<()> {
         m.configuration_hash = configuration_hash();
         ctx.db.market_state().id().update(m);
     }
+    timing::ensure(ctx);
+    let cadence = timing::for_run(ctx, r.run_id, &config())?;
     // Recovery records evidence of interruption and cannot turn FAILED into PASSED.
     run.status = "FAILED".into();
-    let recovery_reason =
-        if run.configuration_hash != workload_hash(r.initialized, r.seed, &run.profile) {
-            format!(
-                "authorized non-qualifying recovery after workload change: {}",
-                workload_hash(r.initialized, r.seed, &run.profile)
-            )
-        } else {
-            "authorized recovery after pause/stall".into()
-        };
+    let recovery_reason = if run.configuration_hash
+        != workload_hash_at_cadence(r.initialized, r.seed, &run.profile, &cadence)
+    {
+        format!(
+            "authorized non-qualifying recovery after workload change: {}",
+            workload_hash_at_cadence(r.initialized, r.seed, &run.profile, &cadence)
+        )
+    } else {
+        "authorized recovery after pause/stall".into()
+    };
     if !run.failure_reason.contains(&recovery_reason) {
         if !run.failure_reason.is_empty() {
             run.failure_reason.push_str("; ");
         }
         run.failure_reason.push_str(&recovery_reason);
     }
-    let elapsed = i128::from(now_us(ctx)) - i128::from(r.origin.to_micros_since_unix_epoch());
-    let next = if elapsed < 0 {
-        1
-    } else {
-        u64::try_from(elapsed / 50_000 + 1).map_err(|_| "slot overflow")?
-    };
+    let next = schedule::next_slot(
+        r.origin.to_micros_since_unix_epoch(),
+        now_us(ctx),
+        cadence.tick_interval_us,
+    )?;
     run.skipped_slots = add(run.skipped_slots, next.saturating_sub(r.next_slot))?;
     r.next_slot = next.max(r.next_slot);
     r.enabled = true;
@@ -169,7 +216,7 @@ pub fn recover_simulation(ctx: &ReducerContext) -> Result<()> {
             .scheduled_id()
             .delete(row.scheduled_id);
     }
-    enqueue(ctx, &r)?;
+    enqueue(ctx, &r, cadence.tick_interval_us)?;
     ctx.db.run_record().run_id().update(run);
     ctx.db.runtime_config().id().update(r);
     Ok(())
@@ -194,6 +241,9 @@ pub fn simulation_tick(ctx: &ReducerContext, scheduled: TickSchedule) -> Result<
     let r = runtime(ctx)?;
     if !r.enabled || scheduled.generation != r.generation || scheduled.intended_slot != r.next_slot
     {
+        return Ok(());
+    }
+    if crate::timed_run::stop_if_due(ctx, &r)? {
         return Ok(());
     }
     // Delete explicitly as well as runtime's one-shot cleanup; no duplicate next tick.
@@ -252,7 +302,8 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
     let tick = m.logical_tick;
     // Host-backed timers only in a separate diagnostic release build. Rotate
     // through buckets, sampling one tick per epoch; never log per actor.
-    let profiling = cfg!(feature = "profile-ticks") && tick % 20 == (tick / 20) % 20;
+    let buckets = u64::from(c.buckets);
+    let profiling = cfg!(feature = "profile-ticks") && tick % buckets == (tick / buckets) % buckets;
     let mut run = ctx
         .db
         .run_record()
@@ -287,12 +338,18 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         ctx.db.runtime_config().id().update(r);
         return Ok(());
     }
-    let intended = schedule::deadline(r.origin.to_micros_since_unix_epoch(), r.next_slot)?;
+    let cadence = timing::for_run(ctx, r.run_id, &c)?;
+    let intended = schedule::deadline(
+        r.origin.to_micros_since_unix_epoch(),
+        r.next_slot,
+        cadence.tick_interval_us,
+    )?;
     let (next, skipped, lateness) = if scheduled {
         schedule::advance(
             r.origin.to_micros_since_unix_epoch(),
             r.next_slot,
             now_us(ctx),
+            cadence.tick_interval_us,
         )?
     } else {
         (add(r.next_slot, 1)?, 0, 0)
@@ -332,7 +389,7 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
             0
         },
     };
-    let bucket = (tick % 20) as u8;
+    let bucket = (tick % buckets) as u8;
     let timer = profiling
         .then(|| spacetimedb::log_stopwatch::LogStopwatch::new("profile/indexed-select-sort"));
     // The only actor query in a measured tick is this indexed due-bucket query.
@@ -356,7 +413,7 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
     let mut grant_count = 0u64;
     let mut activity: Option<(String, String, String, String, u64, i64, u64)> = None;
     for (i, a) in actors.iter_mut().enumerate() {
-        let expected_previous = tick.checked_sub(20);
+        let expected_previous = tick.checked_sub(buckets);
         if a.last_step_tick.get() != expected_previous {
             return Err("missing or duplicate actor update".into());
         }
@@ -687,7 +744,7 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
     m.price = clearing.price;
     m.logical_tick = add(tick, 1)?;
     m.tick = m.logical_tick;
-    m.epoch = m.logical_tick / 20;
+    m.epoch = m.logical_tick / buckets;
     m.matched_share_volume = clearing.volume;
     m.cumulative_actor_steps = add(m.cumulative_actor_steps, steps)?;
     m.cumulative_actor_rows_updated = add(m.cumulative_actor_rows_updated, steps)?;
@@ -770,7 +827,9 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         ));
     }
     r.next_slot = next;
-    if run.qualification && r.next_slot > (c.warmup_seconds + c.measurement_seconds) * 20 {
+    if run.qualification
+        && r.next_slot > cadence.ticks_for_seconds(c.warmup_seconds + c.measurement_seconds)?
+    {
         r.enabled = false;
         run.completed_at = Some(ctx.timestamp);
         if run.status != "FAILED" {
@@ -779,7 +838,7 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         }
     }
     if scheduled && r.enabled {
-        enqueue(ctx, &r)?;
+        enqueue(ctx, &r, cadence.tick_interval_us)?;
     }
     ctx.db.run_record().run_id().update(run);
     ctx.db.runtime_config().id().update(r);

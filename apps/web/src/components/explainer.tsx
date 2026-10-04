@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TARGET_HZ } from '../market/contract';
+import { cadenceLabel, type Cadence } from '../market/contract';
 
 const STEPS = [
   {
@@ -27,7 +27,7 @@ const STEPS = [
  * animation restarts and the loop has no seam. The duplicate is hidden from
  * assistive technology, which reads the first copy once.
  */
-export function Explainer() {
+export function Explainer({ cadence }: { cadence?: Cadence }) {
   const [running, setRunning] = useState(true);
 
   return (
@@ -35,7 +35,8 @@ export function Explainer() {
       <div className="explain-head" data-reveal>
         <h2>How it works</h2>
         <p>
-          A market anyone can read, run by agents at {TARGET_HZ} ticks a second.
+          A market anyone can read, with one shared clock:{' '}
+          {cadenceLabel(cadence)}.
         </p>
       </div>
 

@@ -1,5 +1,9 @@
 import { formatCount } from '../lib/units';
-import { TARGET_HZ, type ConnectionStatus } from '../market/contract';
+import {
+  cadenceLabel,
+  type Cadence,
+  type ConnectionStatus,
+} from '../market/contract';
 
 const SECTIONS = [
   { id: 'market', label: 'Market' },
@@ -11,9 +15,11 @@ const SECTIONS = [
 export function Header({
   status,
   logicalTick,
+  cadence,
 }: {
   status: ConnectionStatus;
   logicalTick?: bigint;
+  cadence?: Cadence;
 }) {
   const liveNow = status === 'Connected';
   return (
@@ -38,7 +44,7 @@ export function Header({
       </nav>
 
       <div className="header-system">
-        {/* The tick changes twenty times a second and is deliberately not a
+        {/* The tick changes frequently and is deliberately not a
             live region. Connection state is the one status worth announcing,
             and it is announced once, atomically, with context. */}
         <span className="sr-only" aria-live="polite" aria-atomic="true">
@@ -60,7 +66,7 @@ export function Header({
             {logicalTick === undefined ? '—' : formatCount(logicalTick)}
           </span>
         </span>
-        <span className="header-hz">{TARGET_HZ} Hz target</span>
+        <span className="header-hz">{cadenceLabel(cadence)}</span>
       </div>
     </header>
   );
