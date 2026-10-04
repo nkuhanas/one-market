@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Resume the selected existing production world; never initialize or reset it.
+source "$(dirname "$0")/maincloud-common.sh"
+
+cloud_node resume

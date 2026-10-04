@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { toCandles } from '../lib/candles';
 import { centsToDollars, formatCount, formatUsd } from '../lib/units';
 import {
   cadenceLabel,
@@ -9,31 +11,40 @@ import {
 const BG_W = 1600;
 const BG_H = 420;
 
-/** The live price line, drawn full-bleed behind the hero. */
+/** The same real OHLC candles as the market, drawn behind the hero. */
 function backdrop(samples: readonly PriceSample[]) {
-  if (samples.length < 2) return undefined;
-  const step = Math.max(1, Math.floor(samples.length / 400));
-  const points: string[] = [];
-  const values: number[] = [];
-  for (let i = 0; i < samples.length; i += step) {
-    values.push(centsToDollars(samples[i].priceCents, 'price_cents'));
-  }
-  const low = Math.min(...values);
-  const high = Math.max(...values);
+  const candles = toCandles(samples);
+  if (candles.length < 2) return undefined;
+  const low = Math.min(
+    ...candles.map((c) => centsToDollars(c.lowCents, 'low_cents')),
+  );
+  const high = Math.max(
+    ...candles.map((c) => centsToDollars(c.highCents, 'high_cents')),
+  );
   const pad = (high - low || Math.max(high, 1)) * 0.3;
   const floor = low - pad;
   const ceil = high + pad;
-  values.forEach((v, i) => {
-    const x = (i / (values.length - 1)) * BG_W;
-    const y = BG_H - ((v - floor) / (ceil - floor)) * BG_H;
-    points.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+  const y = (cents: bigint) =>
+    BG_H -
+    ((centsToDollars(cents, 'price_cents') - floor) / (ceil - floor)) * BG_H;
+  const slot = BG_W / candles.length;
+  const body = Math.max(slot * 0.62, 1);
+  return candles.map((candle, i) => {
+    const centre = i * slot + slot / 2;
+    const open = y(candle.openCents);
+    const close = y(candle.closeCents);
+    return {
+      key: candle.firstTick.toString(),
+      centre,
+      x: centre - body / 2,
+      width: body,
+      bodyY: Math.min(open, close),
+      bodyH: Math.max(Math.abs(close - open), 1),
+      wickTop: y(candle.highCents),
+      wickBottom: y(candle.lowCents),
+      rising: candle.closeCents >= candle.openCents,
+    };
   });
-  const line = `M${points.join(' L')}`;
-  return {
-    line,
-    area: `${line} L${BG_W},${BG_H} L0,${BG_H} Z`,
-    rising: values[values.length - 1] >= values[0],
-  };
 }
 
 /**
@@ -52,18 +63,36 @@ export function Hero({
   fillRate?: number;
   samples: readonly PriceSample[];
 }) {
-  const bg = backdrop(samples);
+  const bg = useMemo(() => backdrop(samples), [samples]);
   return (
     <section className="hero" data-trail>
       {bg && (
         <svg
-          className={`hero-backdrop ${bg.rising ? 'up' : 'down'}`}
+          className="hero-backdrop"
           viewBox={`0 0 ${BG_W} ${BG_H}`}
           preserveAspectRatio="none"
           aria-hidden="true"
+          focusable="false"
         >
-          <path className="hero-backdrop-area" d={bg.area} />
-          <path className="hero-backdrop-line" d={bg.line} />
+          {bg.map((candle) => (
+            <g
+              key={candle.key}
+              className={`candle ${candle.rising ? 'candle-up' : 'candle-down'}`}
+            >
+              <line
+                x1={candle.centre}
+                x2={candle.centre}
+                y1={candle.wickTop}
+                y2={candle.wickBottom}
+              />
+              <rect
+                x={candle.x}
+                y={candle.bodyY}
+                width={candle.width}
+                height={candle.bodyH}
+              />
+            </g>
+          ))}
         </svg>
       )}
 
