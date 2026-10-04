@@ -18,26 +18,32 @@
  */
 
 @font-face {
-  font-family: 'Plex Sans';
-  src: url('/fonts/plex-sans-400.woff2') format('woff2');
+  font-family: 'Red Hat Display';
+  src: url('/fonts/rhd-400.woff2') format('woff2');
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Plex Sans';
-  src: url('/fonts/plex-sans-600.woff2') format('woff2');
-  font-weight: 600;
+  font-family: 'Red Hat Display';
+  src: url('/fonts/rhd-500.woff2') format('woff2');
+  font-weight: 500;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Plex Mono';
-  src: url('/fonts/plex-mono-400.woff2') format('woff2');
+  font-family: 'Red Hat Display';
+  src: url('/fonts/rhd-700.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Red Hat Mono';
+  src: url('/fonts/rhm-400.woff2') format('woff2');
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Plex Mono';
-  src: url('/fonts/plex-mono-500.woff2') format('woff2');
+  font-family: 'Red Hat Mono';
+  src: url('/fonts/rhm-500.woff2') format('woff2');
   font-weight: 500;
   font-display: swap;
 }
@@ -186,16 +192,19 @@ main {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  color: var(--accent);
+  gap: 10px;
+  color: var(--text);
   text-decoration: none;
-  font-weight: 600;
-  font-size: 15px;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.02em;
 }
 
 .brand-mark {
-  height: 22px;
+  height: 26px;
+}
+
+.brand-mark {
   width: auto;
   display: block;
 }
@@ -305,12 +314,12 @@ main {
   border-top: 1px solid var(--line-soft);
 }
 
-.market-identity h1 {
+.market-identity h2 {
   display: flex;
   align-items: baseline;
   gap: 12px;
   font-size: 26px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.025em;
 }
 
@@ -323,12 +332,6 @@ main {
   padding: 3px 9px;
   border-radius: 999px;
   letter-spacing: 0;
-}
-
-.market-line {
-  margin-top: 8px;
-  font-size: 16px;
-  color: var(--text);
 }
 
 .market-sub {
@@ -414,7 +417,7 @@ main {
 .panel-head h2,
 .order-head h2 {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.005em;
 }
 
@@ -576,13 +579,13 @@ svg.flat .chart-area {
 .side-buy.side-on {
   background: rgb(34 197 94 / 0.16);
   color: var(--up);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .side-sell.side-on {
   background: rgb(255 90 90 / 0.16);
   color: var(--down);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .field {
@@ -666,7 +669,7 @@ button.primary {
   border: 0;
   border-radius: 10px;
   padding: 13px;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 15px;
   cursor: pointer;
   width: 100%;
@@ -878,7 +881,7 @@ button.primary:disabled {
 
 .empty-title {
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .empty-body {
@@ -918,7 +921,7 @@ button.primary:disabled {
 
 .chaos-tag {
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--down);
   letter-spacing: 0.02em;
 }
@@ -929,7 +932,7 @@ button.primary:disabled {
 
 .chaos-headline {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.015em;
   max-width: 54ch;
   text-wrap: balance;
@@ -1140,7 +1143,7 @@ button.ghost:hover {
     font-size: 38px;
   }
 
-  .market-identity h1 {
+  .market-identity h2 {
     font-size: 28px;
   }
 
@@ -1300,12 +1303,30 @@ button.ghost:hover {
   animation: pulse 2.4s ease-in-out infinite;
 }
 
+.hero-lockup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-mark {
+  height: clamp(44px, 6vw, 68px);
+  width: auto;
+}
+
 .hero h1 {
-  font-size: clamp(2.4rem, 5.4vw, 4rem);
-  line-height: 1.04;
-  letter-spacing: -0.035em;
-  font-weight: 600;
-  text-wrap: balance;
+  font-size: clamp(2.6rem, 6vw, 4.5rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+}
+
+.hero-tagline {
+  font-size: clamp(1.25rem, 2.6vw, 1.75rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-top: -4px;
 }
 
 .hero-lede {
@@ -1346,7 +1367,7 @@ button.ghost:hover {
   background: var(--accent-solid);
   color: var(--accent-ink);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 15px;
   padding: 13px 26px;
   border-radius: 10px;
@@ -1379,7 +1400,7 @@ button.ghost:hover {
 
 .explain-head h2 {
   font-size: clamp(1.5rem, 2.8vw, 2rem);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.025em;
 }
 
@@ -1414,7 +1435,7 @@ button.ghost:hover {
 
 .explain-steps h3 {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .explain-steps p {
@@ -1432,7 +1453,7 @@ button.ghost:hover {
 
 .explain-note h3 {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 6px;
 }
 

@@ -21,11 +21,18 @@ export function Hero({
         {connected ? 'Live now' : 'Connecting'}
       </span>
 
-      <h1>
-        One market.
-        <br />
-        Thousands of autonomous minds.
-      </h1>
+      <div className="hero-lockup">
+        <img
+          className="hero-mark"
+          src="/one-market-mark.png"
+          alt=""
+          width={197}
+          height={128}
+        />
+        <h1>One Market</h1>
+      </div>
+
+      <p className="hero-tagline">Thousands of autonomous minds. One price.</p>
 
       <p className="hero-lede">
         A single synthetic market, shared by everyone who opens this page.

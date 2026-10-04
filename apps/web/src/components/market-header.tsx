@@ -12,17 +12,13 @@ export function MarketHeader({ snapshot }: { snapshot?: MarketSnapshot }) {
   return (
     <section className="market-header" id="market">
       <div className="market-identity">
-        <h1>
+        {/* The hero owns the page heading; this is the section header for
+            the terminal below it. */}
+        <h2>
           ONE
           <span className="market-kind">Synthetic market</span>
-        </h1>
-        <p className="market-line">
-          One market. Thousands of autonomous minds.
-        </p>
-        <p className="market-sub">
-          A single persistent world shared by every browser watching it, traded
-          by autonomous policy actors and by people. All money is synthetic.
-        </p>
+        </h2>
+        <p className="market-sub">All money is synthetic.</p>
       </div>
 
       <div className="market-price">
