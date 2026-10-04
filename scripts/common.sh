@@ -12,6 +12,6 @@ compose() {
 
 database_name() {
   # Compose resolves shell overrides and the root .env without sourcing arbitrary code.
-  compose config --format json | docker run --rm -i node:24.21.0-bookworm-slim \
-    node -e 'let s=""; process.stdin.on("data",c=>s+=c).on("end",()=>console.log(JSON.parse(s).services.web.environment.VITE_SPACETIMEDB_DATABASE));'
+  compose --profile tools config --format json | docker run --rm -i node:24.21.0-bookworm-slim \
+    node -e 'let s=""; process.stdin.on("data",c=>s+=c).on("end",()=>console.log(JSON.parse(s).services.tools.environment.SPACETIMEDB_DATABASE));'
 }

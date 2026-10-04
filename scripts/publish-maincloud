@@ -1,16 +1,22 @@
 #!/usr/bin/env bash
-source "$(dirname "$0")/common.sh"
+source "$(dirname "$0")/maincloud-common.sh"
 
 : "${MAINCLOUD_SERVER:?Set the selected HTTPS Maincloud server URL}"
 : "${MAINCLOUD_DATABASE:?Set the selected development database}"
-: "${SPACETIMEDB_TOKEN:?Supply the authorized Maincloud publishing token}"
 [[ "${CONFIRM_MAINCLOUD:-}" == publish ]] || { printf 'Set CONFIRM_MAINCLOUD=publish for the selected development database.\n' >&2; exit 1; }
 [[ "$MAINCLOUD_SERVER" == https://* ]] || { printf 'Maincloud requires HTTPS.\n' >&2; exit 1; }
+cloud_node preflight
 "$REPO_ROOT/scripts/generate-bindings"
-# Authentication exists only in this temporary container; local identity is intact.
+# Reuse the authenticated CLI without logging out or replacing its identity.
+# Explicit tokens use a temporary profile and never overwrite the local profile.
 compose run --rm --no-deps -e SPACETIMEDB_TOKEN -e MAINCLOUD_SERVER -e MAINCLOUD_DATABASE tools sh -ec '
-  spacetime --root-dir /tmp/one-market-cloud-cli login --token "$SPACETIMEDB_TOKEN" >/dev/null
-  spacetime --root-dir /tmp/one-market-cloud-cli publish --server "$MAINCLOUD_SERVER" \
+  cloud_cli_root=/state
+  if [ -n "${SPACETIMEDB_TOKEN:-}" ]; then
+    cloud_cli_root=/tmp/one-market-cloud-cli
+    spacetime --root-dir "$cloud_cli_root" login --token "$SPACETIMEDB_TOKEN" >/dev/null
+  fi
+  spacetime --root-dir "$cloud_cli_root" publish --server "$MAINCLOUD_SERVER" \
     --bin-path target/wasm32-unknown-unknown/release/one_market_spacetime.wasm \
     --no-config --delete-data=never --yes=remote,migrate,skip-login "$MAINCLOUD_DATABASE"
 '
+cloud_node status
