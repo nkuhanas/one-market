@@ -178,7 +178,9 @@ database and explicit credentials; they are not part of ordinary local startup.
 
 See [Maincloud deployment](docs/maincloud-deployment.md) for fresh-name
 publication, bounded actor initialization, frontend configuration, and safe
-inspection/pause commands. The authenticated Docker CLI may be reused without
+inspection/start/stop commands (`scripts/start-prod` and `scripts/stop-prod`).
+These require an explicit Maincloud target and action confirmation; see the
+deployment guide before running them. The authenticated Docker CLI may be reused without
 putting publishing credentials in the frontend environment.
 
 ## Cadence profiles

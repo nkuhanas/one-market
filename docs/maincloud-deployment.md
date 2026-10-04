@@ -101,6 +101,53 @@ the module hash are recorded in
 
 ## Inspect and stop
 
+### Start or stop the existing production simulation
+
+The two Docker-backed entrypoints reuse the authenticated CLI owner identity
+(or an exported private `SPACETIMEDB_TOKEN`). Select the target explicitly; the
+scripts deliberately do not infer a production database from frontend `.env`
+settings. The current database retains its original 100k name even though the
+world now has 1M actors.
+
+```sh
+export MAINCLOUD_SERVER=https://maincloud.spacetimedb.com
+export MAINCLOUD_DATABASE=one-market-100k-20261004-035212
+
+CONFIRM_MAINCLOUD=resume ./scripts/start-prod
+CONFIRM_MAINCLOUD=pause ./scripts/stop-prod
+./scripts/maincloud-status
+```
+
+`start-prod` resumes an existing initialized run using `recover_simulation` and
+verifies advancing authoritative ticks with exactly one tick schedule. It runs
+indefinitely until paused, not for a fixed duration. An already-running world
+is only inspected; its existing timed stop, if any, is preserved. A fresh world,
+incomplete initialization or inconsistent schedules cause an error, never a reset,
+new run, automatic setup or repeated recovery. Recovery retains failed run
+evidence and may adopt an already-published workload as described above; it is
+not a qualifying benchmark or a deployment command.
+
+`stop-prod` pauses the scheduler, clears timed stops, then verifies zero schedules
+and a stable tick using two server reads. Repeating it on an already-paused world
+is read-only. Neither script changes population, balances, cadence, CHAOS or the
+deployed module. If a request or verification fails, inspect `maincloud-status`;
+a timeout does not prove the reducer failed to commit. No script retries a start
+mutation automatically. Use `stop-prod` if a requested start must be cancelled.
+
+On a Linux host requiring Docker elevation, pass the target through `sudo env`:
+
+```sh
+sudo -n env LOCAL_UID="$(id -u)" LOCAL_GID="$(id -g)" \
+  MAINCLOUD_SERVER="$MAINCLOUD_SERVER" MAINCLOUD_DATABASE="$MAINCLOUD_DATABASE" \
+  CONFIRM_MAINCLOUD=pause ./scripts/stop-prod
+```
+
+Use `CONFIRM_MAINCLOUD=resume ./scripts/start-prod` at the end of that same prefix
+to start instead. Do not use either command to change cadence or initialize/reset
+actors; those remain separate, explicitly authorized operations.
+
+### Bounded sessions and world resets
+
 For a deliberately bounded live session, initialize the selected world while
 paused, select its cadence, and use the owner-only
 `start_timed_run("NORMAL", module_sha256, 180)` instead of `start_run`.

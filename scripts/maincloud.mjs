@@ -68,7 +68,12 @@ export function setupAction(runtime, market, population, seed) {
 }
 
 export class Cloud {
-  constructor(target, token, request = fetch) {
+  constructor(
+    target,
+    token,
+    request = fetch,
+    wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  ) {
     if (!token)
       throw new Error(
         'Authenticate the Docker CLI or supply SPACETIMEDB_TOKEN',
@@ -76,6 +81,7 @@ export class Cloud {
     this.target = target;
     this.token = token;
     this.request = request;
+    this.wait = wait;
     this.endpoint = `${target.server}/v1/database/${target.database}`;
   }
 
@@ -233,6 +239,7 @@ export class Cloud {
       (run) => run.run_id === r.run_id,
     );
     const schedules = await this.query('SELECT * FROM tick_schedule');
+    const stops = await this.query('SELECT * FROM timed_run_stop');
     return {
       database: this.target.database,
       database_identity: normalizeIdentity(metadata.database_identity),
@@ -243,6 +250,7 @@ export class Cloud {
       seed: r.seed,
       enabled: r.enabled,
       scheduled_ticks: schedules.length,
+      scheduled_stops: stops.length,
       logical_tick: m.logical_tick,
       active_actors: m.active_actor_count,
       price_cents: m.price_cents,
@@ -257,6 +265,75 @@ export class Cloud {
       run_configuration_hash: run?.configuration_hash ?? null,
     };
   }
+
+  async resume() {
+    const before = await this.status(); // Includes owner and bootstrap checks.
+    if (
+      before.phase !== 'READY' ||
+      before.initialized === 0n ||
+      before.initialized !== before.target_population ||
+      before.run_id === 0n
+    )
+      throw new Error(
+        'Resume requires an existing fully initialized run; no setup or reset attempted',
+      );
+    if (before.enabled) {
+      if (before.scheduled_ticks !== 1)
+        throw new Error(
+          'Running world has an unexpected schedule; refusing automatic repair',
+        );
+      // Do not restart a running world or cancel an existing timed stop.
+    } else {
+      if (before.scheduled_ticks !== 0 || before.scheduled_stops !== 0)
+        throw new Error(
+          'Paused world has leftover schedules; refusing automatic repair',
+        );
+      await this.call('recover_simulation');
+    }
+    for (let attempt = 0; attempt < 30; attempt++) {
+      await this.wait(1000);
+      const result = await this.status();
+      if (!result.enabled)
+        throw new Error(
+          'Simulation stopped during start verification; no retry attempted',
+        );
+      if (
+        result.logical_tick > before.logical_tick &&
+        result.scheduled_ticks === 1
+      )
+        return { ...result, tick_progress_verified: true };
+    }
+    throw new Error(
+      'Start was requested but tick progress was not verified; inspect status or run stop-prod',
+    );
+  }
+
+  async pause() {
+    const before = await this.status();
+    if (
+      before.enabled ||
+      before.scheduled_ticks !== 0 ||
+      before.scheduled_stops !== 0
+    )
+      await this.call('pause_simulation');
+    const stopped = await this.status();
+    const isPaused = (state) =>
+      !state.enabled &&
+      state.scheduled_ticks === 0 &&
+      state.scheduled_stops === 0;
+    if (!isPaused(stopped))
+      throw new Error(
+        'Pause was requested but schedules remain; inspect maincloud-status',
+      );
+    // Read the server after the reducer commits, not an in-flight client cache.
+    await this.wait(1000);
+    const verified = await this.status();
+    if (!isPaused(verified) || verified.logical_tick !== stopped.logical_tick)
+      throw new Error(
+        'A stable paused tick could not be verified; inspect maincloud-status',
+      );
+    return { ...verified, tick_stable_verified: true };
+  }
 }
 
 async function main() {
@@ -265,10 +342,11 @@ async function main() {
   const confirmations = {
     preflight: 'publish',
     start: 'start',
+    resume: 'resume',
     pause: 'pause',
   };
-  if (!['preflight', 'start', 'status', 'pause'].includes(action))
-    throw new Error('Choose preflight, start, status or pause');
+  if (!['preflight', 'start', 'resume', 'status', 'pause'].includes(action))
+    throw new Error('Choose preflight, start, resume, status or pause');
   if (
     confirmations[action] &&
     process.env.CONFIRM_MAINCLOUD !== confirmations[action]
@@ -292,13 +370,9 @@ async function main() {
       )
       .digest('hex');
     result = await cloud.start(population, seed, hash);
-  } else {
-    if (action === 'pause') {
-      if (!(await cloud.metadata())) throw new Error('Database does not exist');
-      await cloud.call('pause_simulation');
-    }
-    result = await cloud.status();
-  }
+  } else if (action === 'resume') result = await cloud.resume();
+  else if (action === 'pause') result = await cloud.pause();
+  else result = await cloud.status();
   console.log(
     JSON.stringify(
       result,
