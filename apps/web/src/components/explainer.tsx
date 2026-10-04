@@ -31,7 +31,7 @@ export function Explainer() {
   const [running, setRunning] = useState(true);
 
   return (
-    <section className="explain" id="how">
+    <section className="explain" id="how" data-trail>
       <div className="explain-head" data-reveal>
         <h2>How it works</h2>
         <p>

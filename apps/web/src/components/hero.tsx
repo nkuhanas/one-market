@@ -53,7 +53,7 @@ export function Hero({
 }) {
   const bg = backdrop(samples);
   return (
-    <section className="hero">
+    <section className="hero" data-trail>
       {bg && (
         <svg
           className={`hero-backdrop ${bg.rising ? 'up' : 'down'}`}

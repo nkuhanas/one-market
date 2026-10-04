@@ -7,6 +7,11 @@ import { useEffect, useRef } from 'react';
  * document while the market re-renders at 20 Hz. The loop only runs while
  * there are points left to draw, so an idle page costs nothing.
  *
+ * It only draws over regions marked `data-trail`, currently the hero and the
+ * How it works strip. The trading terminal is dense and already moving, so a
+ * trail across it is noise: points stop being added there and whatever is on
+ * screen fades out on its own rather than cutting off.
+ *
  * Skipped entirely for coarse pointers and for anyone who has asked for
  * reduced motion.
  */
@@ -31,14 +36,31 @@ export function CursorTrail() {
     let points: Point[] = [];
     let frame = 0;
     let ratio = 1;
+    let zones: DOMRect[] = [];
+    let zonesStale = true;
 
     const resize = () => {
       ratio = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = window.innerWidth * ratio;
       canvas.height = window.innerHeight * ratio;
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      zonesStale = true;
     };
     resize();
+
+    // Rects are cached and only re-read once the page has moved beneath the
+    // pointer, so a pointermove never forces layout on its own.
+    const inZone = (x: number, y: number) => {
+      if (zonesStale) {
+        zones = Array.from(
+          document.querySelectorAll<HTMLElement>('[data-trail]'),
+        ).map((el) => el.getBoundingClientRect());
+        zonesStale = false;
+      }
+      return zones.some(
+        (r) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom,
+      );
+    };
 
     const draw = () => {
       const now = performance.now();
@@ -48,8 +70,7 @@ export function CursorTrail() {
       for (let i = 1; i < points.length; i += 1) {
         const a = points[i - 1];
         const b = points[i];
-        const age = (now - b.at) / FADE_MS;
-        const life = 1 - age;
+        const life = 1 - (now - b.at) / FADE_MS;
         ctx.strokeStyle = `rgba(34, 194, 232, ${(life * 0.55).toFixed(3)})`;
         ctx.lineWidth = 1 + life * 2.4;
         ctx.lineCap = 'round';
@@ -81,6 +102,7 @@ export function CursorTrail() {
     };
 
     const onMove = (event: PointerEvent) => {
+      if (!inZone(event.clientX, event.clientY)) return;
       points.push({
         x: event.clientX,
         y: event.clientY,
@@ -90,10 +112,16 @@ export function CursorTrail() {
       if (!frame) frame = requestAnimationFrame(draw);
     };
 
+    const invalidate = () => {
+      zonesStale = true;
+    };
+
     window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('scroll', invalidate, { passive: true });
     window.addEventListener('resize', resize);
     return () => {
       window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('scroll', invalidate);
       window.removeEventListener('resize', resize);
       if (frame) cancelAnimationFrame(frame);
     };
