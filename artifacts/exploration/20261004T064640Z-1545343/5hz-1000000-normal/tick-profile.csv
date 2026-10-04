@@ -1,0 +1,8 @@
+phase,samples,mean_ms,p99_ms,max_ms
+"profile/indexed-select-sort","9","19.835351888888894","20.732425","20.732425"
+"profile/coverage-policy-lifecycle","9","23.26554188888889","23.741043","23.741043"
+"profile/human-gather","9","0.005496","0.007073","0.007073"
+"profile/auction","9","2.857249888888889","2.944127","2.944127"
+"profile/actor-settle-final-write","9","21.968394111111113","24.768402","24.768402"
+"profile/human-settle","9","0.036393","0.053340000000000005","0.053340000000000005"
+"profile/feeds-receipts-scheduling","9","0.2594783333333333","0.354275","0.354275"

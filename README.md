@@ -36,6 +36,9 @@ see [benchmark methodology](docs/benchmark-methodology.md) and the
 [backend handoff](docs/backend-handoff.md) for measured evidence and limitations.
 
 Private actor rows use a fixed-width schema.
+The [lossless compact storage path](docs/actor-storage.md) reduces ordinary row
+payloads while preserving full-width fallback. Existing worlds require an
+explicit paused migration to use it; publishing alone never rewrites actors.
 Existing baseline worlds are deliberately not migrated or deleted. To opt into
 a separate local world, set `SPACETIMEDB_DATABASE=one-market-v02-fixed-local`
 in your ignored `.env` (or export it) before the development commands. Public

@@ -159,7 +159,7 @@ impl OptionalTick {
 }
 
 #[table(accessor = actor_state)]
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ActorState {
     #[primary_key]
     #[index(direct)]
@@ -184,6 +184,37 @@ pub struct ActorState {
     pub lifetime_pnl_cents: i64,
     pub wipeout_count: u64,
     pub filled_order_count: u64,
+}
+
+/// Lossless storage fast path, not a narrower logical actor model. The original
+/// table remains the authoritative fallback for any value that does not fit.
+/// Fixed-width BSATN avoids the dynamic row serialization path.
+#[table(accessor = actor_state_compact)]
+#[derive(Clone, Debug)]
+pub struct ActorStateCompact {
+    #[primary_key]
+    #[index(direct)]
+    pub actor_id: u64,
+    #[index(btree)]
+    pub bucket: u8,
+    pub flags: u8,
+    pub cash_cents: u32,
+    pub shares: u32,
+    pub marked_equity_cents: u32,
+    pub initial_endowment_value_cents: u32,
+    pub life_peak_equity_cents: u32,
+    pub cumulative_recapitalization_grants_cents: u32,
+    pub momentum_weight: i16,
+    pub mean_reversion_weight: i16,
+    pub contrarian_weight: i16,
+    pub news_weight: i16,
+    pub risk_tolerance_bps: u16,
+    pub conviction_threshold_bps: u16,
+    pub last_step_tick_value: u64,
+    pub cooldown_started_tick_value: u64,
+    pub lifetime_pnl_cents: i32,
+    pub wipeout_count: u32,
+    pub filled_order_count: u32,
 }
 
 #[table(accessor = bucket_manifest)]

@@ -333,9 +333,9 @@ pub fn run(options: Options) -> Result<bool> {
                 .into(),
         );
     }
-    #[cfg(not(feature = "probe-bindings"))]
+    #[cfg(has_cadence_profiles)]
     invoke!(owner, set_cadence_profile_then(cadence.id.clone()))?;
-    #[cfg(feature = "probe-bindings")]
+    #[cfg(not(has_cadence_profiles))]
     if cadence.id != "20hz" {
         return Err("historical probe bindings support only the historical 20hz cadence".into());
     }
@@ -626,17 +626,12 @@ pub fn run(options: Options) -> Result<bool> {
             &options.uri,
             &options.database,
             Some(options.token.clone()),
-            ["actor_state", "human_trader", "grant_accounting"]
-                .iter()
-                .map(|t| format!("SELECT * FROM {t}"))
-                .collect(),
+            client::audit_queries(),
         )?;
         let audit_ok = client::audit(&audit_client).is_ok();
         owner.db.db.market_state().remove_on_update(market_callback);
-        let market_health = Some(health::summarize(
-            market_samples.lock().unwrap().clone(),
-            &audit_client,
-        ));
+        let market_health =
+            health::summarize(market_samples.lock().unwrap().clone(), &audit_client).ok();
         drop(audit_client);
         let exploratory_metrics = options.exploration.map(|window| {
             crate::explore::measure(

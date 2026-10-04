@@ -10,6 +10,8 @@ pub mod actor_recovery_table;
 pub mod actor_recovery_type;
 pub mod actor_sample_table;
 pub mod actor_sample_type;
+pub mod actor_state_compact_table;
+pub mod actor_state_compact_type;
 pub mod actor_state_table;
 pub mod actor_state_type;
 pub mod actor_status_type;
@@ -32,6 +34,7 @@ pub mod cadence_state_type;
 pub mod connected_reducer;
 pub mod connection_state_table;
 pub mod connection_state_type;
+pub mod continue_timed_run_reducer;
 pub mod detailed_benchmark_receipts_table;
 pub mod disconnected_reducer;
 pub mod enter_market_reducer;
@@ -46,6 +49,7 @@ pub mod market_dynamics_table;
 pub mod market_dynamics_type;
 pub mod market_state_table;
 pub mod market_state_type;
+pub mod migrate_actor_storage_batch_reducer;
 pub mod my_pending_order_table;
 pub mod my_recent_fills_table;
 pub mod my_trader_table;
@@ -94,6 +98,8 @@ pub use actor_recovery_table::*;
 pub use actor_recovery_type::ActorRecovery;
 pub use actor_sample_table::*;
 pub use actor_sample_type::ActorSample;
+pub use actor_state_compact_table::*;
+pub use actor_state_compact_type::ActorStateCompact;
 pub use actor_state_table::*;
 pub use actor_state_type::ActorState;
 pub use actor_status_type::ActorStatus;
@@ -116,6 +122,7 @@ pub use cadence_state_type::CadenceState;
 pub use connected_reducer::connected;
 pub use connection_state_table::*;
 pub use connection_state_type::ConnectionState;
+pub use continue_timed_run_reducer::continue_timed_run;
 pub use detailed_benchmark_receipts_table::*;
 pub use disconnected_reducer::disconnected;
 pub use enter_market_reducer::enter_market;
@@ -130,6 +137,7 @@ pub use market_dynamics_table::*;
 pub use market_dynamics_type::MarketDynamics;
 pub use market_state_table::*;
 pub use market_state_type::MarketState;
+pub use migrate_actor_storage_batch_reducer::migrate_actor_storage_batch;
 pub use my_pending_order_table::*;
 pub use my_recent_fills_table::*;
 pub use my_trader_table::*;
@@ -187,10 +195,20 @@ pub enum Reducer {
     },
     BenchmarkStep,
     Connected,
+    ContinueTimedRun {
+        profile: String,
+        build_hash: String,
+        duration_seconds: u64,
+    },
     Disconnected,
     EnterMarket,
     InitializeBatch {
         count: u64,
+    },
+    MigrateActorStorageBatch {
+        start_actor_id: u64,
+        count: u64,
+        compact: bool,
     },
     PauseSimulation,
     Ping,
@@ -256,9 +274,11 @@ impl __sdk::Reducer for Reducer {
             Reducer::AuthorizeReader { .. } => "authorize_reader",
             Reducer::BenchmarkStep => "benchmark_step",
             Reducer::Connected => "connected",
+            Reducer::ContinueTimedRun { .. } => "continue_timed_run",
             Reducer::Disconnected => "disconnected",
             Reducer::EnterMarket => "enter_market",
             Reducer::InitializeBatch { .. } => "initialize_batch",
+            Reducer::MigrateActorStorageBatch { .. } => "migrate_actor_storage_batch",
             Reducer::PauseSimulation => "pause_simulation",
             Reducer::Ping => "ping",
             Reducer::PlaceOrder { .. } => "place_order",
@@ -290,6 +310,15 @@ impl __sdk::Reducer for Reducer {
                 __sats::bsatn::to_vec(&benchmark_step_reducer::BenchmarkStepArgs {})
             }
             Reducer::Connected => __sats::bsatn::to_vec(&connected_reducer::ConnectedArgs {}),
+            Reducer::ContinueTimedRun {
+                profile,
+                build_hash,
+                duration_seconds,
+            } => __sats::bsatn::to_vec(&continue_timed_run_reducer::ContinueTimedRunArgs {
+                profile: profile.clone(),
+                build_hash: build_hash.clone(),
+                duration_seconds: duration_seconds.clone(),
+            }),
             Reducer::Disconnected => {
                 __sats::bsatn::to_vec(&disconnected_reducer::DisconnectedArgs {})
             }
@@ -301,6 +330,17 @@ impl __sdk::Reducer for Reducer {
                     count: count.clone(),
                 })
             }
+            Reducer::MigrateActorStorageBatch {
+                start_actor_id,
+                count,
+                compact,
+            } => __sats::bsatn::to_vec(
+                &migrate_actor_storage_batch_reducer::MigrateActorStorageBatchArgs {
+                    start_actor_id: start_actor_id.clone(),
+                    count: count.clone(),
+                    compact: compact.clone(),
+                },
+            ),
             Reducer::PauseSimulation => {
                 __sats::bsatn::to_vec(&pause_simulation_reducer::PauseSimulationArgs {})
             }
@@ -408,6 +448,7 @@ pub struct DbUpdate {
     actor_recovery: __sdk::TableUpdate<ActorRecovery>,
     actor_sample: __sdk::TableUpdate<ActorSample>,
     actor_state: __sdk::TableUpdate<ActorState>,
+    actor_state_compact: __sdk::TableUpdate<ActorStateCompact>,
     admin_allowlist: __sdk::TableUpdate<AdminAllowlist>,
     benchmark_latest_receipt: __sdk::TableUpdate<TickReceipt>,
     benchmark_reader: __sdk::TableUpdate<BenchmarkReader>,
@@ -454,6 +495,9 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "actor_state" => db_update
                     .actor_state
                     .append(actor_state_table::parse_table_update(table_update)?),
+                "actor_state_compact" => db_update
+                    .actor_state_compact
+                    .append(actor_state_compact_table::parse_table_update(table_update)?),
                 "admin_allowlist" => db_update
                     .admin_allowlist
                     .append(admin_allowlist_table::parse_table_update(table_update)?),
@@ -576,6 +620,12 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.actor_state = cache
             .apply_diff_to_table::<ActorState>("actor_state", &self.actor_state)
             .with_updates_by_pk(|row| &row.actor_id);
+        diff.actor_state_compact = cache
+            .apply_diff_to_table::<ActorStateCompact>(
+                "actor_state_compact",
+                &self.actor_state_compact,
+            )
+            .with_updates_by_pk(|row| &row.actor_id);
         diff.admin_allowlist = cache
             .apply_diff_to_table::<AdminAllowlist>("admin_allowlist", &self.admin_allowlist)
             .with_updates_by_pk(|row| &row.identity);
@@ -683,6 +733,9 @@ impl __sdk::DbUpdate for DbUpdate {
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "actor_state" => db_update
                     .actor_state
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "actor_state_compact" => db_update
+                    .actor_state_compact
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "admin_allowlist" => db_update
                     .admin_allowlist
@@ -793,6 +846,9 @@ impl __sdk::DbUpdate for DbUpdate {
                 "actor_state" => db_update
                     .actor_state
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "actor_state_compact" => db_update
+                    .actor_state_compact
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "admin_allowlist" => db_update
                     .admin_allowlist
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
@@ -898,6 +954,7 @@ pub struct AppliedDiff<'r> {
     actor_recovery: __sdk::TableAppliedDiff<'r, ActorRecovery>,
     actor_sample: __sdk::TableAppliedDiff<'r, ActorSample>,
     actor_state: __sdk::TableAppliedDiff<'r, ActorState>,
+    actor_state_compact: __sdk::TableAppliedDiff<'r, ActorStateCompact>,
     admin_allowlist: __sdk::TableAppliedDiff<'r, AdminAllowlist>,
     benchmark_latest_receipt: __sdk::TableAppliedDiff<'r, TickReceipt>,
     benchmark_reader: __sdk::TableAppliedDiff<'r, BenchmarkReader>,
@@ -951,6 +1008,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             event,
         );
         callbacks.invoke_table_row_callbacks::<ActorState>("actor_state", &self.actor_state, event);
+        callbacks.invoke_table_row_callbacks::<ActorStateCompact>(
+            "actor_state_compact",
+            &self.actor_state_compact,
+            event,
+        );
         callbacks.invoke_table_row_callbacks::<AdminAllowlist>(
             "admin_allowlist",
             &self.admin_allowlist,
@@ -1739,6 +1801,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         actor_recovery_table::register_table(client_cache);
         actor_sample_table::register_table(client_cache);
         actor_state_table::register_table(client_cache);
+        actor_state_compact_table::register_table(client_cache);
         admin_allowlist_table::register_table(client_cache);
         benchmark_latest_receipt_table::register_table(client_cache);
         benchmark_reader_table::register_table(client_cache);
@@ -1773,6 +1836,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "actor_recovery",
         "actor_sample",
         "actor_state",
+        "actor_state_compact",
         "admin_allowlist",
         "benchmark_latest_receipt",
         "benchmark_reader",

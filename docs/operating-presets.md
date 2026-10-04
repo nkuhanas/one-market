@@ -30,8 +30,12 @@ fresh local world or probe, for example `CADENCE=10hz POPULATION=750000`.
 Recording a preset does **not** resize, reset or start any database. Changing an
 existing world's cadence still requires the owner-only pause/select/start flow;
 changing its population is a separate, explicit operation, not part of a cadence
-switch. Maincloud remains paused with 100,000 actors; the default cadence remains
-20 Hz and ordinary local startup remains at 200 actors.
+switch. The default cadence remains 20 Hz and ordinary local startup remains at
+200 actors. Maincloud was subsequently resized, with explicit authorization, to
+1M actors at 5 Hz and is paused. The latest
+[three-minute production observation](../deltas/maincloud-actor-cost_2026-10-04_01-44-31_EST.md)
+achieved 3.917 effective Hz with missed slots, so the local 1M preset is **not**
+a demonstrated Maincloud 5 Hz capacity.
 
 Benchmark artifacts and release WASM binaries are retained in Git independently
 of disposable local probe databases. Disk cleanup may remove those databases

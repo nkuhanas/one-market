@@ -128,14 +128,9 @@ pub fn test_stale_callback(ctx: &ReducerContext) -> Result<()> {
 #[reducer]
 pub fn test_corrupt_coverage(ctx: &ReducerContext, actor_id: u64) -> Result<()> {
     admin(ctx)?;
-    let mut actor = ctx
-        .db
-        .actor_state()
-        .actor_id()
-        .find(actor_id)
-        .ok_or("actor missing")?;
+    let mut actor = crate::actor_storage::find(ctx, actor_id)?;
     actor.last_step_tick = Some(u64::MAX).into();
-    ctx.db.actor_state().actor_id().update(actor);
+    crate::actor_storage::update(ctx, actor);
     Ok(())
 }
 
@@ -158,12 +153,7 @@ pub fn test_actor_fixture(
         "COOLDOWN" => ActorStatus::Cooldown,
         _ => return Err("invalid fixture state".into()),
     };
-    let mut actor = ctx
-        .db
-        .actor_state()
-        .actor_id()
-        .find(actor_id)
-        .ok_or("actor missing")?;
+    let mut actor = crate::actor_storage::find(ctx, actor_id)?;
     let mut market = crate::market(ctx)?;
     if actor.status == ActorStatus::Active && status != ActorStatus::Active {
         market.active_actor_count = market
@@ -180,7 +170,44 @@ pub fn test_actor_fixture(
     actor.life_peak_equity_cents = one_market_core::equity(cash_cents, shares, market.price_cents)?;
     actor.cooldown_started_tick = cooldown_started_tick.into();
     actor.conviction_threshold_bps = u64::MAX;
-    ctx.db.actor_state().actor_id().update(actor);
+    crate::actor_storage::update(ctx, actor);
     ctx.db.market_state().id().update(market);
+    Ok(())
+}
+
+/// Storage boundary fixtures are compiled only into the disposable test module.
+#[reducer]
+pub fn test_actor_storage_fixture(ctx: &ReducerContext, actor_id: u64, mode: String) -> Result<()> {
+    admin(ctx)?;
+    if runtime(ctx)?.enabled {
+        return Err("pause before storage fixture".into());
+    }
+    if mode == "invalidate_flags" || mode == "repair_flags" {
+        let mut row = ctx
+            .db
+            .actor_state_compact()
+            .actor_id()
+            .find(actor_id)
+            .ok_or("compact actor missing")?;
+        if mode == "invalidate_flags" {
+            row.flags |= 128;
+        } else {
+            row.flags &= !128;
+        }
+        ctx.db.actor_state_compact().actor_id().update(row);
+    } else if mode == "promote_on_step" {
+        let mut actor = crate::actor_storage::find(ctx, actor_id)?;
+        actor.cash_cents = u32::MAX.into();
+        actor.shares = 1;
+        actor.initial_endowment_value_cents = u32::MAX.into();
+        actor.life_peak_equity_cents = u32::MAX.into();
+        actor.marked_equity_cents = u32::MAX.into();
+        actor.lifetime_pnl_cents = 0;
+        actor.conviction_threshold_bps = u16::MAX.into();
+        actor.status = ActorStatus::Active;
+        crate::actor_storage::update(ctx, actor);
+    } else {
+        return Err("invalid storage fixture mode".into());
+    }
     Ok(())
 }

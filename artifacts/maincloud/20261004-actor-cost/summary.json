@@ -1,0 +1,105 @@
+{
+  "at": "2026-10-04T06:56:42.726Z",
+  "target": {
+    "server": "https://maincloud.spacetimedb.com",
+    "database": "one-market-100k-20261004-035212",
+    "mode": "update"
+  },
+  "identity": "c200e95eb69477bcf73f4c84aa7a9828dd8ccd623978bef401244483771e7739",
+  "buildHash": "54c64c6970696efc8eaeeb5f72e203e3b59ec37a76859940c1d0f980de3bc056",
+  "source_commit": "8fca9ff3c9b2eb4f7b765b4e5c711c471b77a254",
+  "duration_seconds": 180,
+  "cadence": "5hz",
+  "tick_interval_us": 200000,
+  "actors": 1000000,
+  "qualification": false,
+  "synthetic_load": false,
+  "profiling": true,
+  "before_tick": "669",
+  "final": {
+    "database": "one-market-100k-20261004-035212",
+    "database_identity": "c200e95eb69477bcf73f4c84aa7a9828dd8ccd623978bef401244483771e7739",
+    "host_type": {
+      "Wasm": []
+    },
+    "phase": "READY",
+    "initialized": "1000000",
+    "target_population": "1000000",
+    "seed": "20261003",
+    "enabled": false,
+    "scheduled_ticks": 0,
+    "logical_tick": "1374",
+    "active_actors": "1000000",
+    "price_cents": "9925",
+    "matched_shares": "104295",
+    "run_id": "3",
+    "run_status": "FAILED",
+    "failure_reason": "missed application slots",
+    "skipped_slots": "194",
+    "qualification": false,
+    "build_hash": "54c64c6970696efc8eaeeb5f72e203e3b59ec37a76859940c1d0f980de3bc056",
+    "configuration_hash": "9686c7bada307d97e1719d26113ecb8e54b5cdc6cfbc462b05a90195548b683c",
+    "run_configuration_hash": "152de315bf14daeaa7468e2f4125d6c183c98ea9e08d9d77671ea51e12f8823b"
+  },
+  "receipt_count": 705,
+  "effective_hz": 3.9166666666666665,
+  "actor_updates": "35250171",
+  "skipped_slots": "194",
+  "start_gap_us": {
+    "count": 704,
+    "mean": 255336.27556818182,
+    "min": 241044,
+    "p50": 246764,
+    "p99": 718140,
+    "max": 803540
+  },
+  "start_lateness_us": {
+    "count": 705,
+    "mean": 154775.24113475176,
+    "min": 829,
+    "p50": 152473,
+    "p99": 624647,
+    "max": 741532
+  },
+  "min_price_cents": "9443",
+  "max_price_cents": "10670",
+  "floor_ticks": 0,
+  "zero_volume_ticks": 0,
+  "min_active_actors": "1000000",
+  "fallback_pause": false,
+  "stable_tick": true,
+  "deadline": [
+    "1791096996418142"
+  ],
+  "no_ticks_started_at_or_after_deadline": true,
+  "grants": [
+    {
+      "id": "0",
+      "actor_initial_cash_cents": "5000000000000",
+      "human_entry_cash_cents": "0",
+      "recapitalization_cash_cents": "0",
+      "initial_share_supply": "500000000",
+      "human_entry_count": "0",
+      "recapitalization_count": "0"
+    }
+  ],
+  "dynamics": [
+    {
+      "id": "0",
+      "reference_price_cents": "9980",
+      "sentiment_bps": "-5",
+      "mode": "NORMAL",
+      "floor_streak": "0",
+      "illiquid_streak": "0",
+      "healthy_streak": "1374",
+      "distressed_buckets": "0",
+      "episode": "0",
+      "episode_started_tick": "0",
+      "next_recovery_tick": "0",
+      "revived_actors": "0",
+      "episode_grants_cents": "0",
+      "total_grants_cents": "0",
+      "constrained_grants": "0"
+    }
+  ]
+}

@@ -1,0 +1,5642 @@
+[
+  {
+    "logical_tick": "1373",
+    "recorded_at": [
+      "1791096996375709"
+    ],
+    "price_cents": "9925",
+    "matched_share_volume": "104295"
+  },
+  {
+    "logical_tick": "1372",
+    "recorded_at": [
+      "1791096996126080"
+    ],
+    "price_cents": "9922",
+    "matched_share_volume": "104063"
+  },
+  {
+    "logical_tick": "1371",
+    "recorded_at": [
+      "1791096995878451"
+    ],
+    "price_cents": "9918",
+    "matched_share_volume": "103251"
+  },
+  {
+    "logical_tick": "1370",
+    "recorded_at": [
+      "1791096995632694"
+    ],
+    "price_cents": "9917",
+    "matched_share_volume": "103406"
+  },
+  {
+    "logical_tick": "1369",
+    "recorded_at": [
+      "1791096995385132"
+    ],
+    "price_cents": "9916",
+    "matched_share_volume": "103370"
+  },
+  {
+    "logical_tick": "1368",
+    "recorded_at": [
+      "1791096995137094"
+    ],
+    "price_cents": "9915",
+    "matched_share_volume": "103380"
+  },
+  {
+    "logical_tick": "1367",
+    "recorded_at": [
+      "1791096994890107"
+    ],
+    "price_cents": "9912",
+    "matched_share_volume": "103420"
+  },
+  {
+    "logical_tick": "1366",
+    "recorded_at": [
+      "1791096994641591"
+    ],
+    "price_cents": "9915",
+    "matched_share_volume": "103681"
+  },
+  {
+    "logical_tick": "1365",
+    "recorded_at": [
+      "1791096994387132"
+    ],
+    "price_cents": "9916",
+    "matched_share_volume": "103368"
+  },
+  {
+    "logical_tick": "1364",
+    "recorded_at": [
+      "1791096994135086"
+    ],
+    "price_cents": "9918",
+    "matched_share_volume": "103960"
+  },
+  {
+    "logical_tick": "1363",
+    "recorded_at": [
+      "1791096993881169"
+    ],
+    "price_cents": "9919",
+    "matched_share_volume": "104524"
+  },
+  {
+    "logical_tick": "1362",
+    "recorded_at": [
+      "1791096993632095"
+    ],
+    "price_cents": "9923",
+    "matched_share_volume": "103291"
+  },
+  {
+    "logical_tick": "1361",
+    "recorded_at": [
+      "1791096993362564"
+    ],
+    "price_cents": "9931",
+    "matched_share_volume": "103964"
+  },
+  {
+    "logical_tick": "1360",
+    "recorded_at": [
+      "1791096992631793"
+    ],
+    "price_cents": "9933",
+    "matched_share_volume": "103040"
+  },
+  {
+    "logical_tick": "1359",
+    "recorded_at": [
+      "1791096992384348"
+    ],
+    "price_cents": "9938",
+    "matched_share_volume": "103951"
+  },
+  {
+    "logical_tick": "1358",
+    "recorded_at": [
+      "1791096992137882"
+    ],
+    "price_cents": "9940",
+    "matched_share_volume": "103443"
+  },
+  {
+    "logical_tick": "1357",
+    "recorded_at": [
+      "1791096991891531"
+    ],
+    "price_cents": "9940",
+    "matched_share_volume": "103222"
+  },
+  {
+    "logical_tick": "1356",
+    "recorded_at": [
+      "1791096991644744"
+    ],
+    "price_cents": "9941",
+    "matched_share_volume": "103982"
+  },
+  {
+    "logical_tick": "1355",
+    "recorded_at": [
+      "1791096991400005"
+    ],
+    "price_cents": "9938",
+    "matched_share_volume": "103465"
+  },
+  {
+    "logical_tick": "1354",
+    "recorded_at": [
+      "1791096991152687"
+    ],
+    "price_cents": "9939",
+    "matched_share_volume": "105313"
+  },
+  {
+    "logical_tick": "1353",
+    "recorded_at": [
+      "1791096990906004"
+    ],
+    "price_cents": "9938",
+    "matched_share_volume": "103719"
+  },
+  {
+    "logical_tick": "1352",
+    "recorded_at": [
+      "1791096990657868"
+    ],
+    "price_cents": "9946",
+    "matched_share_volume": "103871"
+  },
+  {
+    "logical_tick": "1351",
+    "recorded_at": [
+      "1791096990413471"
+    ],
+    "price_cents": "9948",
+    "matched_share_volume": "103397"
+  },
+  {
+    "logical_tick": "1350",
+    "recorded_at": [
+      "1791096990167060"
+    ],
+    "price_cents": "9949",
+    "matched_share_volume": "103715"
+  },
+  {
+    "logical_tick": "1349",
+    "recorded_at": [
+      "1791096989918971"
+    ],
+    "price_cents": "9950",
+    "matched_share_volume": "103517"
+  },
+  {
+    "logical_tick": "1348",
+    "recorded_at": [
+      "1791096989670605"
+    ],
+    "price_cents": "9954",
+    "matched_share_volume": "103995"
+  },
+  {
+    "logical_tick": "1347",
+    "recorded_at": [
+      "1791096989424793"
+    ],
+    "price_cents": "9952",
+    "matched_share_volume": "103679"
+  },
+  {
+    "logical_tick": "1346",
+    "recorded_at": [
+      "1791096989177740"
+    ],
+    "price_cents": "9956",
+    "matched_share_volume": "103754"
+  },
+  {
+    "logical_tick": "1345",
+    "recorded_at": [
+      "1791096988932024"
+    ],
+    "price_cents": "9953",
+    "matched_share_volume": "103287"
+  },
+  {
+    "logical_tick": "1344",
+    "recorded_at": [
+      "1791096988685353"
+    ],
+    "price_cents": "9950",
+    "matched_share_volume": "103815"
+  },
+  {
+    "logical_tick": "1343",
+    "recorded_at": [
+      "1791096988436371"
+    ],
+    "price_cents": "9950",
+    "matched_share_volume": "104634"
+  },
+  {
+    "logical_tick": "1342",
+    "recorded_at": [
+      "1791096988191166"
+    ],
+    "price_cents": "9955",
+    "matched_share_volume": "102802"
+  },
+  {
+    "logical_tick": "1341",
+    "recorded_at": [
+      "1791096987945979"
+    ],
+    "price_cents": "9950",
+    "matched_share_volume": "103444"
+  },
+  {
+    "logical_tick": "1340",
+    "recorded_at": [
+      "1791096987700533"
+    ],
+    "price_cents": "9949",
+    "matched_share_volume": "103606"
+  },
+  {
+    "logical_tick": "1339",
+    "recorded_at": [
+      "1791096987453458"
+    ],
+    "price_cents": "9951",
+    "matched_share_volume": "103149"
+  },
+  {
+    "logical_tick": "1338",
+    "recorded_at": [
+      "1791096987208248"
+    ],
+    "price_cents": "9954",
+    "matched_share_volume": "103784"
+  },
+  {
+    "logical_tick": "1337",
+    "recorded_at": [
+      "1791096986960989"
+    ],
+    "price_cents": "9954",
+    "matched_share_volume": "103630"
+  },
+  {
+    "logical_tick": "1336",
+    "recorded_at": [
+      "1791096986714702"
+    ],
+    "price_cents": "9954",
+    "matched_share_volume": "104234"
+  },
+  {
+    "logical_tick": "1335",
+    "recorded_at": [
+      "1791096986469823"
+    ],
+    "price_cents": "9959",
+    "matched_share_volume": "103460"
+  },
+  {
+    "logical_tick": "1334",
+    "recorded_at": [
+      "1791096986221757"
+    ],
+    "price_cents": "9964",
+    "matched_share_volume": "104222"
+  },
+  {
+    "logical_tick": "1333",
+    "recorded_at": [
+      "1791096985976550"
+    ],
+    "price_cents": "9967",
+    "matched_share_volume": "104827"
+  },
+  {
+    "logical_tick": "1332",
+    "recorded_at": [
+      "1791096985729590"
+    ],
+    "price_cents": "9966",
+    "matched_share_volume": "103753"
+  },
+  {
+    "logical_tick": "1331",
+    "recorded_at": [
+      "1791096985481678"
+    ],
+    "price_cents": "9971",
+    "matched_share_volume": "103457"
+  },
+  {
+    "logical_tick": "1330",
+    "recorded_at": [
+      "1791096985234193"
+    ],
+    "price_cents": "9971",
+    "matched_share_volume": "103849"
+  },
+  {
+    "logical_tick": "1329",
+    "recorded_at": [
+      "1791096984985356"
+    ],
+    "price_cents": "9972",
+    "matched_share_volume": "104137"
+  },
+  {
+    "logical_tick": "1328",
+    "recorded_at": [
+      "1791096984738213"
+    ],
+    "price_cents": "9976",
+    "matched_share_volume": "103980"
+  },
+  {
+    "logical_tick": "1327",
+    "recorded_at": [
+      "1791096984478886"
+    ],
+    "price_cents": "9981",
+    "matched_share_volume": "103396"
+  },
+  {
+    "logical_tick": "1326",
+    "recorded_at": [
+      "1791096984227659"
+    ],
+    "price_cents": "9983",
+    "matched_share_volume": "104113"
+  },
+  {
+    "logical_tick": "1325",
+    "recorded_at": [
+      "1791096983975320"
+    ],
+    "price_cents": "9981",
+    "matched_share_volume": "103671"
+  },
+  {
+    "logical_tick": "1324",
+    "recorded_at": [
+      "1791096983727925"
+    ],
+    "price_cents": "9983",
+    "matched_share_volume": "103508"
+  },
+  {
+    "logical_tick": "1323",
+    "recorded_at": [
+      "1791096983473107"
+    ],
+    "price_cents": "9983",
+    "matched_share_volume": "104225"
+  },
+  {
+    "logical_tick": "1322",
+    "recorded_at": [
+      "1791096983216763"
+    ],
+    "price_cents": "9988",
+    "matched_share_volume": "102818"
+  },
+  {
+    "logical_tick": "1321",
+    "recorded_at": [
+      "1791096982970920"
+    ],
+    "price_cents": "9991",
+    "matched_share_volume": "104012"
+  },
+  {
+    "logical_tick": "1320",
+    "recorded_at": [
+      "1791096982724895"
+    ],
+    "price_cents": "9993",
+    "matched_share_volume": "103849"
+  },
+  {
+    "logical_tick": "1319",
+    "recorded_at": [
+      "1791096982478751"
+    ],
+    "price_cents": "9996",
+    "matched_share_volume": "104106"
+  },
+  {
+    "logical_tick": "1318",
+    "recorded_at": [
+      "1791096982233550"
+    ],
+    "price_cents": "9999",
+    "matched_share_volume": "103942"
+  },
+  {
+    "logical_tick": "1317",
+    "recorded_at": [
+      "1791096981987218"
+    ],
+    "price_cents": "9995",
+    "matched_share_volume": "104004"
+  },
+  {
+    "logical_tick": "1316",
+    "recorded_at": [
+      "1791096981741136"
+    ],
+    "price_cents": "9994",
+    "matched_share_volume": "104130"
+  },
+  {
+    "logical_tick": "1315",
+    "recorded_at": [
+      "1791096981497422"
+    ],
+    "price_cents": "9999",
+    "matched_share_volume": "103698"
+  },
+  {
+    "logical_tick": "1314",
+    "recorded_at": [
+      "1791096981241057"
+    ],
+    "price_cents": "10000",
+    "matched_share_volume": "104282"
+  },
+  {
+    "logical_tick": "1313",
+    "recorded_at": [
+      "1791096980995660"
+    ],
+    "price_cents": "10005",
+    "matched_share_volume": "104323"
+  },
+  {
+    "logical_tick": "1312",
+    "recorded_at": [
+      "1791096980748533"
+    ],
+    "price_cents": "10009",
+    "matched_share_volume": "104162"
+  },
+  {
+    "logical_tick": "1311",
+    "recorded_at": [
+      "1791096980492244"
+    ],
+    "price_cents": "10011",
+    "matched_share_volume": "103448"
+  },
+  {
+    "logical_tick": "1310",
+    "recorded_at": [
+      "1791096980243883"
+    ],
+    "price_cents": "10014",
+    "matched_share_volume": "103657"
+  },
+  {
+    "logical_tick": "1309",
+    "recorded_at": [
+      "1791096980000778"
+    ],
+    "price_cents": "10014",
+    "matched_share_volume": "102988"
+  },
+  {
+    "logical_tick": "1308",
+    "recorded_at": [
+      "1791096979734813"
+    ],
+    "price_cents": "10018",
+    "matched_share_volume": "103377"
+  },
+  {
+    "logical_tick": "1307",
+    "recorded_at": [
+      "1791096979493211"
+    ],
+    "price_cents": "10023",
+    "matched_share_volume": "103023"
+  },
+  {
+    "logical_tick": "1306",
+    "recorded_at": [
+      "1791096979249739"
+    ],
+    "price_cents": "10027",
+    "matched_share_volume": "103699"
+  },
+  {
+    "logical_tick": "1305",
+    "recorded_at": [
+      "1791096979004858"
+    ],
+    "price_cents": "10032",
+    "matched_share_volume": "103371"
+  },
+  {
+    "logical_tick": "1304",
+    "recorded_at": [
+      "1791096978761199"
+    ],
+    "price_cents": "10036",
+    "matched_share_volume": "102622"
+  },
+  {
+    "logical_tick": "1303",
+    "recorded_at": [
+      "1791096978516596"
+    ],
+    "price_cents": "10038",
+    "matched_share_volume": "104528"
+  },
+  {
+    "logical_tick": "1302",
+    "recorded_at": [
+      "1791096978258073"
+    ],
+    "price_cents": "10041",
+    "matched_share_volume": "104016"
+  },
+  {
+    "logical_tick": "1301",
+    "recorded_at": [
+      "1791096978013153"
+    ],
+    "price_cents": "10042",
+    "matched_share_volume": "103610"
+  },
+  {
+    "logical_tick": "1300",
+    "recorded_at": [
+      "1791096977770859"
+    ],
+    "price_cents": "10042",
+    "matched_share_volume": "103309"
+  },
+  {
+    "logical_tick": "1299",
+    "recorded_at": [
+      "1791096977526711"
+    ],
+    "price_cents": "10050",
+    "matched_share_volume": "103934"
+  },
+  {
+    "logical_tick": "1298",
+    "recorded_at": [
+      "1791096977280664"
+    ],
+    "price_cents": "10051",
+    "matched_share_volume": "103488"
+  },
+  {
+    "logical_tick": "1297",
+    "recorded_at": [
+      "1791096977035394"
+    ],
+    "price_cents": "10056",
+    "matched_share_volume": "103332"
+  },
+  {
+    "logical_tick": "1296",
+    "recorded_at": [
+      "1791096976782129"
+    ],
+    "price_cents": "10058",
+    "matched_share_volume": "103776"
+  },
+  {
+    "logical_tick": "1295",
+    "recorded_at": [
+      "1791096976526064"
+    ],
+    "price_cents": "10060",
+    "matched_share_volume": "103378"
+  },
+  {
+    "logical_tick": "1294",
+    "recorded_at": [
+      "1791096976278286"
+    ],
+    "price_cents": "10058",
+    "matched_share_volume": "103988"
+  },
+  {
+    "logical_tick": "1293",
+    "recorded_at": [
+      "1791096976033891"
+    ],
+    "price_cents": "10061",
+    "matched_share_volume": "104013"
+  },
+  {
+    "logical_tick": "1292",
+    "recorded_at": [
+      "1791096975787813"
+    ],
+    "price_cents": "10063",
+    "matched_share_volume": "104518"
+  },
+  {
+    "logical_tick": "1291",
+    "recorded_at": [
+      "1791096975543208"
+    ],
+    "price_cents": "10062",
+    "matched_share_volume": "103535"
+  },
+  {
+    "logical_tick": "1290",
+    "recorded_at": [
+      "1791096975299102"
+    ],
+    "price_cents": "10058",
+    "matched_share_volume": "103525"
+  },
+  {
+    "logical_tick": "1289",
+    "recorded_at": [
+      "1791096975055612"
+    ],
+    "price_cents": "10060",
+    "matched_share_volume": "104372"
+  },
+  {
+    "logical_tick": "1288",
+    "recorded_at": [
+      "1791096974810617"
+    ],
+    "price_cents": "10061",
+    "matched_share_volume": "103543"
+  },
+  {
+    "logical_tick": "1287",
+    "recorded_at": [
+      "1791096974566811"
+    ],
+    "price_cents": "10067",
+    "matched_share_volume": "104218"
+  },
+  {
+    "logical_tick": "1286",
+    "recorded_at": [
+      "1791096974321915"
+    ],
+    "price_cents": "10070",
+    "matched_share_volume": "104311"
+  },
+  {
+    "logical_tick": "1285",
+    "recorded_at": [
+      "1791096974078120"
+    ],
+    "price_cents": "10070",
+    "matched_share_volume": "103859"
+  },
+  {
+    "logical_tick": "1284",
+    "recorded_at": [
+      "1791096973835886"
+    ],
+    "price_cents": "10077",
+    "matched_share_volume": "103678"
+  },
+  {
+    "logical_tick": "1283",
+    "recorded_at": [
+      "1791096973592735"
+    ],
+    "price_cents": "10082",
+    "matched_share_volume": "103430"
+  },
+  {
+    "logical_tick": "1282",
+    "recorded_at": [
+      "1791096973348376"
+    ],
+    "price_cents": "10089",
+    "matched_share_volume": "104256"
+  },
+  {
+    "logical_tick": "1281",
+    "recorded_at": [
+      "1791096973101745"
+    ],
+    "price_cents": "10093",
+    "matched_share_volume": "103782"
+  },
+  {
+    "logical_tick": "1280",
+    "recorded_at": [
+      "1791096972855470"
+    ],
+    "price_cents": "10109",
+    "matched_share_volume": "103719"
+  },
+  {
+    "logical_tick": "1279",
+    "recorded_at": [
+      "1791096972606020"
+    ],
+    "price_cents": "10119",
+    "matched_share_volume": "104404"
+  },
+  {
+    "logical_tick": "1278",
+    "recorded_at": [
+      "1791096972347259"
+    ],
+    "price_cents": "10122",
+    "matched_share_volume": "104295"
+  },
+  {
+    "logical_tick": "1277",
+    "recorded_at": [
+      "1791096971592234"
+    ],
+    "price_cents": "10126",
+    "matched_share_volume": "103348"
+  },
+  {
+    "logical_tick": "1276",
+    "recorded_at": [
+      "1791096971346069"
+    ],
+    "price_cents": "10130",
+    "matched_share_volume": "104004"
+  },
+  {
+    "logical_tick": "1275",
+    "recorded_at": [
+      "1791096971102849"
+    ],
+    "price_cents": "10134",
+    "matched_share_volume": "103816"
+  },
+  {
+    "logical_tick": "1274",
+    "recorded_at": [
+      "1791096970856753"
+    ],
+    "price_cents": "10137",
+    "matched_share_volume": "104335"
+  },
+  {
+    "logical_tick": "1273",
+    "recorded_at": [
+      "1791096970613058"
+    ],
+    "price_cents": "10136",
+    "matched_share_volume": "104434"
+  },
+  {
+    "logical_tick": "1272",
+    "recorded_at": [
+      "1791096970366650"
+    ],
+    "price_cents": "10139",
+    "matched_share_volume": "104545"
+  },
+  {
+    "logical_tick": "1271",
+    "recorded_at": [
+      "1791096970123235"
+    ],
+    "price_cents": "10137",
+    "matched_share_volume": "103717"
+  },
+  {
+    "logical_tick": "1270",
+    "recorded_at": [
+      "1791096969880559"
+    ],
+    "price_cents": "10142",
+    "matched_share_volume": "104728"
+  },
+  {
+    "logical_tick": "1269",
+    "recorded_at": [
+      "1791096969626982"
+    ],
+    "price_cents": "10142",
+    "matched_share_volume": "103947"
+  },
+  {
+    "logical_tick": "1268",
+    "recorded_at": [
+      "1791096969380417"
+    ],
+    "price_cents": "10141",
+    "matched_share_volume": "103839"
+  },
+  {
+    "logical_tick": "1267",
+    "recorded_at": [
+      "1791096969134349"
+    ],
+    "price_cents": "10146",
+    "matched_share_volume": "103636"
+  },
+  {
+    "logical_tick": "1266",
+    "recorded_at": [
+      "1791096968889439"
+    ],
+    "price_cents": "10156",
+    "matched_share_volume": "103437"
+  },
+  {
+    "logical_tick": "1265",
+    "recorded_at": [
+      "1791096968643702"
+    ],
+    "price_cents": "10155",
+    "matched_share_volume": "103565"
+  },
+  {
+    "logical_tick": "1264",
+    "recorded_at": [
+      "1791096968399852"
+    ],
+    "price_cents": "10161",
+    "matched_share_volume": "103573"
+  },
+  {
+    "logical_tick": "1263",
+    "recorded_at": [
+      "1791096968154438"
+    ],
+    "price_cents": "10164",
+    "matched_share_volume": "104269"
+  },
+  {
+    "logical_tick": "1262",
+    "recorded_at": [
+      "1791096967909727"
+    ],
+    "price_cents": "10174",
+    "matched_share_volume": "103155"
+  },
+  {
+    "logical_tick": "1261",
+    "recorded_at": [
+      "1791096967663502"
+    ],
+    "price_cents": "10189",
+    "matched_share_volume": "104646"
+  },
+  {
+    "logical_tick": "1260",
+    "recorded_at": [
+      "1791096967418691"
+    ],
+    "price_cents": "10192",
+    "matched_share_volume": "102862"
+  },
+  {
+    "logical_tick": "1259",
+    "recorded_at": [
+      "1791096967171117"
+    ],
+    "price_cents": "10203",
+    "matched_share_volume": "103853"
+  },
+  {
+    "logical_tick": "1258",
+    "recorded_at": [
+      "1791096966924523"
+    ],
+    "price_cents": "10208",
+    "matched_share_volume": "105436"
+  },
+  {
+    "logical_tick": "1257",
+    "recorded_at": [
+      "1791096966677825"
+    ],
+    "price_cents": "10215",
+    "matched_share_volume": "104719"
+  },
+  {
+    "logical_tick": "1256",
+    "recorded_at": [
+      "1791096966431827"
+    ],
+    "price_cents": "10213",
+    "matched_share_volume": "103629"
+  },
+  {
+    "logical_tick": "1255",
+    "recorded_at": [
+      "1791096966186787"
+    ],
+    "price_cents": "10211",
+    "matched_share_volume": "103951"
+  },
+  {
+    "logical_tick": "1254",
+    "recorded_at": [
+      "1791096965939100"
+    ],
+    "price_cents": "10214",
+    "matched_share_volume": "104756"
+  },
+  {
+    "logical_tick": "1253",
+    "recorded_at": [
+      "1791096965693807"
+    ],
+    "price_cents": "10216",
+    "matched_share_volume": "104167"
+  },
+  {
+    "logical_tick": "1252",
+    "recorded_at": [
+      "1791096965447233"
+    ],
+    "price_cents": "10218",
+    "matched_share_volume": "104895"
+  },
+  {
+    "logical_tick": "1251",
+    "recorded_at": [
+      "1791096965201314"
+    ],
+    "price_cents": "10219",
+    "matched_share_volume": "104511"
+  },
+  {
+    "logical_tick": "1250",
+    "recorded_at": [
+      "1791096964943482"
+    ],
+    "price_cents": "10222",
+    "matched_share_volume": "103748"
+  },
+  {
+    "logical_tick": "1249",
+    "recorded_at": [
+      "1791096964693774"
+    ],
+    "price_cents": "10221",
+    "matched_share_volume": "104010"
+  },
+  {
+    "logical_tick": "1248",
+    "recorded_at": [
+      "1791096964420500"
+    ],
+    "price_cents": "10225",
+    "matched_share_volume": "104127"
+  },
+  {
+    "logical_tick": "1247",
+    "recorded_at": [
+      "1791096964172857"
+    ],
+    "price_cents": "10231",
+    "matched_share_volume": "103848"
+  },
+  {
+    "logical_tick": "1246",
+    "recorded_at": [
+      "1791096963926317"
+    ],
+    "price_cents": "10244",
+    "matched_share_volume": "103559"
+  },
+  {
+    "logical_tick": "1245",
+    "recorded_at": [
+      "1791096963681355"
+    ],
+    "price_cents": "10250",
+    "matched_share_volume": "103714"
+  },
+  {
+    "logical_tick": "1244",
+    "recorded_at": [
+      "1791096963435017"
+    ],
+    "price_cents": "10257",
+    "matched_share_volume": "103722"
+  },
+  {
+    "logical_tick": "1243",
+    "recorded_at": [
+      "1791096963187817"
+    ],
+    "price_cents": "10265",
+    "matched_share_volume": "104299"
+  },
+  {
+    "logical_tick": "1242",
+    "recorded_at": [
+      "1791096962942590"
+    ],
+    "price_cents": "10274",
+    "matched_share_volume": "103596"
+  },
+  {
+    "logical_tick": "1241",
+    "recorded_at": [
+      "1791096962694869"
+    ],
+    "price_cents": "10286",
+    "matched_share_volume": "104498"
+  },
+  {
+    "logical_tick": "1240",
+    "recorded_at": [
+      "1791096962447439"
+    ],
+    "price_cents": "10302",
+    "matched_share_volume": "104760"
+  },
+  {
+    "logical_tick": "1239",
+    "recorded_at": [
+      "1791096962198112"
+    ],
+    "price_cents": "10315",
+    "matched_share_volume": "105187"
+  },
+  {
+    "logical_tick": "1238",
+    "recorded_at": [
+      "1791096961950411"
+    ],
+    "price_cents": "10317",
+    "matched_share_volume": "104017"
+  },
+  {
+    "logical_tick": "1237",
+    "recorded_at": [
+      "1791096961703272"
+    ],
+    "price_cents": "10315",
+    "matched_share_volume": "103906"
+  },
+  {
+    "logical_tick": "1236",
+    "recorded_at": [
+      "1791096961457997"
+    ],
+    "price_cents": "10318",
+    "matched_share_volume": "104048"
+  },
+  {
+    "logical_tick": "1235",
+    "recorded_at": [
+      "1791096961213300"
+    ],
+    "price_cents": "10327",
+    "matched_share_volume": "104763"
+  },
+  {
+    "logical_tick": "1234",
+    "recorded_at": [
+      "1791096960965099"
+    ],
+    "price_cents": "10334",
+    "matched_share_volume": "104185"
+  },
+  {
+    "logical_tick": "1233",
+    "recorded_at": [
+      "1791096960718754"
+    ],
+    "price_cents": "10335",
+    "matched_share_volume": "105768"
+  },
+  {
+    "logical_tick": "1232",
+    "recorded_at": [
+      "1791096960471552"
+    ],
+    "price_cents": "10338",
+    "matched_share_volume": "104717"
+  },
+  {
+    "logical_tick": "1231",
+    "recorded_at": [
+      "1791096960224504"
+    ],
+    "price_cents": "10340",
+    "matched_share_volume": "104024"
+  },
+  {
+    "logical_tick": "1230",
+    "recorded_at": [
+      "1791096959978401"
+    ],
+    "price_cents": "10344",
+    "matched_share_volume": "103814"
+  },
+  {
+    "logical_tick": "1229",
+    "recorded_at": [
+      "1791096959729619"
+    ],
+    "price_cents": "10354",
+    "matched_share_volume": "104660"
+  },
+  {
+    "logical_tick": "1228",
+    "recorded_at": [
+      "1791096959483691"
+    ],
+    "price_cents": "10365",
+    "matched_share_volume": "103876"
+  },
+  {
+    "logical_tick": "1227",
+    "recorded_at": [
+      "1791096959239211"
+    ],
+    "price_cents": "10369",
+    "matched_share_volume": "105018"
+  },
+  {
+    "logical_tick": "1226",
+    "recorded_at": [
+      "1791096958993510"
+    ],
+    "price_cents": "10379",
+    "matched_share_volume": "103442"
+  },
+  {
+    "logical_tick": "1225",
+    "recorded_at": [
+      "1791096958745943"
+    ],
+    "price_cents": "10385",
+    "matched_share_volume": "103086"
+  },
+  {
+    "logical_tick": "1224",
+    "recorded_at": [
+      "1791096958499180"
+    ],
+    "price_cents": "10396",
+    "matched_share_volume": "103997"
+  },
+  {
+    "logical_tick": "1223",
+    "recorded_at": [
+      "1791096958247009"
+    ],
+    "price_cents": "10414",
+    "matched_share_volume": "104337"
+  },
+  {
+    "logical_tick": "1222",
+    "recorded_at": [
+      "1791096957993859"
+    ],
+    "price_cents": "10425",
+    "matched_share_volume": "103725"
+  },
+  {
+    "logical_tick": "1221",
+    "recorded_at": [
+      "1791096957744581"
+    ],
+    "price_cents": "10435",
+    "matched_share_volume": "104113"
+  },
+  {
+    "logical_tick": "1220",
+    "recorded_at": [
+      "1791096957496064"
+    ],
+    "price_cents": "10446",
+    "matched_share_volume": "104794"
+  },
+  {
+    "logical_tick": "1219",
+    "recorded_at": [
+      "1791096957247116"
+    ],
+    "price_cents": "10463",
+    "matched_share_volume": "105900"
+  },
+  {
+    "logical_tick": "1218",
+    "recorded_at": [
+      "1791096956999056"
+    ],
+    "price_cents": "10468",
+    "matched_share_volume": "105949"
+  },
+  {
+    "logical_tick": "1217",
+    "recorded_at": [
+      "1791096956752126"
+    ],
+    "price_cents": "10468",
+    "matched_share_volume": "104532"
+  },
+  {
+    "logical_tick": "1216",
+    "recorded_at": [
+      "1791096956505622"
+    ],
+    "price_cents": "10469",
+    "matched_share_volume": "105410"
+  },
+  {
+    "logical_tick": "1215",
+    "recorded_at": [
+      "1791096956260733"
+    ],
+    "price_cents": "10473",
+    "matched_share_volume": "105202"
+  },
+  {
+    "logical_tick": "1214",
+    "recorded_at": [
+      "1791096956013845"
+    ],
+    "price_cents": "10479",
+    "matched_share_volume": "104286"
+  },
+  {
+    "logical_tick": "1213",
+    "recorded_at": [
+      "1791096955766559"
+    ],
+    "price_cents": "10483",
+    "matched_share_volume": "106054"
+  },
+  {
+    "logical_tick": "1212",
+    "recorded_at": [
+      "1791096955514092"
+    ],
+    "price_cents": "10495",
+    "matched_share_volume": "104141"
+  },
+  {
+    "logical_tick": "1211",
+    "recorded_at": [
+      "1791096955265693"
+    ],
+    "price_cents": "10499",
+    "matched_share_volume": "103936"
+  },
+  {
+    "logical_tick": "1210",
+    "recorded_at": [
+      "1791096955017944"
+    ],
+    "price_cents": "10512",
+    "matched_share_volume": "105246"
+  },
+  {
+    "logical_tick": "1209",
+    "recorded_at": [
+      "1791096954770615"
+    ],
+    "price_cents": "10526",
+    "matched_share_volume": "104518"
+  },
+  {
+    "logical_tick": "1208",
+    "recorded_at": [
+      "1791096954524047"
+    ],
+    "price_cents": "10533",
+    "matched_share_volume": "105568"
+  },
+  {
+    "logical_tick": "1207",
+    "recorded_at": [
+      "1791096954274721"
+    ],
+    "price_cents": "10542",
+    "matched_share_volume": "105871"
+  },
+  {
+    "logical_tick": "1206",
+    "recorded_at": [
+      "1791096954026899"
+    ],
+    "price_cents": "10551",
+    "matched_share_volume": "104103"
+  },
+  {
+    "logical_tick": "1205",
+    "recorded_at": [
+      "1791096953777319"
+    ],
+    "price_cents": "10555",
+    "matched_share_volume": "104121"
+  },
+  {
+    "logical_tick": "1204",
+    "recorded_at": [
+      "1791096953528910"
+    ],
+    "price_cents": "10566",
+    "matched_share_volume": "103940"
+  },
+  {
+    "logical_tick": "1203",
+    "recorded_at": [
+      "1791096953280602"
+    ],
+    "price_cents": "10582",
+    "matched_share_volume": "105217"
+  },
+  {
+    "logical_tick": "1202",
+    "recorded_at": [
+      "1791096953032837"
+    ],
+    "price_cents": "10593",
+    "matched_share_volume": "103908"
+  },
+  {
+    "logical_tick": "1201",
+    "recorded_at": [
+      "1791096952782837"
+    ],
+    "price_cents": "10609",
+    "matched_share_volume": "103915"
+  },
+  {
+    "logical_tick": "1200",
+    "recorded_at": [
+      "1791096952527548"
+    ],
+    "price_cents": "10627",
+    "matched_share_volume": "108451"
+  },
+  {
+    "logical_tick": "1199",
+    "recorded_at": [
+      "1791096952273737"
+    ],
+    "price_cents": "10650",
+    "matched_share_volume": "106077"
+  },
+  {
+    "logical_tick": "1198",
+    "recorded_at": [
+      "1791096952012083"
+    ],
+    "price_cents": "10647",
+    "matched_share_volume": "106507"
+  },
+  {
+    "logical_tick": "1197",
+    "recorded_at": [
+      "1791096951750727"
+    ],
+    "price_cents": "10646",
+    "matched_share_volume": "105837"
+  },
+  {
+    "logical_tick": "1196",
+    "recorded_at": [
+      "1791096951477746"
+    ],
+    "price_cents": "10646",
+    "matched_share_volume": "105716"
+  },
+  {
+    "logical_tick": "1195",
+    "recorded_at": [
+      "1791096950731454"
+    ],
+    "price_cents": "10648",
+    "matched_share_volume": "106732"
+  },
+  {
+    "logical_tick": "1194",
+    "recorded_at": [
+      "1791096950476209"
+    ],
+    "price_cents": "10652",
+    "matched_share_volume": "106972"
+  },
+  {
+    "logical_tick": "1193",
+    "recorded_at": [
+      "1791096950223274"
+    ],
+    "price_cents": "10651",
+    "matched_share_volume": "107519"
+  },
+  {
+    "logical_tick": "1192",
+    "recorded_at": [
+      "1791096949953035"
+    ],
+    "price_cents": "10650",
+    "matched_share_volume": "105267"
+  },
+  {
+    "logical_tick": "1191",
+    "recorded_at": [
+      "1791096949662642"
+    ],
+    "price_cents": "10645",
+    "matched_share_volume": "107588"
+  },
+  {
+    "logical_tick": "1190",
+    "recorded_at": [
+      "1791096949413005"
+    ],
+    "price_cents": "10646",
+    "matched_share_volume": "106270"
+  },
+  {
+    "logical_tick": "1189",
+    "recorded_at": [
+      "1791096949166464"
+    ],
+    "price_cents": "10642",
+    "matched_share_volume": "106615"
+  },
+  {
+    "logical_tick": "1188",
+    "recorded_at": [
+      "1791096948921192"
+    ],
+    "price_cents": "10641",
+    "matched_share_volume": "103781"
+  },
+  {
+    "logical_tick": "1187",
+    "recorded_at": [
+      "1791096948674909"
+    ],
+    "price_cents": "10644",
+    "matched_share_volume": "107113"
+  },
+  {
+    "logical_tick": "1186",
+    "recorded_at": [
+      "1791096948428353"
+    ],
+    "price_cents": "10655",
+    "matched_share_volume": "104791"
+  },
+  {
+    "logical_tick": "1185",
+    "recorded_at": [
+      "1791096948181776"
+    ],
+    "price_cents": "10655",
+    "matched_share_volume": "105979"
+  },
+  {
+    "logical_tick": "1184",
+    "recorded_at": [
+      "1791096947937058"
+    ],
+    "price_cents": "10662",
+    "matched_share_volume": "107262"
+  },
+  {
+    "logical_tick": "1183",
+    "recorded_at": [
+      "1791096947688728"
+    ],
+    "price_cents": "10664",
+    "matched_share_volume": "106736"
+  },
+  {
+    "logical_tick": "1182",
+    "recorded_at": [
+      "1791096947444110"
+    ],
+    "price_cents": "10660",
+    "matched_share_volume": "107162"
+  },
+  {
+    "logical_tick": "1181",
+    "recorded_at": [
+      "1791096947193138"
+    ],
+    "price_cents": "10659",
+    "matched_share_volume": "106795"
+  },
+  {
+    "logical_tick": "1180",
+    "recorded_at": [
+      "1791096946948984"
+    ],
+    "price_cents": "10654",
+    "matched_share_volume": "105985"
+  },
+  {
+    "logical_tick": "1179",
+    "recorded_at": [
+      "1791096946702638"
+    ],
+    "price_cents": "10651",
+    "matched_share_volume": "105993"
+  },
+  {
+    "logical_tick": "1178",
+    "recorded_at": [
+      "1791096946457666"
+    ],
+    "price_cents": "10650",
+    "matched_share_volume": "106795"
+  },
+  {
+    "logical_tick": "1177",
+    "recorded_at": [
+      "1791096946214840"
+    ],
+    "price_cents": "10651",
+    "matched_share_volume": "106258"
+  },
+  {
+    "logical_tick": "1176",
+    "recorded_at": [
+      "1791096945967506"
+    ],
+    "price_cents": "10652",
+    "matched_share_volume": "104683"
+  },
+  {
+    "logical_tick": "1175",
+    "recorded_at": [
+      "1791096945724281"
+    ],
+    "price_cents": "10654",
+    "matched_share_volume": "107680"
+  },
+  {
+    "logical_tick": "1174",
+    "recorded_at": [
+      "1791096945479910"
+    ],
+    "price_cents": "10665",
+    "matched_share_volume": "105117"
+  },
+  {
+    "logical_tick": "1173",
+    "recorded_at": [
+      "1791096945236058"
+    ],
+    "price_cents": "10663",
+    "matched_share_volume": "109897"
+  },
+  {
+    "logical_tick": "1172",
+    "recorded_at": [
+      "1791096944989055"
+    ],
+    "price_cents": "10670",
+    "matched_share_volume": "105183"
+  },
+  {
+    "logical_tick": "1171",
+    "recorded_at": [
+      "1791096944743668"
+    ],
+    "price_cents": "10662",
+    "matched_share_volume": "108823"
+  },
+  {
+    "logical_tick": "1170",
+    "recorded_at": [
+      "1791096944501290"
+    ],
+    "price_cents": "10662",
+    "matched_share_volume": "107836"
+  },
+  {
+    "logical_tick": "1169",
+    "recorded_at": [
+      "1791096944257482"
+    ],
+    "price_cents": "10654",
+    "matched_share_volume": "105384"
+  },
+  {
+    "logical_tick": "1168",
+    "recorded_at": [
+      "1791096944013120"
+    ],
+    "price_cents": "10647",
+    "matched_share_volume": "106571"
+  },
+  {
+    "logical_tick": "1167",
+    "recorded_at": [
+      "1791096943766835"
+    ],
+    "price_cents": "10646",
+    "matched_share_volume": "108328"
+  },
+  {
+    "logical_tick": "1166",
+    "recorded_at": [
+      "1791096943521917"
+    ],
+    "price_cents": "10647",
+    "matched_share_volume": "107189"
+  },
+  {
+    "logical_tick": "1165",
+    "recorded_at": [
+      "1791096943276696"
+    ],
+    "price_cents": "10641",
+    "matched_share_volume": "104138"
+  },
+  {
+    "logical_tick": "1164",
+    "recorded_at": [
+      "1791096943031983"
+    ],
+    "price_cents": "10637",
+    "matched_share_volume": "107210"
+  },
+  {
+    "logical_tick": "1163",
+    "recorded_at": [
+      "1791096942787169"
+    ],
+    "price_cents": "10642",
+    "matched_share_volume": "104703"
+  },
+  {
+    "logical_tick": "1162",
+    "recorded_at": [
+      "1791096942546125"
+    ],
+    "price_cents": "10639",
+    "matched_share_volume": "106461"
+  },
+  {
+    "logical_tick": "1161",
+    "recorded_at": [
+      "1791096942291900"
+    ],
+    "price_cents": "10645",
+    "matched_share_volume": "107894"
+  },
+  {
+    "logical_tick": "1160",
+    "recorded_at": [
+      "1791096942048447"
+    ],
+    "price_cents": "10646",
+    "matched_share_volume": "104990"
+  },
+  {
+    "logical_tick": "1159",
+    "recorded_at": [
+      "1791096941804336"
+    ],
+    "price_cents": "10646",
+    "matched_share_volume": "106524"
+  },
+  {
+    "logical_tick": "1158",
+    "recorded_at": [
+      "1791096941559354"
+    ],
+    "price_cents": "10649",
+    "matched_share_volume": "109399"
+  },
+  {
+    "logical_tick": "1157",
+    "recorded_at": [
+      "1791096941314413"
+    ],
+    "price_cents": "10649",
+    "matched_share_volume": "104543"
+  },
+  {
+    "logical_tick": "1156",
+    "recorded_at": [
+      "1791096941057375"
+    ],
+    "price_cents": "10644",
+    "matched_share_volume": "108057"
+  },
+  {
+    "logical_tick": "1155",
+    "recorded_at": [
+      "1791096940797686"
+    ],
+    "price_cents": "10649",
+    "matched_share_volume": "105343"
+  },
+  {
+    "logical_tick": "1154",
+    "recorded_at": [
+      "1791096940533692"
+    ],
+    "price_cents": "10646",
+    "matched_share_volume": "106530"
+  },
+  {
+    "logical_tick": "1153",
+    "recorded_at": [
+      "1791096940280659"
+    ],
+    "price_cents": "10648",
+    "matched_share_volume": "106034"
+  },
+  {
+    "logical_tick": "1152",
+    "recorded_at": [
+      "1791096940026955"
+    ],
+    "price_cents": "10647",
+    "matched_share_volume": "105902"
+  },
+  {
+    "logical_tick": "1151",
+    "recorded_at": [
+      "1791096939775553"
+    ],
+    "price_cents": "10650",
+    "matched_share_volume": "106315"
+  },
+  {
+    "logical_tick": "1150",
+    "recorded_at": [
+      "1791096939518669"
+    ],
+    "price_cents": "10656",
+    "matched_share_volume": "106385"
+  },
+  {
+    "logical_tick": "1149",
+    "recorded_at": [
+      "1791096939271806"
+    ],
+    "price_cents": "10658",
+    "matched_share_volume": "108174"
+  },
+  {
+    "logical_tick": "1148",
+    "recorded_at": [
+      "1791096939024721"
+    ],
+    "price_cents": "10658",
+    "matched_share_volume": "106812"
+  },
+  {
+    "logical_tick": "1147",
+    "recorded_at": [
+      "1791096938778893"
+    ],
+    "price_cents": "10654",
+    "matched_share_volume": "106967"
+  },
+  {
+    "logical_tick": "1146",
+    "recorded_at": [
+      "1791096938532598"
+    ],
+    "price_cents": "10653",
+    "matched_share_volume": "105138"
+  },
+  {
+    "logical_tick": "1145",
+    "recorded_at": [
+      "1791096938285242"
+    ],
+    "price_cents": "10650",
+    "matched_share_volume": "105583"
+  },
+  {
+    "logical_tick": "1144",
+    "recorded_at": [
+      "1791096938040489"
+    ],
+    "price_cents": "10658",
+    "matched_share_volume": "107339"
+  },
+  {
+    "logical_tick": "1143",
+    "recorded_at": [
+      "1791096937787194"
+    ],
+    "price_cents": "10661",
+    "matched_share_volume": "105899"
+  },
+  {
+    "logical_tick": "1142",
+    "recorded_at": [
+      "1791096937545606"
+    ],
+    "price_cents": "10657",
+    "matched_share_volume": "107748"
+  },
+  {
+    "logical_tick": "1141",
+    "recorded_at": [
+      "1791096937302667"
+    ],
+    "price_cents": "10660",
+    "matched_share_volume": "105962"
+  },
+  {
+    "logical_tick": "1140",
+    "recorded_at": [
+      "1791096937058853"
+    ],
+    "price_cents": "10657",
+    "matched_share_volume": "107048"
+  },
+  {
+    "logical_tick": "1139",
+    "recorded_at": [
+      "1791096936813087"
+    ],
+    "price_cents": "10657",
+    "matched_share_volume": "107698"
+  },
+  {
+    "logical_tick": "1138",
+    "recorded_at": [
+      "1791096936567053"
+    ],
+    "price_cents": "10655",
+    "matched_share_volume": "105839"
+  },
+  {
+    "logical_tick": "1137",
+    "recorded_at": [
+      "1791096936322499"
+    ],
+    "price_cents": "10651",
+    "matched_share_volume": "107679"
+  },
+  {
+    "logical_tick": "1136",
+    "recorded_at": [
+      "1791096936076496"
+    ],
+    "price_cents": "10653",
+    "matched_share_volume": "104840"
+  },
+  {
+    "logical_tick": "1135",
+    "recorded_at": [
+      "1791096935832741"
+    ],
+    "price_cents": "10653",
+    "matched_share_volume": "105469"
+  },
+  {
+    "logical_tick": "1134",
+    "recorded_at": [
+      "1791096935588372"
+    ],
+    "price_cents": "10660",
+    "matched_share_volume": "107095"
+  },
+  {
+    "logical_tick": "1133",
+    "recorded_at": [
+      "1791096935343768"
+    ],
+    "price_cents": "10665",
+    "matched_share_volume": "106546"
+  },
+  {
+    "logical_tick": "1132",
+    "recorded_at": [
+      "1791096935099443"
+    ],
+    "price_cents": "10665",
+    "matched_share_volume": "108717"
+  },
+  {
+    "logical_tick": "1131",
+    "recorded_at": [
+      "1791096934853837"
+    ],
+    "price_cents": "10662",
+    "matched_share_volume": "106761"
+  },
+  {
+    "logical_tick": "1130",
+    "recorded_at": [
+      "1791096934607683"
+    ],
+    "price_cents": "10656",
+    "matched_share_volume": "104485"
+  },
+  {
+    "logical_tick": "1129",
+    "recorded_at": [
+      "1791096934362753"
+    ],
+    "price_cents": "10655",
+    "matched_share_volume": "108320"
+  },
+  {
+    "logical_tick": "1128",
+    "recorded_at": [
+      "1791096934118707"
+    ],
+    "price_cents": "10657",
+    "matched_share_volume": "107633"
+  },
+  {
+    "logical_tick": "1127",
+    "recorded_at": [
+      "1791096933877361"
+    ],
+    "price_cents": "10652",
+    "matched_share_volume": "106656"
+  },
+  {
+    "logical_tick": "1126",
+    "recorded_at": [
+      "1791096933635669"
+    ],
+    "price_cents": "10648",
+    "matched_share_volume": "104482"
+  },
+  {
+    "logical_tick": "1125",
+    "recorded_at": [
+      "1791096933392593"
+    ],
+    "price_cents": "10647",
+    "matched_share_volume": "108854"
+  },
+  {
+    "logical_tick": "1124",
+    "recorded_at": [
+      "1791096933150881"
+    ],
+    "price_cents": "10652",
+    "matched_share_volume": "105675"
+  },
+  {
+    "logical_tick": "1123",
+    "recorded_at": [
+      "1791096932906465"
+    ],
+    "price_cents": "10644",
+    "matched_share_volume": "106193"
+  },
+  {
+    "logical_tick": "1122",
+    "recorded_at": [
+      "1791096932663225"
+    ],
+    "price_cents": "10641",
+    "matched_share_volume": "107172"
+  },
+  {
+    "logical_tick": "1121",
+    "recorded_at": [
+      "1791096932419072"
+    ],
+    "price_cents": "10641",
+    "matched_share_volume": "105081"
+  },
+  {
+    "logical_tick": "1120",
+    "recorded_at": [
+      "1791096932176757"
+    ],
+    "price_cents": "10638",
+    "matched_share_volume": "108957"
+  },
+  {
+    "logical_tick": "1119",
+    "recorded_at": [
+      "1791096931924310"
+    ],
+    "price_cents": "10640",
+    "matched_share_volume": "106395"
+  },
+  {
+    "logical_tick": "1118",
+    "recorded_at": [
+      "1791096931677640"
+    ],
+    "price_cents": "10631",
+    "matched_share_volume": "108808"
+  },
+  {
+    "logical_tick": "1117",
+    "recorded_at": [
+      "1791096931433289"
+    ],
+    "price_cents": "10630",
+    "matched_share_volume": "104330"
+  },
+  {
+    "logical_tick": "1116",
+    "recorded_at": [
+      "1791096931189611"
+    ],
+    "price_cents": "10623",
+    "matched_share_volume": "105734"
+  },
+  {
+    "logical_tick": "1115",
+    "recorded_at": [
+      "1791096930945691"
+    ],
+    "price_cents": "10625",
+    "matched_share_volume": "105338"
+  },
+  {
+    "logical_tick": "1114",
+    "recorded_at": [
+      "1791096930687127"
+    ],
+    "price_cents": "10632",
+    "matched_share_volume": "108695"
+  },
+  {
+    "logical_tick": "1113",
+    "recorded_at": [
+      "1791096929957335"
+    ],
+    "price_cents": "10633",
+    "matched_share_volume": "105757"
+  },
+  {
+    "logical_tick": "1112",
+    "recorded_at": [
+      "1791096929714013"
+    ],
+    "price_cents": "10629",
+    "matched_share_volume": "108203"
+  },
+  {
+    "logical_tick": "1111",
+    "recorded_at": [
+      "1791096929471261"
+    ],
+    "price_cents": "10630",
+    "matched_share_volume": "107315"
+  },
+  {
+    "logical_tick": "1110",
+    "recorded_at": [
+      "1791096929228966"
+    ],
+    "price_cents": "10625",
+    "matched_share_volume": "106007"
+  },
+  {
+    "logical_tick": "1109",
+    "recorded_at": [
+      "1791096928986465"
+    ],
+    "price_cents": "10622",
+    "matched_share_volume": "106538"
+  },
+  {
+    "logical_tick": "1108",
+    "recorded_at": [
+      "1791096928742693"
+    ],
+    "price_cents": "10623",
+    "matched_share_volume": "105983"
+  },
+  {
+    "logical_tick": "1107",
+    "recorded_at": [
+      "1791096928499604"
+    ],
+    "price_cents": "10621",
+    "matched_share_volume": "106314"
+  },
+  {
+    "logical_tick": "1106",
+    "recorded_at": [
+      "1791096928253300"
+    ],
+    "price_cents": "10623",
+    "matched_share_volume": "104744"
+  },
+  {
+    "logical_tick": "1105",
+    "recorded_at": [
+      "1791096928009286"
+    ],
+    "price_cents": "10625",
+    "matched_share_volume": "107536"
+  },
+  {
+    "logical_tick": "1104",
+    "recorded_at": [
+      "1791096927767318"
+    ],
+    "price_cents": "10631",
+    "matched_share_volume": "107154"
+  },
+  {
+    "logical_tick": "1103",
+    "recorded_at": [
+      "1791096927523140"
+    ],
+    "price_cents": "10629",
+    "matched_share_volume": "107091"
+  },
+  {
+    "logical_tick": "1102",
+    "recorded_at": [
+      "1791096927279399"
+    ],
+    "price_cents": "10625",
+    "matched_share_volume": "105036"
+  },
+  {
+    "logical_tick": "1101",
+    "recorded_at": [
+      "1791096927033988"
+    ],
+    "price_cents": "10624",
+    "matched_share_volume": "107316"
+  },
+  {
+    "logical_tick": "1100",
+    "recorded_at": [
+      "1791096926789595"
+    ],
+    "price_cents": "10625",
+    "matched_share_volume": "105898"
+  },
+  {
+    "logical_tick": "1099",
+    "recorded_at": [
+      "1791096926545188"
+    ],
+    "price_cents": "10622",
+    "matched_share_volume": "106635"
+  },
+  {
+    "logical_tick": "1098",
+    "recorded_at": [
+      "1791096926297323"
+    ],
+    "price_cents": "10623",
+    "matched_share_volume": "106821"
+  },
+  {
+    "logical_tick": "1097",
+    "recorded_at": [
+      "1791096926051583"
+    ],
+    "price_cents": "10624",
+    "matched_share_volume": "104815"
+  },
+  {
+    "logical_tick": "1096",
+    "recorded_at": [
+      "1791096925806639"
+    ],
+    "price_cents": "10624",
+    "matched_share_volume": "107011"
+  },
+  {
+    "logical_tick": "1095",
+    "recorded_at": [
+      "1791096925562998"
+    ],
+    "price_cents": "10630",
+    "matched_share_volume": "106428"
+  },
+  {
+    "logical_tick": "1094",
+    "recorded_at": [
+      "1791096925316749"
+    ],
+    "price_cents": "10628",
+    "matched_share_volume": "108179"
+  },
+  {
+    "logical_tick": "1093",
+    "recorded_at": [
+      "1791096925072037"
+    ],
+    "price_cents": "10623",
+    "matched_share_volume": "105639"
+  },
+  {
+    "logical_tick": "1092",
+    "recorded_at": [
+      "1791096924826166"
+    ],
+    "price_cents": "10617",
+    "matched_share_volume": "107360"
+  },
+  {
+    "logical_tick": "1091",
+    "recorded_at": [
+      "1791096924583444"
+    ],
+    "price_cents": "10615",
+    "matched_share_volume": "107593"
+  },
+  {
+    "logical_tick": "1090",
+    "recorded_at": [
+      "1791096924339709"
+    ],
+    "price_cents": "10611",
+    "matched_share_volume": "106046"
+  },
+  {
+    "logical_tick": "1089",
+    "recorded_at": [
+      "1791096924095361"
+    ],
+    "price_cents": "10605",
+    "matched_share_volume": "105689"
+  },
+  {
+    "logical_tick": "1088",
+    "recorded_at": [
+      "1791096923850859"
+    ],
+    "price_cents": "10601",
+    "matched_share_volume": "104679"
+  },
+  {
+    "logical_tick": "1087",
+    "recorded_at": [
+      "1791096923607113"
+    ],
+    "price_cents": "10602",
+    "matched_share_volume": "107466"
+  },
+  {
+    "logical_tick": "1086",
+    "recorded_at": [
+      "1791096923362269"
+    ],
+    "price_cents": "10610",
+    "matched_share_volume": "105869"
+  },
+  {
+    "logical_tick": "1085",
+    "recorded_at": [
+      "1791096923119306"
+    ],
+    "price_cents": "10607",
+    "matched_share_volume": "107424"
+  },
+  {
+    "logical_tick": "1084",
+    "recorded_at": [
+      "1791096922875294"
+    ],
+    "price_cents": "10605",
+    "matched_share_volume": "106557"
+  },
+  {
+    "logical_tick": "1083",
+    "recorded_at": [
+      "1791096922626440"
+    ],
+    "price_cents": "10601",
+    "matched_share_volume": "107713"
+  },
+  {
+    "logical_tick": "1082",
+    "recorded_at": [
+      "1791096922373699"
+    ],
+    "price_cents": "10596",
+    "matched_share_volume": "105742"
+  },
+  {
+    "logical_tick": "1081",
+    "recorded_at": [
+      "1791096922130047"
+    ],
+    "price_cents": "10590",
+    "matched_share_volume": "108820"
+  },
+  {
+    "logical_tick": "1080",
+    "recorded_at": [
+      "1791096921887505"
+    ],
+    "price_cents": "10586",
+    "matched_share_volume": "104196"
+  },
+  {
+    "logical_tick": "1079",
+    "recorded_at": [
+      "1791096921640751"
+    ],
+    "price_cents": "10579",
+    "matched_share_volume": "106086"
+  },
+  {
+    "logical_tick": "1078",
+    "recorded_at": [
+      "1791096921394351"
+    ],
+    "price_cents": "10580",
+    "matched_share_volume": "106878"
+  },
+  {
+    "logical_tick": "1077",
+    "recorded_at": [
+      "1791096921149733"
+    ],
+    "price_cents": "10583",
+    "matched_share_volume": "105109"
+  },
+  {
+    "logical_tick": "1076",
+    "recorded_at": [
+      "1791096920902939"
+    ],
+    "price_cents": "10583",
+    "matched_share_volume": "104735"
+  },
+  {
+    "logical_tick": "1075",
+    "recorded_at": [
+      "1791096920659830"
+    ],
+    "price_cents": "10588",
+    "matched_share_volume": "105647"
+  },
+  {
+    "logical_tick": "1074",
+    "recorded_at": [
+      "1791096920416508"
+    ],
+    "price_cents": "10597",
+    "matched_share_volume": "106221"
+  },
+  {
+    "logical_tick": "1073",
+    "recorded_at": [
+      "1791096920170971"
+    ],
+    "price_cents": "10598",
+    "matched_share_volume": "108264"
+  },
+  {
+    "logical_tick": "1072",
+    "recorded_at": [
+      "1791096919927469"
+    ],
+    "price_cents": "10596",
+    "matched_share_volume": "105455"
+  },
+  {
+    "logical_tick": "1071",
+    "recorded_at": [
+      "1791096919683341"
+    ],
+    "price_cents": "10589",
+    "matched_share_volume": "107211"
+  },
+  {
+    "logical_tick": "1070",
+    "recorded_at": [
+      "1791096919441158"
+    ],
+    "price_cents": "10592",
+    "matched_share_volume": "106141"
+  },
+  {
+    "logical_tick": "1069",
+    "recorded_at": [
+      "1791096919197615"
+    ],
+    "price_cents": "10590",
+    "matched_share_volume": "105943"
+  },
+  {
+    "logical_tick": "1068",
+    "recorded_at": [
+      "1791096918952871"
+    ],
+    "price_cents": "10591",
+    "matched_share_volume": "106767"
+  },
+  {
+    "logical_tick": "1067",
+    "recorded_at": [
+      "1791096918708456"
+    ],
+    "price_cents": "10593",
+    "matched_share_volume": "105264"
+  },
+  {
+    "logical_tick": "1066",
+    "recorded_at": [
+      "1791096918464257"
+    ],
+    "price_cents": "10591",
+    "matched_share_volume": "107760"
+  },
+  {
+    "logical_tick": "1065",
+    "recorded_at": [
+      "1791096918214481"
+    ],
+    "price_cents": "10592",
+    "matched_share_volume": "103869"
+  },
+  {
+    "logical_tick": "1064",
+    "recorded_at": [
+      "1791096917970863"
+    ],
+    "price_cents": "10585",
+    "matched_share_volume": "105277"
+  },
+  {
+    "logical_tick": "1063",
+    "recorded_at": [
+      "1791096917725082"
+    ],
+    "price_cents": "10590",
+    "matched_share_volume": "107478"
+  },
+  {
+    "logical_tick": "1062",
+    "recorded_at": [
+      "1791096917480720"
+    ],
+    "price_cents": "10591",
+    "matched_share_volume": "104512"
+  },
+  {
+    "logical_tick": "1061",
+    "recorded_at": [
+      "1791096917234374"
+    ],
+    "price_cents": "10587",
+    "matched_share_volume": "107187"
+  },
+  {
+    "logical_tick": "1060",
+    "recorded_at": [
+      "1791096916983106"
+    ],
+    "price_cents": "10591",
+    "matched_share_volume": "106448"
+  },
+  {
+    "logical_tick": "1059",
+    "recorded_at": [
+      "1791096916731020"
+    ],
+    "price_cents": "10591",
+    "matched_share_volume": "106684"
+  },
+  {
+    "logical_tick": "1058",
+    "recorded_at": [
+      "1791096916477827"
+    ],
+    "price_cents": "10590",
+    "matched_share_volume": "106377"
+  },
+  {
+    "logical_tick": "1057",
+    "recorded_at": [
+      "1791096916220292"
+    ],
+    "price_cents": "10590",
+    "matched_share_volume": "106853"
+  },
+  {
+    "logical_tick": "1056",
+    "recorded_at": [
+      "1791096915972150"
+    ],
+    "price_cents": "10590",
+    "matched_share_volume": "106859"
+  },
+  {
+    "logical_tick": "1055",
+    "recorded_at": [
+      "1791096915727460"
+    ],
+    "price_cents": "10585",
+    "matched_share_volume": "106836"
+  },
+  {
+    "logical_tick": "1054",
+    "recorded_at": [
+      "1791096915479069"
+    ],
+    "price_cents": "10583",
+    "matched_share_volume": "105394"
+  },
+  {
+    "logical_tick": "1053",
+    "recorded_at": [
+      "1791096915230913"
+    ],
+    "price_cents": "10579",
+    "matched_share_volume": "105279"
+  },
+  {
+    "logical_tick": "1052",
+    "recorded_at": [
+      "1791096914973664"
+    ],
+    "price_cents": "10579",
+    "matched_share_volume": "106462"
+  },
+  {
+    "logical_tick": "1051",
+    "recorded_at": [
+      "1791096914728063"
+    ],
+    "price_cents": "10580",
+    "matched_share_volume": "108018"
+  },
+  {
+    "logical_tick": "1050",
+    "recorded_at": [
+      "1791096914481948"
+    ],
+    "price_cents": "10579",
+    "matched_share_volume": "104130"
+  },
+  {
+    "logical_tick": "1049",
+    "recorded_at": [
+      "1791096914234825"
+    ],
+    "price_cents": "10572",
+    "matched_share_volume": "105353"
+  },
+  {
+    "logical_tick": "1048",
+    "recorded_at": [
+      "1791096913989719"
+    ],
+    "price_cents": "10576",
+    "matched_share_volume": "107935"
+  },
+  {
+    "logical_tick": "1047",
+    "recorded_at": [
+      "1791096913739895"
+    ],
+    "price_cents": "10578",
+    "matched_share_volume": "105736"
+  },
+  {
+    "logical_tick": "1046",
+    "recorded_at": [
+      "1791096913480634"
+    ],
+    "price_cents": "10574",
+    "matched_share_volume": "106430"
+  },
+  {
+    "logical_tick": "1045",
+    "recorded_at": [
+      "1791096913230792"
+    ],
+    "price_cents": "10573",
+    "matched_share_volume": "103955"
+  },
+  {
+    "logical_tick": "1044",
+    "recorded_at": [
+      "1791096912982312"
+    ],
+    "price_cents": "10569",
+    "matched_share_volume": "110765"
+  },
+  {
+    "logical_tick": "1043",
+    "recorded_at": [
+      "1791096912731483"
+    ],
+    "price_cents": "10574",
+    "matched_share_volume": "105340"
+  },
+  {
+    "logical_tick": "1042",
+    "recorded_at": [
+      "1791096912481185"
+    ],
+    "price_cents": "10564",
+    "matched_share_volume": "106323"
+  },
+  {
+    "logical_tick": "1041",
+    "recorded_at": [
+      "1791096912231408"
+    ],
+    "price_cents": "10563",
+    "matched_share_volume": "104703"
+  },
+  {
+    "logical_tick": "1040",
+    "recorded_at": [
+      "1791096911982740"
+    ],
+    "price_cents": "10561",
+    "matched_share_volume": "105936"
+  },
+  {
+    "logical_tick": "1039",
+    "recorded_at": [
+      "1791096911731917"
+    ],
+    "price_cents": "10565",
+    "matched_share_volume": "105873"
+  },
+  {
+    "logical_tick": "1038",
+    "recorded_at": [
+      "1791096911482068"
+    ],
+    "price_cents": "10565",
+    "matched_share_volume": "110237"
+  },
+  {
+    "logical_tick": "1037",
+    "recorded_at": [
+      "1791096911231936"
+    ],
+    "price_cents": "10564",
+    "matched_share_volume": "103805"
+  },
+  {
+    "logical_tick": "1036",
+    "recorded_at": [
+      "1791096910980591"
+    ],
+    "price_cents": "10554",
+    "matched_share_volume": "105173"
+  },
+  {
+    "logical_tick": "1035",
+    "recorded_at": [
+      "1791096910723600"
+    ],
+    "price_cents": "10561",
+    "matched_share_volume": "104717"
+  },
+  {
+    "logical_tick": "1034",
+    "recorded_at": [
+      "1791096910449175"
+    ],
+    "price_cents": "10571",
+    "matched_share_volume": "107561"
+  },
+  {
+    "logical_tick": "1033",
+    "recorded_at": [
+      "1791096910188911"
+    ],
+    "price_cents": "10576",
+    "matched_share_volume": "107892"
+  },
+  {
+    "logical_tick": "1032",
+    "recorded_at": [
+      "1791096909920656"
+    ],
+    "price_cents": "10574",
+    "matched_share_volume": "106172"
+  },
+  {
+    "logical_tick": "1031",
+    "recorded_at": [
+      "1791096909202516"
+    ],
+    "price_cents": "10567",
+    "matched_share_volume": "106480"
+  },
+  {
+    "logical_tick": "1030",
+    "recorded_at": [
+      "1791096908958467"
+    ],
+    "price_cents": "10564",
+    "matched_share_volume": "107288"
+  },
+  {
+    "logical_tick": "1029",
+    "recorded_at": [
+      "1791096908714704"
+    ],
+    "price_cents": "10560",
+    "matched_share_volume": "105711"
+  },
+  {
+    "logical_tick": "1028",
+    "recorded_at": [
+      "1791096908468779"
+    ],
+    "price_cents": "10552",
+    "matched_share_volume": "106598"
+  },
+  {
+    "logical_tick": "1027",
+    "recorded_at": [
+      "1791096908224027"
+    ],
+    "price_cents": "10548",
+    "matched_share_volume": "107195"
+  },
+  {
+    "logical_tick": "1026",
+    "recorded_at": [
+      "1791096907979345"
+    ],
+    "price_cents": "10544",
+    "matched_share_volume": "104451"
+  },
+  {
+    "logical_tick": "1025",
+    "recorded_at": [
+      "1791096907733635"
+    ],
+    "price_cents": "10541",
+    "matched_share_volume": "107433"
+  },
+  {
+    "logical_tick": "1024",
+    "recorded_at": [
+      "1791096907489880"
+    ],
+    "price_cents": "10545",
+    "matched_share_volume": "106386"
+  },
+  {
+    "logical_tick": "1023",
+    "recorded_at": [
+      "1791096907245346"
+    ],
+    "price_cents": "10540",
+    "matched_share_volume": "105595"
+  },
+  {
+    "logical_tick": "1022",
+    "recorded_at": [
+      "1791096907002955"
+    ],
+    "price_cents": "10536",
+    "matched_share_volume": "106076"
+  },
+  {
+    "logical_tick": "1021",
+    "recorded_at": [
+      "1791096906756728"
+    ],
+    "price_cents": "10539",
+    "matched_share_volume": "107418"
+  },
+  {
+    "logical_tick": "1020",
+    "recorded_at": [
+      "1791096906512526"
+    ],
+    "price_cents": "10539",
+    "matched_share_volume": "103976"
+  },
+  {
+    "logical_tick": "1019",
+    "recorded_at": [
+      "1791096906267973"
+    ],
+    "price_cents": "10535",
+    "matched_share_volume": "106084"
+  },
+  {
+    "logical_tick": "1018",
+    "recorded_at": [
+      "1791096906022159"
+    ],
+    "price_cents": "10541",
+    "matched_share_volume": "108023"
+  },
+  {
+    "logical_tick": "1017",
+    "recorded_at": [
+      "1791096905776284"
+    ],
+    "price_cents": "10544",
+    "matched_share_volume": "103807"
+  },
+  {
+    "logical_tick": "1016",
+    "recorded_at": [
+      "1791096905528874"
+    ],
+    "price_cents": "10539",
+    "matched_share_volume": "105650"
+  },
+  {
+    "logical_tick": "1015",
+    "recorded_at": [
+      "1791096905285127"
+    ],
+    "price_cents": "10547",
+    "matched_share_volume": "106166"
+  },
+  {
+    "logical_tick": "1014",
+    "recorded_at": [
+      "1791096905041119"
+    ],
+    "price_cents": "10551",
+    "matched_share_volume": "105245"
+  },
+  {
+    "logical_tick": "1013",
+    "recorded_at": [
+      "1791096904798125"
+    ],
+    "price_cents": "10551",
+    "matched_share_volume": "108107"
+  },
+  {
+    "logical_tick": "1012",
+    "recorded_at": [
+      "1791096904551694"
+    ],
+    "price_cents": "10558",
+    "matched_share_volume": "106861"
+  },
+  {
+    "logical_tick": "1011",
+    "recorded_at": [
+      "1791096904306679"
+    ],
+    "price_cents": "10553",
+    "matched_share_volume": "103698"
+  },
+  {
+    "logical_tick": "1010",
+    "recorded_at": [
+      "1791096904060627"
+    ],
+    "price_cents": "10551",
+    "matched_share_volume": "105964"
+  },
+  {
+    "logical_tick": "1009",
+    "recorded_at": [
+      "1791096903817280"
+    ],
+    "price_cents": "10557",
+    "matched_share_volume": "107208"
+  },
+  {
+    "logical_tick": "1008",
+    "recorded_at": [
+      "1791096903574583"
+    ],
+    "price_cents": "10559",
+    "matched_share_volume": "105031"
+  },
+  {
+    "logical_tick": "1007",
+    "recorded_at": [
+      "1791096903330962"
+    ],
+    "price_cents": "10556",
+    "matched_share_volume": "107200"
+  },
+  {
+    "logical_tick": "1006",
+    "recorded_at": [
+      "1791096903087423"
+    ],
+    "price_cents": "10558",
+    "matched_share_volume": "105177"
+  },
+  {
+    "logical_tick": "1005",
+    "recorded_at": [
+      "1791096902843627"
+    ],
+    "price_cents": "10554",
+    "matched_share_volume": "107715"
+  },
+  {
+    "logical_tick": "1004",
+    "recorded_at": [
+      "1791096902600138"
+    ],
+    "price_cents": "10556",
+    "matched_share_volume": "107050"
+  },
+  {
+    "logical_tick": "1003",
+    "recorded_at": [
+      "1791096902355861"
+    ],
+    "price_cents": "10551",
+    "matched_share_volume": "107439"
+  },
+  {
+    "logical_tick": "1002",
+    "recorded_at": [
+      "1791096902112679"
+    ],
+    "price_cents": "10544",
+    "matched_share_volume": "104229"
+  },
+  {
+    "logical_tick": "1001",
+    "recorded_at": [
+      "1791096901869508"
+    ],
+    "price_cents": "10539",
+    "matched_share_volume": "106652"
+  },
+  {
+    "logical_tick": "1000",
+    "recorded_at": [
+      "1791096901626732"
+    ],
+    "price_cents": "10541",
+    "matched_share_volume": "106242"
+  },
+  {
+    "logical_tick": "999",
+    "recorded_at": [
+      "1791096901382042"
+    ],
+    "price_cents": "10541",
+    "matched_share_volume": "105590"
+  },
+  {
+    "logical_tick": "998",
+    "recorded_at": [
+      "1791096901136875"
+    ],
+    "price_cents": "10538",
+    "matched_share_volume": "108254"
+  },
+  {
+    "logical_tick": "997",
+    "recorded_at": [
+      "1791096900891217"
+    ],
+    "price_cents": "10539",
+    "matched_share_volume": "104695"
+  },
+  {
+    "logical_tick": "996",
+    "recorded_at": [
+      "1791096900645694"
+    ],
+    "price_cents": "10533",
+    "matched_share_volume": "104888"
+  },
+  {
+    "logical_tick": "995",
+    "recorded_at": [
+      "1791096900404047"
+    ],
+    "price_cents": "10535",
+    "matched_share_volume": "105669"
+  },
+  {
+    "logical_tick": "994",
+    "recorded_at": [
+      "1791096900154698"
+    ],
+    "price_cents": "10541",
+    "matched_share_volume": "107778"
+  },
+  {
+    "logical_tick": "993",
+    "recorded_at": [
+      "1791096899911113"
+    ],
+    "price_cents": "10542",
+    "matched_share_volume": "105117"
+  },
+  {
+    "logical_tick": "992",
+    "recorded_at": [
+      "1791096899664484"
+    ],
+    "price_cents": "10539",
+    "matched_share_volume": "108078"
+  },
+  {
+    "logical_tick": "991",
+    "recorded_at": [
+      "1791096899418015"
+    ],
+    "price_cents": "10540",
+    "matched_share_volume": "104739"
+  },
+  {
+    "logical_tick": "990",
+    "recorded_at": [
+      "1791096899171323"
+    ],
+    "price_cents": "10534",
+    "matched_share_volume": "107652"
+  },
+  {
+    "logical_tick": "989",
+    "recorded_at": [
+      "1791096898925539"
+    ],
+    "price_cents": "10535",
+    "matched_share_volume": "106519"
+  },
+  {
+    "logical_tick": "988",
+    "recorded_at": [
+      "1791096898678798"
+    ],
+    "price_cents": "10529",
+    "matched_share_volume": "104628"
+  },
+  {
+    "logical_tick": "987",
+    "recorded_at": [
+      "1791096898430775"
+    ],
+    "price_cents": "10524",
+    "matched_share_volume": "106853"
+  },
+  {
+    "logical_tick": "986",
+    "recorded_at": [
+      "1791096898183308"
+    ],
+    "price_cents": "10526",
+    "matched_share_volume": "105038"
+  },
+  {
+    "logical_tick": "985",
+    "recorded_at": [
+      "1791096897935356"
+    ],
+    "price_cents": "10524",
+    "matched_share_volume": "104559"
+  },
+  {
+    "logical_tick": "984",
+    "recorded_at": [
+      "1791096897687845"
+    ],
+    "price_cents": "10527",
+    "matched_share_volume": "107591"
+  },
+  {
+    "logical_tick": "983",
+    "recorded_at": [
+      "1791096897437230"
+    ],
+    "price_cents": "10531",
+    "matched_share_volume": "106173"
+  },
+  {
+    "logical_tick": "982",
+    "recorded_at": [
+      "1791096897191041"
+    ],
+    "price_cents": "10525",
+    "matched_share_volume": "106676"
+  },
+  {
+    "logical_tick": "981",
+    "recorded_at": [
+      "1791096896943835"
+    ],
+    "price_cents": "10520",
+    "matched_share_volume": "106442"
+  },
+  {
+    "logical_tick": "980",
+    "recorded_at": [
+      "1791096896696762"
+    ],
+    "price_cents": "10515",
+    "matched_share_volume": "104882"
+  },
+  {
+    "logical_tick": "979",
+    "recorded_at": [
+      "1791096896447860"
+    ],
+    "price_cents": "10511",
+    "matched_share_volume": "106710"
+  },
+  {
+    "logical_tick": "978",
+    "recorded_at": [
+      "1791096896197346"
+    ],
+    "price_cents": "10512",
+    "matched_share_volume": "108706"
+  },
+  {
+    "logical_tick": "977",
+    "recorded_at": [
+      "1791096895948934"
+    ],
+    "price_cents": "10509",
+    "matched_share_volume": "104394"
+  },
+  {
+    "logical_tick": "976",
+    "recorded_at": [
+      "1791096895682792"
+    ],
+    "price_cents": "10501",
+    "matched_share_volume": "106514"
+  },
+  {
+    "logical_tick": "975",
+    "recorded_at": [
+      "1791096895427701"
+    ],
+    "price_cents": "10503",
+    "matched_share_volume": "105071"
+  },
+  {
+    "logical_tick": "974",
+    "recorded_at": [
+      "1791096895171396"
+    ],
+    "price_cents": "10500",
+    "matched_share_volume": "106073"
+  },
+  {
+    "logical_tick": "973",
+    "recorded_at": [
+      "1791096894924183"
+    ],
+    "price_cents": "10497",
+    "matched_share_volume": "105186"
+  },
+  {
+    "logical_tick": "972",
+    "recorded_at": [
+      "1791096894677613"
+    ],
+    "price_cents": "10495",
+    "matched_share_volume": "107651"
+  },
+  {
+    "logical_tick": "971",
+    "recorded_at": [
+      "1791096894433537"
+    ],
+    "price_cents": "10494",
+    "matched_share_volume": "106084"
+  },
+  {
+    "logical_tick": "970",
+    "recorded_at": [
+      "1791096894190119"
+    ],
+    "price_cents": "10488",
+    "matched_share_volume": "106791"
+  },
+  {
+    "logical_tick": "969",
+    "recorded_at": [
+      "1791096893943889"
+    ],
+    "price_cents": "10484",
+    "matched_share_volume": "104091"
+  },
+  {
+    "logical_tick": "968",
+    "recorded_at": [
+      "1791096893697304"
+    ],
+    "price_cents": "10480",
+    "matched_share_volume": "107134"
+  },
+  {
+    "logical_tick": "967",
+    "recorded_at": [
+      "1791096893437981"
+    ],
+    "price_cents": "10483",
+    "matched_share_volume": "105683"
+  },
+  {
+    "logical_tick": "966",
+    "recorded_at": [
+      "1791096893193333"
+    ],
+    "price_cents": "10482",
+    "matched_share_volume": "104617"
+  },
+  {
+    "logical_tick": "965",
+    "recorded_at": [
+      "1791096892948634"
+    ],
+    "price_cents": "10483",
+    "matched_share_volume": "106962"
+  },
+  {
+    "logical_tick": "964",
+    "recorded_at": [
+      "1791096892704222"
+    ],
+    "price_cents": "10486",
+    "matched_share_volume": "106075"
+  },
+  {
+    "logical_tick": "963",
+    "recorded_at": [
+      "1791096892448493"
+    ],
+    "price_cents": "10481",
+    "matched_share_volume": "105485"
+  },
+  {
+    "logical_tick": "962",
+    "recorded_at": [
+      "1791096892194749"
+    ],
+    "price_cents": "10480",
+    "matched_share_volume": "105743"
+  },
+  {
+    "logical_tick": "961",
+    "recorded_at": [
+      "1791096891940084"
+    ],
+    "price_cents": "10480",
+    "matched_share_volume": "106422"
+  },
+  {
+    "logical_tick": "960",
+    "recorded_at": [
+      "1791096891688954"
+    ],
+    "price_cents": "10479",
+    "matched_share_volume": "107257"
+  },
+  {
+    "logical_tick": "959",
+    "recorded_at": [
+      "1791096891435869"
+    ],
+    "price_cents": "10476",
+    "matched_share_volume": "105269"
+  },
+  {
+    "logical_tick": "958",
+    "recorded_at": [
+      "1791096891183469"
+    ],
+    "price_cents": "10468",
+    "matched_share_volume": "105780"
+  },
+  {
+    "logical_tick": "957",
+    "recorded_at": [
+      "1791096890925569"
+    ],
+    "price_cents": "10465",
+    "matched_share_volume": "105826"
+  },
+  {
+    "logical_tick": "956",
+    "recorded_at": [
+      "1791096890673120"
+    ],
+    "price_cents": "10467",
+    "matched_share_volume": "107396"
+  },
+  {
+    "logical_tick": "955",
+    "recorded_at": [
+      "1791096890408876"
+    ],
+    "price_cents": "10467",
+    "matched_share_volume": "104496"
+  },
+  {
+    "logical_tick": "954",
+    "recorded_at": [
+      "1791096890136455"
+    ],
+    "price_cents": "10463",
+    "matched_share_volume": "106093"
+  },
+  {
+    "logical_tick": "953",
+    "recorded_at": [
+      "1791096889886383"
+    ],
+    "price_cents": "10465",
+    "matched_share_volume": "105356"
+  },
+  {
+    "logical_tick": "952",
+    "recorded_at": [
+      "1791096889638527"
+    ],
+    "price_cents": "10468",
+    "matched_share_volume": "107767"
+  },
+  {
+    "logical_tick": "951",
+    "recorded_at": [
+      "1791096889390958"
+    ],
+    "price_cents": "10469",
+    "matched_share_volume": "105551"
+  },
+  {
+    "logical_tick": "950",
+    "recorded_at": [
+      "1791096889134177"
+    ],
+    "price_cents": "10461",
+    "matched_share_volume": "106829"
+  },
+  {
+    "logical_tick": "949",
+    "recorded_at": [
+      "1791096888417327"
+    ],
+    "price_cents": "10455",
+    "matched_share_volume": "106046"
+  },
+  {
+    "logical_tick": "948",
+    "recorded_at": [
+      "1791096888170732"
+    ],
+    "price_cents": "10448",
+    "matched_share_volume": "105251"
+  },
+  {
+    "logical_tick": "947",
+    "recorded_at": [
+      "1791096887922451"
+    ],
+    "price_cents": "10444",
+    "matched_share_volume": "105884"
+  },
+  {
+    "logical_tick": "946",
+    "recorded_at": [
+      "1791096887677726"
+    ],
+    "price_cents": "10443",
+    "matched_share_volume": "105743"
+  },
+  {
+    "logical_tick": "945",
+    "recorded_at": [
+      "1791096887431392"
+    ],
+    "price_cents": "10440",
+    "matched_share_volume": "105382"
+  },
+  {
+    "logical_tick": "944",
+    "recorded_at": [
+      "1791096887186548"
+    ],
+    "price_cents": "10438",
+    "matched_share_volume": "105737"
+  },
+  {
+    "logical_tick": "943",
+    "recorded_at": [
+      "1791096886940479"
+    ],
+    "price_cents": "10436",
+    "matched_share_volume": "106063"
+  },
+  {
+    "logical_tick": "942",
+    "recorded_at": [
+      "1791096886694006"
+    ],
+    "price_cents": "10429",
+    "matched_share_volume": "105458"
+  },
+  {
+    "logical_tick": "941",
+    "recorded_at": [
+      "1791096886448238"
+    ],
+    "price_cents": "10424",
+    "matched_share_volume": "105443"
+  },
+  {
+    "logical_tick": "940",
+    "recorded_at": [
+      "1791096886203421"
+    ],
+    "price_cents": "10421",
+    "matched_share_volume": "105605"
+  },
+  {
+    "logical_tick": "939",
+    "recorded_at": [
+      "1791096885956657"
+    ],
+    "price_cents": "10418",
+    "matched_share_volume": "104844"
+  },
+  {
+    "logical_tick": "938",
+    "recorded_at": [
+      "1791096885709419"
+    ],
+    "price_cents": "10415",
+    "matched_share_volume": "107407"
+  },
+  {
+    "logical_tick": "937",
+    "recorded_at": [
+      "1791096885462998"
+    ],
+    "price_cents": "10414",
+    "matched_share_volume": "104784"
+  },
+  {
+    "logical_tick": "936",
+    "recorded_at": [
+      "1791096885216369"
+    ],
+    "price_cents": "10408",
+    "matched_share_volume": "106567"
+  },
+  {
+    "logical_tick": "935",
+    "recorded_at": [
+      "1791096884971746"
+    ],
+    "price_cents": "10405",
+    "matched_share_volume": "104500"
+  },
+  {
+    "logical_tick": "934",
+    "recorded_at": [
+      "1791096884724271"
+    ],
+    "price_cents": "10400",
+    "matched_share_volume": "106295"
+  },
+  {
+    "logical_tick": "933",
+    "recorded_at": [
+      "1791096884479206"
+    ],
+    "price_cents": "10401",
+    "matched_share_volume": "105440"
+  },
+  {
+    "logical_tick": "932",
+    "recorded_at": [
+      "1791096884233179"
+    ],
+    "price_cents": "10400",
+    "matched_share_volume": "105712"
+  },
+  {
+    "logical_tick": "931",
+    "recorded_at": [
+      "1791096883987444"
+    ],
+    "price_cents": "10398",
+    "matched_share_volume": "105240"
+  },
+  {
+    "logical_tick": "930",
+    "recorded_at": [
+      "1791096883742194"
+    ],
+    "price_cents": "10399",
+    "matched_share_volume": "105470"
+  },
+  {
+    "logical_tick": "929",
+    "recorded_at": [
+      "1791096883495171"
+    ],
+    "price_cents": "10398",
+    "matched_share_volume": "107597"
+  },
+  {
+    "logical_tick": "928",
+    "recorded_at": [
+      "1791096883249481"
+    ],
+    "price_cents": "10394",
+    "matched_share_volume": "104452"
+  },
+  {
+    "logical_tick": "927",
+    "recorded_at": [
+      "1791096883004861"
+    ],
+    "price_cents": "10386",
+    "matched_share_volume": "105563"
+  },
+  {
+    "logical_tick": "926",
+    "recorded_at": [
+      "1791096882761275"
+    ],
+    "price_cents": "10386",
+    "matched_share_volume": "105251"
+  },
+  {
+    "logical_tick": "925",
+    "recorded_at": [
+      "1791096882508764"
+    ],
+    "price_cents": "10387",
+    "matched_share_volume": "105337"
+  },
+  {
+    "logical_tick": "924",
+    "recorded_at": [
+      "1791096882262223"
+    ],
+    "price_cents": "10386",
+    "matched_share_volume": "106300"
+  },
+  {
+    "logical_tick": "923",
+    "recorded_at": [
+      "1791096882014460"
+    ],
+    "price_cents": "10383",
+    "matched_share_volume": "105904"
+  },
+  {
+    "logical_tick": "922",
+    "recorded_at": [
+      "1791096881769436"
+    ],
+    "price_cents": "10375",
+    "matched_share_volume": "103544"
+  },
+  {
+    "logical_tick": "921",
+    "recorded_at": [
+      "1791096881525013"
+    ],
+    "price_cents": "10372",
+    "matched_share_volume": "106967"
+  },
+  {
+    "logical_tick": "920",
+    "recorded_at": [
+      "1791096881279941"
+    ],
+    "price_cents": "10374",
+    "matched_share_volume": "105856"
+  },
+  {
+    "logical_tick": "919",
+    "recorded_at": [
+      "1791096881033102"
+    ],
+    "price_cents": "10366",
+    "matched_share_volume": "105818"
+  },
+  {
+    "logical_tick": "918",
+    "recorded_at": [
+      "1791096880785782"
+    ],
+    "price_cents": "10359",
+    "matched_share_volume": "104599"
+  },
+  {
+    "logical_tick": "917",
+    "recorded_at": [
+      "1791096880540680"
+    ],
+    "price_cents": "10354",
+    "matched_share_volume": "105880"
+  },
+  {
+    "logical_tick": "916",
+    "recorded_at": [
+      "1791096880294376"
+    ],
+    "price_cents": "10356",
+    "matched_share_volume": "103748"
+  },
+  {
+    "logical_tick": "915",
+    "recorded_at": [
+      "1791096880047876"
+    ],
+    "price_cents": "10354",
+    "matched_share_volume": "106662"
+  },
+  {
+    "logical_tick": "914",
+    "recorded_at": [
+      "1791096879801221"
+    ],
+    "price_cents": "10362",
+    "matched_share_volume": "105456"
+  },
+  {
+    "logical_tick": "913",
+    "recorded_at": [
+      "1791096879555133"
+    ],
+    "price_cents": "10357",
+    "matched_share_volume": "106354"
+  },
+  {
+    "logical_tick": "912",
+    "recorded_at": [
+      "1791096879306130"
+    ],
+    "price_cents": "10355",
+    "matched_share_volume": "106761"
+  },
+  {
+    "logical_tick": "911",
+    "recorded_at": [
+      "1791096879059275"
+    ],
+    "price_cents": "10348",
+    "matched_share_volume": "104972"
+  },
+  {
+    "logical_tick": "910",
+    "recorded_at": [
+      "1791096878812003"
+    ],
+    "price_cents": "10339",
+    "matched_share_volume": "106633"
+  },
+  {
+    "logical_tick": "909",
+    "recorded_at": [
+      "1791096878565255"
+    ],
+    "price_cents": "10335",
+    "matched_share_volume": "106388"
+  },
+  {
+    "logical_tick": "908",
+    "recorded_at": [
+      "1791096878319099"
+    ],
+    "price_cents": "10327",
+    "matched_share_volume": "104020"
+  },
+  {
+    "logical_tick": "907",
+    "recorded_at": [
+      "1791096878073085"
+    ],
+    "price_cents": "10319",
+    "matched_share_volume": "106215"
+  },
+  {
+    "logical_tick": "906",
+    "recorded_at": [
+      "1791096877825909"
+    ],
+    "price_cents": "10319",
+    "matched_share_volume": "105327"
+  },
+  {
+    "logical_tick": "905",
+    "recorded_at": [
+      "1791096877580290"
+    ],
+    "price_cents": "10315",
+    "matched_share_volume": "105547"
+  },
+  {
+    "logical_tick": "904",
+    "recorded_at": [
+      "1791096877334777"
+    ],
+    "price_cents": "10311",
+    "matched_share_volume": "106032"
+  },
+  {
+    "logical_tick": "903",
+    "recorded_at": [
+      "1791096877087712"
+    ],
+    "price_cents": "10306",
+    "matched_share_volume": "106393"
+  },
+  {
+    "logical_tick": "902",
+    "recorded_at": [
+      "1791096876844836"
+    ],
+    "price_cents": "10297",
+    "matched_share_volume": "104557"
+  },
+  {
+    "logical_tick": "901",
+    "recorded_at": [
+      "1791096876599748"
+    ],
+    "price_cents": "10290",
+    "matched_share_volume": "104557"
+  },
+  {
+    "logical_tick": "900",
+    "recorded_at": [
+      "1791096876353416"
+    ],
+    "price_cents": "10283",
+    "matched_share_volume": "106332"
+  },
+  {
+    "logical_tick": "899",
+    "recorded_at": [
+      "1791096876102847"
+    ],
+    "price_cents": "10281",
+    "matched_share_volume": "104991"
+  },
+  {
+    "logical_tick": "898",
+    "recorded_at": [
+      "1791096875854393"
+    ],
+    "price_cents": "10276",
+    "matched_share_volume": "105239"
+  },
+  {
+    "logical_tick": "897",
+    "recorded_at": [
+      "1791096875604933"
+    ],
+    "price_cents": "10275",
+    "matched_share_volume": "104602"
+  },
+  {
+    "logical_tick": "896",
+    "recorded_at": [
+      "1791096875357130"
+    ],
+    "price_cents": "10273",
+    "matched_share_volume": "105128"
+  },
+  {
+    "logical_tick": "895",
+    "recorded_at": [
+      "1791096875110745"
+    ],
+    "price_cents": "10273",
+    "matched_share_volume": "103228"
+  },
+  {
+    "logical_tick": "894",
+    "recorded_at": [
+      "1791096874863884"
+    ],
+    "price_cents": "10268",
+    "matched_share_volume": "105013"
+  },
+  {
+    "logical_tick": "893",
+    "recorded_at": [
+      "1791096874617185"
+    ],
+    "price_cents": "10268",
+    "matched_share_volume": "104800"
+  },
+  {
+    "logical_tick": "892",
+    "recorded_at": [
+      "1791096874369205"
+    ],
+    "price_cents": "10266",
+    "matched_share_volume": "105687"
+  },
+  {
+    "logical_tick": "891",
+    "recorded_at": [
+      "1791096874121902"
+    ],
+    "price_cents": "10263",
+    "matched_share_volume": "106099"
+  },
+  {
+    "logical_tick": "890",
+    "recorded_at": [
+      "1791096873874021"
+    ],
+    "price_cents": "10260",
+    "matched_share_volume": "104120"
+  },
+  {
+    "logical_tick": "889",
+    "recorded_at": [
+      "1791096873626801"
+    ],
+    "price_cents": "10250",
+    "matched_share_volume": "105599"
+  },
+  {
+    "logical_tick": "888",
+    "recorded_at": [
+      "1791096873378661"
+    ],
+    "price_cents": "10246",
+    "matched_share_volume": "104505"
+  },
+  {
+    "logical_tick": "887",
+    "recorded_at": [
+      "1791096873133113"
+    ],
+    "price_cents": "10242",
+    "matched_share_volume": "105293"
+  },
+  {
+    "logical_tick": "886",
+    "recorded_at": [
+      "1791096872888791"
+    ],
+    "price_cents": "10243",
+    "matched_share_volume": "103870"
+  },
+  {
+    "logical_tick": "885",
+    "recorded_at": [
+      "1791096872642763"
+    ],
+    "price_cents": "10239",
+    "matched_share_volume": "106199"
+  },
+  {
+    "logical_tick": "884",
+    "recorded_at": [
+      "1791096872397367"
+    ],
+    "price_cents": "10241",
+    "matched_share_volume": "104654"
+  },
+  {
+    "logical_tick": "883",
+    "recorded_at": [
+      "1791096872151624"
+    ],
+    "price_cents": "10231",
+    "matched_share_volume": "105696"
+  },
+  {
+    "logical_tick": "882",
+    "recorded_at": [
+      "1791096871907548"
+    ],
+    "price_cents": "10224",
+    "matched_share_volume": "105659"
+  },
+  {
+    "logical_tick": "881",
+    "recorded_at": [
+      "1791096871663028"
+    ],
+    "price_cents": "10217",
+    "matched_share_volume": "106969"
+  },
+  {
+    "logical_tick": "880",
+    "recorded_at": [
+      "1791096871417532"
+    ],
+    "price_cents": "10207",
+    "matched_share_volume": "103067"
+  },
+  {
+    "logical_tick": "879",
+    "recorded_at": [
+      "1791096871169068"
+    ],
+    "price_cents": "10194",
+    "matched_share_volume": "106397"
+  },
+  {
+    "logical_tick": "878",
+    "recorded_at": [
+      "1791096870922201"
+    ],
+    "price_cents": "10194",
+    "matched_share_volume": "103992"
+  },
+  {
+    "logical_tick": "877",
+    "recorded_at": [
+      "1791096870675479"
+    ],
+    "price_cents": "10186",
+    "matched_share_volume": "105695"
+  },
+  {
+    "logical_tick": "876",
+    "recorded_at": [
+      "1791096870427695"
+    ],
+    "price_cents": "10186",
+    "matched_share_volume": "104503"
+  },
+  {
+    "logical_tick": "875",
+    "recorded_at": [
+      "1791096870182796"
+    ],
+    "price_cents": "10182",
+    "matched_share_volume": "104336"
+  },
+  {
+    "logical_tick": "874",
+    "recorded_at": [
+      "1791096869934653"
+    ],
+    "price_cents": "10179",
+    "matched_share_volume": "104324"
+  },
+  {
+    "logical_tick": "873",
+    "recorded_at": [
+      "1791096869688242"
+    ],
+    "price_cents": "10173",
+    "matched_share_volume": "104891"
+  },
+  {
+    "logical_tick": "872",
+    "recorded_at": [
+      "1791096869441279"
+    ],
+    "price_cents": "10171",
+    "matched_share_volume": "105491"
+  },
+  {
+    "logical_tick": "871",
+    "recorded_at": [
+      "1791096869195694"
+    ],
+    "price_cents": "10167",
+    "matched_share_volume": "106293"
+  },
+  {
+    "logical_tick": "870",
+    "recorded_at": [
+      "1791096868949223"
+    ],
+    "price_cents": "10159",
+    "matched_share_volume": "104305"
+  },
+  {
+    "logical_tick": "869",
+    "recorded_at": [
+      "1791096868700275"
+    ],
+    "price_cents": "10148",
+    "matched_share_volume": "104625"
+  },
+  {
+    "logical_tick": "868",
+    "recorded_at": [
+      "1791096868442789"
+    ],
+    "price_cents": "10140",
+    "matched_share_volume": "104855"
+  },
+  {
+    "logical_tick": "867",
+    "recorded_at": [
+      "1791096867683614"
+    ],
+    "price_cents": "10133",
+    "matched_share_volume": "104439"
+  },
+  {
+    "logical_tick": "866",
+    "recorded_at": [
+      "1791096867438317"
+    ],
+    "price_cents": "10126",
+    "matched_share_volume": "104123"
+  },
+  {
+    "logical_tick": "865",
+    "recorded_at": [
+      "1791096867193412"
+    ],
+    "price_cents": "10120",
+    "matched_share_volume": "104984"
+  },
+  {
+    "logical_tick": "864",
+    "recorded_at": [
+      "1791096866949970"
+    ],
+    "price_cents": "10115",
+    "matched_share_volume": "104209"
+  },
+  {
+    "logical_tick": "863",
+    "recorded_at": [
+      "1791096866704791"
+    ],
+    "price_cents": "10107",
+    "matched_share_volume": "108229"
+  },
+  {
+    "logical_tick": "862",
+    "recorded_at": [
+      "1791096866463115"
+    ],
+    "price_cents": "10098",
+    "matched_share_volume": "103783"
+  },
+  {
+    "logical_tick": "861",
+    "recorded_at": [
+      "1791096866216717"
+    ],
+    "price_cents": "10080",
+    "matched_share_volume": "107036"
+  },
+  {
+    "logical_tick": "860",
+    "recorded_at": [
+      "1791096865972001"
+    ],
+    "price_cents": "10066",
+    "matched_share_volume": "101906"
+  },
+  {
+    "logical_tick": "859",
+    "recorded_at": [
+      "1791096865724795"
+    ],
+    "price_cents": "10050",
+    "matched_share_volume": "103829"
+  },
+  {
+    "logical_tick": "858",
+    "recorded_at": [
+      "1791096865477600"
+    ],
+    "price_cents": "10052",
+    "matched_share_volume": "105580"
+  },
+  {
+    "logical_tick": "857",
+    "recorded_at": [
+      "1791096865231774"
+    ],
+    "price_cents": "10049",
+    "matched_share_volume": "103951"
+  },
+  {
+    "logical_tick": "856",
+    "recorded_at": [
+      "1791096864986392"
+    ],
+    "price_cents": "10041",
+    "matched_share_volume": "104150"
+  },
+  {
+    "logical_tick": "855",
+    "recorded_at": [
+      "1791096864743480"
+    ],
+    "price_cents": "10038",
+    "matched_share_volume": "104681"
+  },
+  {
+    "logical_tick": "854",
+    "recorded_at": [
+      "1791096864496851"
+    ],
+    "price_cents": "10035",
+    "matched_share_volume": "105390"
+  },
+  {
+    "logical_tick": "853",
+    "recorded_at": [
+      "1791096864252379"
+    ],
+    "price_cents": "10027",
+    "matched_share_volume": "103913"
+  },
+  {
+    "logical_tick": "852",
+    "recorded_at": [
+      "1791096864006373"
+    ],
+    "price_cents": "10019",
+    "matched_share_volume": "104838"
+  },
+  {
+    "logical_tick": "851",
+    "recorded_at": [
+      "1791096863761896"
+    ],
+    "price_cents": "10014",
+    "matched_share_volume": "104111"
+  },
+  {
+    "logical_tick": "850",
+    "recorded_at": [
+      "1791096863516304"
+    ],
+    "price_cents": "10006",
+    "matched_share_volume": "103205"
+  },
+  {
+    "logical_tick": "849",
+    "recorded_at": [
+      "1791096863271087"
+    ],
+    "price_cents": "10000",
+    "matched_share_volume": "104371"
+  },
+  {
+    "logical_tick": "848",
+    "recorded_at": [
+      "1791096863025596"
+    ],
+    "price_cents": "9997",
+    "matched_share_volume": "103804"
+  },
+  {
+    "logical_tick": "847",
+    "recorded_at": [
+      "1791096862779733"
+    ],
+    "price_cents": "9990",
+    "matched_share_volume": "105359"
+  },
+  {
+    "logical_tick": "846",
+    "recorded_at": [
+      "1791096862533153"
+    ],
+    "price_cents": "9985",
+    "matched_share_volume": "105188"
+  },
+  {
+    "logical_tick": "845",
+    "recorded_at": [
+      "1791096862286573"
+    ],
+    "price_cents": "9974",
+    "matched_share_volume": "104300"
+  },
+  {
+    "logical_tick": "844",
+    "recorded_at": [
+      "1791096862040748"
+    ],
+    "price_cents": "9964",
+    "matched_share_volume": "105547"
+  },
+  {
+    "logical_tick": "843",
+    "recorded_at": [
+      "1791096861795267"
+    ],
+    "price_cents": "9957",
+    "matched_share_volume": "103132"
+  },
+  {
+    "logical_tick": "842",
+    "recorded_at": [
+      "1791096861550438"
+    ],
+    "price_cents": "9940",
+    "matched_share_volume": "104857"
+  },
+  {
+    "logical_tick": "841",
+    "recorded_at": [
+      "1791096861304432"
+    ],
+    "price_cents": "9930",
+    "matched_share_volume": "105602"
+  },
+  {
+    "logical_tick": "840",
+    "recorded_at": [
+      "1791096861059923"
+    ],
+    "price_cents": "9914",
+    "matched_share_volume": "102609"
+  },
+  {
+    "logical_tick": "839",
+    "recorded_at": [
+      "1791096860812340"
+    ],
+    "price_cents": "9895",
+    "matched_share_volume": "103805"
+  },
+  {
+    "logical_tick": "838",
+    "recorded_at": [
+      "1791096860564506"
+    ],
+    "price_cents": "9888",
+    "matched_share_volume": "103365"
+  },
+  {
+    "logical_tick": "837",
+    "recorded_at": [
+      "1791096860317487"
+    ],
+    "price_cents": "9885",
+    "matched_share_volume": "103129"
+  },
+  {
+    "logical_tick": "836",
+    "recorded_at": [
+      "1791096860069371"
+    ],
+    "price_cents": "9879",
+    "matched_share_volume": "103533"
+  },
+  {
+    "logical_tick": "835",
+    "recorded_at": [
+      "1791096859823034"
+    ],
+    "price_cents": "9874",
+    "matched_share_volume": "103063"
+  },
+  {
+    "logical_tick": "834",
+    "recorded_at": [
+      "1791096859574656"
+    ],
+    "price_cents": "9870",
+    "matched_share_volume": "103820"
+  },
+  {
+    "logical_tick": "833",
+    "recorded_at": [
+      "1791096859326757"
+    ],
+    "price_cents": "9864",
+    "matched_share_volume": "103651"
+  },
+  {
+    "logical_tick": "832",
+    "recorded_at": [
+      "1791096859078527"
+    ],
+    "price_cents": "9859",
+    "matched_share_volume": "104075"
+  },
+  {
+    "logical_tick": "831",
+    "recorded_at": [
+      "1791096858831394"
+    ],
+    "price_cents": "9852",
+    "matched_share_volume": "102952"
+  },
+  {
+    "logical_tick": "830",
+    "recorded_at": [
+      "1791096858581751"
+    ],
+    "price_cents": "9841",
+    "matched_share_volume": "104564"
+  },
+  {
+    "logical_tick": "829",
+    "recorded_at": [
+      "1791096858333554"
+    ],
+    "price_cents": "9833",
+    "matched_share_volume": "102847"
+  },
+  {
+    "logical_tick": "828",
+    "recorded_at": [
+      "1791096858085564"
+    ],
+    "price_cents": "9819",
+    "matched_share_volume": "102758"
+  },
+  {
+    "logical_tick": "827",
+    "recorded_at": [
+      "1791096857838997"
+    ],
+    "price_cents": "9809",
+    "matched_share_volume": "105235"
+  },
+  {
+    "logical_tick": "826",
+    "recorded_at": [
+      "1791096857592820"
+    ],
+    "price_cents": "9802",
+    "matched_share_volume": "103437"
+  },
+  {
+    "logical_tick": "825",
+    "recorded_at": [
+      "1791096857346450"
+    ],
+    "price_cents": "9787",
+    "matched_share_volume": "103502"
+  },
+  {
+    "logical_tick": "824",
+    "recorded_at": [
+      "1791096857099245"
+    ],
+    "price_cents": "9772",
+    "matched_share_volume": "104452"
+  },
+  {
+    "logical_tick": "823",
+    "recorded_at": [
+      "1791096856851343"
+    ],
+    "price_cents": "9757",
+    "matched_share_volume": "103962"
+  },
+  {
+    "logical_tick": "822",
+    "recorded_at": [
+      "1791096856598009"
+    ],
+    "price_cents": "9737",
+    "matched_share_volume": "104189"
+  },
+  {
+    "logical_tick": "821",
+    "recorded_at": [
+      "1791096856344761"
+    ],
+    "price_cents": "9722",
+    "matched_share_volume": "104729"
+  },
+  {
+    "logical_tick": "820",
+    "recorded_at": [
+      "1791096856087756"
+    ],
+    "price_cents": "9702",
+    "matched_share_volume": "103193"
+  },
+  {
+    "logical_tick": "819",
+    "recorded_at": [
+      "1791096855827897"
+    ],
+    "price_cents": "9679",
+    "matched_share_volume": "103943"
+  },
+  {
+    "logical_tick": "818",
+    "recorded_at": [
+      "1791096855567686"
+    ],
+    "price_cents": "9679",
+    "matched_share_volume": "103967"
+  },
+  {
+    "logical_tick": "817",
+    "recorded_at": [
+      "1791096855309190"
+    ],
+    "price_cents": "9676",
+    "matched_share_volume": "103505"
+  },
+  {
+    "logical_tick": "816",
+    "recorded_at": [
+      "1791096855048434"
+    ],
+    "price_cents": "9671",
+    "matched_share_volume": "103547"
+  },
+  {
+    "logical_tick": "815",
+    "recorded_at": [
+      "1791096854795672"
+    ],
+    "price_cents": "9665",
+    "matched_share_volume": "102870"
+  },
+  {
+    "logical_tick": "814",
+    "recorded_at": [
+      "1791096854539952"
+    ],
+    "price_cents": "9665",
+    "matched_share_volume": "104563"
+  },
+  {
+    "logical_tick": "813",
+    "recorded_at": [
+      "1791096854283903"
+    ],
+    "price_cents": "9654",
+    "matched_share_volume": "103860"
+  },
+  {
+    "logical_tick": "812",
+    "recorded_at": [
+      "1791096854024980"
+    ],
+    "price_cents": "9648",
+    "matched_share_volume": "103646"
+  },
+  {
+    "logical_tick": "811",
+    "recorded_at": [
+      "1791096853771587"
+    ],
+    "price_cents": "9644",
+    "matched_share_volume": "103437"
+  },
+  {
+    "logical_tick": "810",
+    "recorded_at": [
+      "1791096853521886"
+    ],
+    "price_cents": "9636",
+    "matched_share_volume": "103372"
+  },
+  {
+    "logical_tick": "809",
+    "recorded_at": [
+      "1791096853271279"
+    ],
+    "price_cents": "9623",
+    "matched_share_volume": "103114"
+  },
+  {
+    "logical_tick": "808",
+    "recorded_at": [
+      "1791096853021808"
+    ],
+    "price_cents": "9612",
+    "matched_share_volume": "103413"
+  },
+  {
+    "logical_tick": "807",
+    "recorded_at": [
+      "1791096852773201"
+    ],
+    "price_cents": "9599",
+    "matched_share_volume": "103215"
+  },
+  {
+    "logical_tick": "806",
+    "recorded_at": [
+      "1791096852527023"
+    ],
+    "price_cents": "9588",
+    "matched_share_volume": "102505"
+  },
+  {
+    "logical_tick": "805",
+    "recorded_at": [
+      "1791096852279270"
+    ],
+    "price_cents": "9572",
+    "matched_share_volume": "103954"
+  },
+  {
+    "logical_tick": "804",
+    "recorded_at": [
+      "1791096852031911"
+    ],
+    "price_cents": "9557",
+    "matched_share_volume": "102480"
+  },
+  {
+    "logical_tick": "803",
+    "recorded_at": [
+      "1791096851783113"
+    ],
+    "price_cents": "9539",
+    "matched_share_volume": "103325"
+  },
+  {
+    "logical_tick": "802",
+    "recorded_at": [
+      "1791096851535808"
+    ],
+    "price_cents": "9519",
+    "matched_share_volume": "102566"
+  },
+  {
+    "logical_tick": "801",
+    "recorded_at": [
+      "1791096851288488"
+    ],
+    "price_cents": "9501",
+    "matched_share_volume": "104552"
+  },
+  {
+    "logical_tick": "800",
+    "recorded_at": [
+      "1791096851041334"
+    ],
+    "price_cents": "9480",
+    "matched_share_volume": "105115"
+  },
+  {
+    "logical_tick": "799",
+    "recorded_at": [
+      "1791096850794549"
+    ],
+    "price_cents": "9453",
+    "matched_share_volume": "105204"
+  },
+  {
+    "logical_tick": "798",
+    "recorded_at": [
+      "1791096850546512"
+    ],
+    "price_cents": "9453",
+    "matched_share_volume": "107408"
+  },
+  {
+    "logical_tick": "797",
+    "recorded_at": [
+      "1791096850299020"
+    ],
+    "price_cents": "9452",
+    "matched_share_volume": "104653"
+  },
+  {
+    "logical_tick": "796",
+    "recorded_at": [
+      "1791096850051294"
+    ],
+    "price_cents": "9455",
+    "matched_share_volume": "106259"
+  },
+  {
+    "logical_tick": "795",
+    "recorded_at": [
+      "1791096849804434"
+    ],
+    "price_cents": "9454",
+    "matched_share_volume": "106213"
+  },
+  {
+    "logical_tick": "794",
+    "recorded_at": [
+      "1791096849555835"
+    ],
+    "price_cents": "9454",
+    "matched_share_volume": "105184"
+  },
+  {
+    "logical_tick": "793",
+    "recorded_at": [
+      "1791096849305836"
+    ],
+    "price_cents": "9457",
+    "matched_share_volume": "104218"
+  },
+  {
+    "logical_tick": "792",
+    "recorded_at": [
+      "1791096849054945"
+    ],
+    "price_cents": "9457",
+    "matched_share_volume": "105499"
+  },
+  {
+    "logical_tick": "791",
+    "recorded_at": [
+      "1791096848806965"
+    ],
+    "price_cents": "9455",
+    "matched_share_volume": "105314"
+  },
+  {
+    "logical_tick": "790",
+    "recorded_at": [
+      "1791096848559273"
+    ],
+    "price_cents": "9454",
+    "matched_share_volume": "106603"
+  },
+  {
+    "logical_tick": "789",
+    "recorded_at": [
+      "1791096848314817"
+    ],
+    "price_cents": "9454",
+    "matched_share_volume": "102624"
+  },
+  {
+    "logical_tick": "788",
+    "recorded_at": [
+      "1791096848067333"
+    ],
+    "price_cents": "9458",
+    "matched_share_volume": "104766"
+  },
+  {
+    "logical_tick": "787",
+    "recorded_at": [
+      "1791096847818821"
+    ],
+    "price_cents": "9452",
+    "matched_share_volume": "105464"
+  },
+  {
+    "logical_tick": "786",
+    "recorded_at": [
+      "1791096847559674"
+    ],
+    "price_cents": "9450",
+    "matched_share_volume": "105348"
+  },
+  {
+    "logical_tick": "785",
+    "recorded_at": [
+      "1791096846770967"
+    ],
+    "price_cents": "9448",
+    "matched_share_volume": "105766"
+  },
+  {
+    "logical_tick": "784",
+    "recorded_at": [
+      "1791096846527021"
+    ],
+    "price_cents": "9448",
+    "matched_share_volume": "106653"
+  },
+  {
+    "logical_tick": "783",
+    "recorded_at": [
+      "1791096846276598"
+    ],
+    "price_cents": "9449",
+    "matched_share_volume": "105187"
+  },
+  {
+    "logical_tick": "782",
+    "recorded_at": [
+      "1791096846028457"
+    ],
+    "price_cents": "9453",
+    "matched_share_volume": "104317"
+  },
+  {
+    "logical_tick": "781",
+    "recorded_at": [
+      "1791096845780054"
+    ],
+    "price_cents": "9451",
+    "matched_share_volume": "106287"
+  },
+  {
+    "logical_tick": "780",
+    "recorded_at": [
+      "1791096845532957"
+    ],
+    "price_cents": "9447",
+    "matched_share_volume": "105201"
+  },
+  {
+    "logical_tick": "779",
+    "recorded_at": [
+      "1791096845283844"
+    ],
+    "price_cents": "9447",
+    "matched_share_volume": "106618"
+  },
+  {
+    "logical_tick": "778",
+    "recorded_at": [
+      "1791096845034568"
+    ],
+    "price_cents": "9448",
+    "matched_share_volume": "104779"
+  },
+  {
+    "logical_tick": "777",
+    "recorded_at": [
+      "1791096844786751"
+    ],
+    "price_cents": "9449",
+    "matched_share_volume": "104961"
+  },
+  {
+    "logical_tick": "776",
+    "recorded_at": [
+      "1791096844538479"
+    ],
+    "price_cents": "9445",
+    "matched_share_volume": "108204"
+  },
+  {
+    "logical_tick": "775",
+    "recorded_at": [
+      "1791096844289066"
+    ],
+    "price_cents": "9443",
+    "matched_share_volume": "103936"
+  },
+  {
+    "logical_tick": "774",
+    "recorded_at": [
+      "1791096844037017"
+    ],
+    "price_cents": "9448",
+    "matched_share_volume": "109011"
+  },
+  {
+    "logical_tick": "773",
+    "recorded_at": [
+      "1791096843788040"
+    ],
+    "price_cents": "9448",
+    "matched_share_volume": "105364"
+  },
+  {
+    "logical_tick": "772",
+    "recorded_at": [
+      "1791096843539040"
+    ],
+    "price_cents": "9456",
+    "matched_share_volume": "104949"
+  },
+  {
+    "logical_tick": "771",
+    "recorded_at": [
+      "1791096843293074"
+    ],
+    "price_cents": "9459",
+    "matched_share_volume": "103696"
+  },
+  {
+    "logical_tick": "770",
+    "recorded_at": [
+      "1791096843047149"
+    ],
+    "price_cents": "9457",
+    "matched_share_volume": "105642"
+  },
+  {
+    "logical_tick": "769",
+    "recorded_at": [
+      "1791096842798943"
+    ],
+    "price_cents": "9451",
+    "matched_share_volume": "104458"
+  },
+  {
+    "logical_tick": "768",
+    "recorded_at": [
+      "1791096842551228"
+    ],
+    "price_cents": "9450",
+    "matched_share_volume": "105533"
+  },
+  {
+    "logical_tick": "767",
+    "recorded_at": [
+      "1791096842304744"
+    ],
+    "price_cents": "9449",
+    "matched_share_volume": "104835"
+  },
+  {
+    "logical_tick": "766",
+    "recorded_at": [
+      "1791096842055701"
+    ],
+    "price_cents": "9448",
+    "matched_share_volume": "105762"
+  },
+  {
+    "logical_tick": "765",
+    "recorded_at": [
+      "1791096841807390"
+    ],
+    "price_cents": "9446",
+    "matched_share_volume": "106620"
+  },
+  {
+    "logical_tick": "764",
+    "recorded_at": [
+      "1791096841562509"
+    ],
+    "price_cents": "9446",
+    "matched_share_volume": "104259"
+  },
+  {
+    "logical_tick": "763",
+    "recorded_at": [
+      "1791096841315167"
+    ],
+    "price_cents": "9451",
+    "matched_share_volume": "108215"
+  },
+  {
+    "logical_tick": "762",
+    "recorded_at": [
+      "1791096841065518"
+    ],
+    "price_cents": "9452",
+    "matched_share_volume": "105533"
+  },
+  {
+    "logical_tick": "761",
+    "recorded_at": [
+      "1791096840810283"
+    ],
+    "price_cents": "9459",
+    "matched_share_volume": "106028"
+  },
+  {
+    "logical_tick": "760",
+    "recorded_at": [
+      "1791096840542312"
+    ],
+    "price_cents": "9462",
+    "matched_share_volume": "103964"
+  },
+  {
+    "logical_tick": "759",
+    "recorded_at": [
+      "1791096840286346"
+    ],
+    "price_cents": "9463",
+    "matched_share_volume": "107014"
+  },
+  {
+    "logical_tick": "758",
+    "recorded_at": [
+      "1791096840031771"
+    ],
+    "price_cents": "9459",
+    "matched_share_volume": "105249"
+  },
+  {
+    "logical_tick": "757",
+    "recorded_at": [
+      "1791096839777932"
+    ],
+    "price_cents": "9462",
+    "matched_share_volume": "106169"
+  },
+  {
+    "logical_tick": "756",
+    "recorded_at": [
+      "1791096839507930"
+    ],
+    "price_cents": "9461",
+    "matched_share_volume": "106114"
+  },
+  {
+    "logical_tick": "755",
+    "recorded_at": [
+      "1791096839246905"
+    ],
+    "price_cents": "9463",
+    "matched_share_volume": "103139"
+  },
+  {
+    "logical_tick": "754",
+    "recorded_at": [
+      "1791096838991417"
+    ],
+    "price_cents": "9464",
+    "matched_share_volume": "108056"
+  },
+  {
+    "logical_tick": "753",
+    "recorded_at": [
+      "1791096838739941"
+    ],
+    "price_cents": "9458",
+    "matched_share_volume": "105580"
+  },
+  {
+    "logical_tick": "752",
+    "recorded_at": [
+      "1791096838447128"
+    ],
+    "price_cents": "9464",
+    "matched_share_volume": "105807"
+  },
+  {
+    "logical_tick": "751",
+    "recorded_at": [
+      "1791096838136943"
+    ],
+    "price_cents": "9467",
+    "matched_share_volume": "105342"
+  },
+  {
+    "logical_tick": "750",
+    "recorded_at": [
+      "1791096837887484"
+    ],
+    "price_cents": "9465",
+    "matched_share_volume": "105112"
+  },
+  {
+    "logical_tick": "749",
+    "recorded_at": [
+      "1791096837639831"
+    ],
+    "price_cents": "9464",
+    "matched_share_volume": "104059"
+  },
+  {
+    "logical_tick": "748",
+    "recorded_at": [
+      "1791096837390189"
+    ],
+    "price_cents": "9464",
+    "matched_share_volume": "105589"
+  },
+  {
+    "logical_tick": "747",
+    "recorded_at": [
+      "1791096837142238"
+    ],
+    "price_cents": "9458",
+    "matched_share_volume": "105228"
+  },
+  {
+    "logical_tick": "746",
+    "recorded_at": [
+      "1791096836893881"
+    ],
+    "price_cents": "9458",
+    "matched_share_volume": "105128"
+  },
+  {
+    "logical_tick": "745",
+    "recorded_at": [
+      "1791096836647547"
+    ],
+    "price_cents": "9458",
+    "matched_share_volume": "106173"
+  },
+  {
+    "logical_tick": "744",
+    "recorded_at": [
+      "1791096836399455"
+    ],
+    "price_cents": "9455",
+    "matched_share_volume": "105518"
+  },
+  {
+    "logical_tick": "743",
+    "recorded_at": [
+      "1791096836150703"
+    ],
+    "price_cents": "9456",
+    "matched_share_volume": "106578"
+  },
+  {
+    "logical_tick": "742",
+    "recorded_at": [
+      "1791096835904436"
+    ],
+    "price_cents": "9458",
+    "matched_share_volume": "105925"
+  },
+  {
+    "logical_tick": "741",
+    "recorded_at": [
+      "1791096835652415"
+    ],
+    "price_cents": "9460",
+    "matched_share_volume": "103726"
+  },
+  {
+    "logical_tick": "740",
+    "recorded_at": [
+      "1791096835405712"
+    ],
+    "price_cents": "9462",
+    "matched_share_volume": "106078"
+  },
+  {
+    "logical_tick": "739",
+    "recorded_at": [
+      "1791096835157808"
+    ],
+    "price_cents": "9458",
+    "matched_share_volume": "105172"
+  },
+  {
+    "logical_tick": "738",
+    "recorded_at": [
+      "1791096834911607"
+    ],
+    "price_cents": "9458",
+    "matched_share_volume": "107794"
+  },
+  {
+    "logical_tick": "737",
+    "recorded_at": [
+      "1791096834663948"
+    ],
+    "price_cents": "9457",
+    "matched_share_volume": "105612"
+  },
+  {
+    "logical_tick": "736",
+    "recorded_at": [
+      "1791096834415958"
+    ],
+    "price_cents": "9461",
+    "matched_share_volume": "103859"
+  },
+  {
+    "logical_tick": "735",
+    "recorded_at": [
+      "1791096834168650"
+    ],
+    "price_cents": "9462",
+    "matched_share_volume": "106615"
+  },
+  {
+    "logical_tick": "734",
+    "recorded_at": [
+      "1791096833920270"
+    ],
+    "price_cents": "9458",
+    "matched_share_volume": "104534"
+  },
+  {
+    "logical_tick": "733",
+    "recorded_at": [
+      "1791096833670982"
+    ],
+    "price_cents": "9460",
+    "matched_share_volume": "106524"
+  },
+  {
+    "logical_tick": "732",
+    "recorded_at": [
+      "1791096833421916"
+    ],
+    "price_cents": "9458",
+    "matched_share_volume": "104900"
+  },
+  {
+    "logical_tick": "731",
+    "recorded_at": [
+      "1791096833172564"
+    ],
+    "price_cents": "9461",
+    "matched_share_volume": "107773"
+  },
+  {
+    "logical_tick": "730",
+    "recorded_at": [
+      "1791096832924363"
+    ],
+    "price_cents": "9459",
+    "matched_share_volume": "105044"
+  },
+  {
+    "logical_tick": "729",
+    "recorded_at": [
+      "1791096832676527"
+    ],
+    "price_cents": "9464",
+    "matched_share_volume": "105358"
+  },
+  {
+    "logical_tick": "728",
+    "recorded_at": [
+      "1791096832427480"
+    ],
+    "price_cents": "9464",
+    "matched_share_volume": "105051"
+  },
+  {
+    "logical_tick": "727",
+    "recorded_at": [
+      "1791096832180054"
+    ],
+    "price_cents": "9462",
+    "matched_share_volume": "105574"
+  },
+  {
+    "logical_tick": "726",
+    "recorded_at": [
+      "1791096831933175"
+    ],
+    "price_cents": "9458",
+    "matched_share_volume": "104067"
+  },
+  {
+    "logical_tick": "725",
+    "recorded_at": [
+      "1791096831686803"
+    ],
+    "price_cents": "9457",
+    "matched_share_volume": "105819"
+  },
+  {
+    "logical_tick": "724",
+    "recorded_at": [
+      "1791096831440603"
+    ],
+    "price_cents": "9451",
+    "matched_share_volume": "105533"
+  },
+  {
+    "logical_tick": "723",
+    "recorded_at": [
+      "1791096831194346"
+    ],
+    "price_cents": "9452",
+    "matched_share_volume": "105460"
+  },
+  {
+    "logical_tick": "722",
+    "recorded_at": [
+      "1791096830948296"
+    ],
+    "price_cents": "9453",
+    "matched_share_volume": "105739"
+  },
+  {
+    "logical_tick": "721",
+    "recorded_at": [
+      "1791096830701353"
+    ],
+    "price_cents": "9453",
+    "matched_share_volume": "104559"
+  },
+  {
+    "logical_tick": "720",
+    "recorded_at": [
+      "1791096830456285"
+    ],
+    "price_cents": "9456",
+    "matched_share_volume": "106927"
+  },
+  {
+    "logical_tick": "719",
+    "recorded_at": [
+      "1791096830197531"
+    ],
+    "price_cents": "9455",
+    "matched_share_volume": "105666"
+  },
+  {
+    "logical_tick": "718",
+    "recorded_at": [
+      "1791096829944041"
+    ],
+    "price_cents": "9459",
+    "matched_share_volume": "105963"
+  },
+  {
+    "logical_tick": "717",
+    "recorded_at": [
+      "1791096829692296"
+    ],
+    "price_cents": "9460",
+    "matched_share_volume": "106237"
+  },
+  {
+    "logical_tick": "716",
+    "recorded_at": [
+      "1791096829446091"
+    ],
+    "price_cents": "9463",
+    "matched_share_volume": "103871"
+  },
+  {
+    "logical_tick": "715",
+    "recorded_at": [
+      "1791096829201876"
+    ],
+    "price_cents": "9465",
+    "matched_share_volume": "105918"
+  },
+  {
+    "logical_tick": "714",
+    "recorded_at": [
+      "1791096828956749"
+    ],
+    "price_cents": "9462",
+    "matched_share_volume": "104529"
+  },
+  {
+    "logical_tick": "713",
+    "recorded_at": [
+      "1791096828712395"
+    ],
+    "price_cents": "9463",
+    "matched_share_volume": "106893"
+  },
+  {
+    "logical_tick": "712",
+    "recorded_at": [
+      "1791096828467610"
+    ],
+    "price_cents": "9459",
+    "matched_share_volume": "104729"
+  },
+  {
+    "logical_tick": "711",
+    "recorded_at": [
+      "1791096828224186"
+    ],
+    "price_cents": "9461",
+    "matched_share_volume": "105516"
+  },
+  {
+    "logical_tick": "710",
+    "recorded_at": [
+      "1791096827977669"
+    ],
+    "price_cents": "9460",
+    "matched_share_volume": "106022"
+  },
+  {
+    "logical_tick": "709",
+    "recorded_at": [
+      "1791096827733441"
+    ],
+    "price_cents": "9460",
+    "matched_share_volume": "105985"
+  },
+  {
+    "logical_tick": "708",
+    "recorded_at": [
+      "1791096827487766"
+    ],
+    "price_cents": "9459",
+    "matched_share_volume": "105044"
+  },
+  {
+    "logical_tick": "707",
+    "recorded_at": [
+      "1791096827239215"
+    ],
+    "price_cents": "9459",
+    "matched_share_volume": "107729"
+  },
+  {
+    "logical_tick": "706",
+    "recorded_at": [
+      "1791096826980511"
+    ],
+    "price_cents": "9459",
+    "matched_share_volume": "103447"
+  },
+  {
+    "logical_tick": "705",
+    "recorded_at": [
+      "1791096826733617"
+    ],
+    "price_cents": "9463",
+    "matched_share_volume": "105833"
+  },
+  {
+    "logical_tick": "704",
+    "recorded_at": [
+      "1791096826476595"
+    ],
+    "price_cents": "9457",
+    "matched_share_volume": "104159"
+  },
+  {
+    "logical_tick": "703",
+    "recorded_at": [
+      "1791096825673055"
+    ],
+    "price_cents": "9458",
+    "matched_share_volume": "108306"
+  },
+  {
+    "logical_tick": "702",
+    "recorded_at": [
+      "1791096825412544"
+    ],
+    "price_cents": "9456",
+    "matched_share_volume": "103912"
+  },
+  {
+    "logical_tick": "701",
+    "recorded_at": [
+      "1791096825152160"
+    ],
+    "price_cents": "9462",
+    "matched_share_volume": "105510"
+  },
+  {
+    "logical_tick": "700",
+    "recorded_at": [
+      "1791096824889352"
+    ],
+    "price_cents": "9460",
+    "matched_share_volume": "106386"
+  },
+  {
+    "logical_tick": "699",
+    "recorded_at": [
+      "1791096824624445"
+    ],
+    "price_cents": "9459",
+    "matched_share_volume": "106243"
+  },
+  {
+    "logical_tick": "698",
+    "recorded_at": [
+      "1791096824362217"
+    ],
+    "price_cents": "9462",
+    "matched_share_volume": "105446"
+  },
+  {
+    "logical_tick": "697",
+    "recorded_at": [
+      "1791096824098322"
+    ],
+    "price_cents": "9465",
+    "matched_share_volume": "104860"
+  },
+  {
+    "logical_tick": "696",
+    "recorded_at": [
+      "1791096823837531"
+    ],
+    "price_cents": "9466",
+    "matched_share_volume": "103334"
+  },
+  {
+    "logical_tick": "695",
+    "recorded_at": [
+      "1791096823575906"
+    ],
+    "price_cents": "9465",
+    "matched_share_volume": "106782"
+  },
+  {
+    "logical_tick": "694",
+    "recorded_at": [
+      "1791096823311380"
+    ],
+    "price_cents": "9456",
+    "matched_share_volume": "104620"
+  },
+  {
+    "logical_tick": "693",
+    "recorded_at": [
+      "1791096823049887"
+    ],
+    "price_cents": "9460",
+    "matched_share_volume": "107374"
+  },
+  {
+    "logical_tick": "692",
+    "recorded_at": [
+      "1791096822784030"
+    ],
+    "price_cents": "9456",
+    "matched_share_volume": "104564"
+  },
+  {
+    "logical_tick": "691",
+    "recorded_at": [
+      "1791096822516695"
+    ],
+    "price_cents": "9460",
+    "matched_share_volume": "107812"
+  },
+  {
+    "logical_tick": "690",
+    "recorded_at": [
+      "1791096822252946"
+    ],
+    "price_cents": "9459",
+    "matched_share_volume": "106101"
+  },
+  {
+    "logical_tick": "689",
+    "recorded_at": [
+      "1791096821988808"
+    ],
+    "price_cents": "9465",
+    "matched_share_volume": "104063"
+  },
+  {
+    "logical_tick": "688",
+    "recorded_at": [
+      "1791096821726426"
+    ],
+    "price_cents": "9467",
+    "matched_share_volume": "103521"
+  },
+  {
+    "logical_tick": "687",
+    "recorded_at": [
+      "1791096821465683"
+    ],
+    "price_cents": "9463",
+    "matched_share_volume": "107350"
+  },
+  {
+    "logical_tick": "686",
+    "recorded_at": [
+      "1791096821202105"
+    ],
+    "price_cents": "9457",
+    "matched_share_volume": "103662"
+  },
+  {
+    "logical_tick": "685",
+    "recorded_at": [
+      "1791096820930227"
+    ],
+    "price_cents": "9460",
+    "matched_share_volume": "105973"
+  },
+  {
+    "logical_tick": "684",
+    "recorded_at": [
+      "1791096820659141"
+    ],
+    "price_cents": "9457",
+    "matched_share_volume": "104457"
+  },
+  {
+    "logical_tick": "683",
+    "recorded_at": [
+      "1791096820389172"
+    ],
+    "price_cents": "9459",
+    "matched_share_volume": "107679"
+  },
+  {
+    "logical_tick": "682",
+    "recorded_at": [
+      "1791096820125031"
+    ],
+    "price_cents": "9456",
+    "matched_share_volume": "106146"
+  },
+  {
+    "logical_tick": "681",
+    "recorded_at": [
+      "1791096819859203"
+    ],
+    "price_cents": "9461",
+    "matched_share_volume": "104759"
+  },
+  {
+    "logical_tick": "680",
+    "recorded_at": [
+      "1791096819596008"
+    ],
+    "price_cents": "9465",
+    "matched_share_volume": "106878"
+  },
+  {
+    "logical_tick": "679",
+    "recorded_at": [
+      "1791096819329579"
+    ],
+    "price_cents": "9465",
+    "matched_share_volume": "106374"
+  },
+  {
+    "logical_tick": "678",
+    "recorded_at": [
+      "1791096819056411"
+    ],
+    "price_cents": "9471",
+    "matched_share_volume": "104507"
+  },
+  {
+    "logical_tick": "677",
+    "recorded_at": [
+      "1791096818789662"
+    ],
+    "price_cents": "9477",
+    "matched_share_volume": "105424"
+  },
+  {
+    "logical_tick": "676",
+    "recorded_at": [
+      "1791096818521865"
+    ],
+    "price_cents": "9475",
+    "matched_share_volume": "103524"
+  },
+  {
+    "logical_tick": "675",
+    "recorded_at": [
+      "1791096818255598"
+    ],
+    "price_cents": "9474",
+    "matched_share_volume": "104760"
+  },
+  {
+    "logical_tick": "674",
+    "recorded_at": [
+      "1791096817997044"
+    ],
+    "price_cents": "9467",
+    "matched_share_volume": "105447"
+  },
+  {
+    "logical_tick": "673",
+    "recorded_at": [
+      "1791096817738856"
+    ],
+    "price_cents": "9467",
+    "matched_share_volume": "106612"
+  },
+  {
+    "logical_tick": "672",
+    "recorded_at": [
+      "1791096817480660"
+    ],
+    "price_cents": "9468",
+    "matched_share_volume": "105510"
+  },
+  {
+    "logical_tick": "671",
+    "recorded_at": [
+      "1791096817218196"
+    ],
+    "price_cents": "9473",
+    "matched_share_volume": "105284"
+  },
+  {
+    "logical_tick": "670",
+    "recorded_at": [
+      "1791096816960219"
+    ],
+    "price_cents": "9472",
+    "matched_share_volume": "105862"
+  },
+  {
+    "logical_tick": "669",
+    "recorded_at": [
+      "1791096816618971"
+    ],
+    "price_cents": "9474",
+    "matched_share_volume": "103595"
+  }
+]

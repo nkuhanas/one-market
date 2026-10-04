@@ -85,6 +85,10 @@ if (phase === 'prepare') {
   );
   assert.equal((await cloud.query('SELECT * FROM market_dynamics')).length, 0);
   assert.equal((await cloud.query('SELECT * FROM cadence_state')).length, 0);
+  assert.equal(
+    (await cloud.query('SELECT * FROM actor_state_compact')).length,
+    0,
+  );
   const before = await cloud.snapshot();
   const run = (await cloud.query('SELECT * FROM run_record'))[0];
   await cloud.call('benchmark_step'); // The version fence must fire before actor writes.
@@ -169,10 +173,39 @@ if (phase === 'prepare') {
     (await cloud.query('SELECT * FROM cadence_state'))[0].profile,
     '10hz',
   );
+  // All columns of every actor and all other tables must survive a partial
+  // migration plus its inverse; publication above did not move any actors.
+  const storageTables = [
+    ...tables,
+    'actor_state_compact',
+    'market_dynamics',
+    'bucket_health',
+    'actor_recovery',
+    'cadence_state',
+    'run_cadence',
+    'timed_run_stop',
+  ];
+  const beforeStorage = await fingerprints(storageTables);
+  await cloud.call('migrate_actor_storage_batch', [1n, 100n, true]);
+  assert.equal((await cloud.query('SELECT * FROM actor_state')).length, 100);
+  assert.equal(
+    (await cloud.query('SELECT * FROM actor_state_compact')).length,
+    100,
+  );
+  await cloud.call('migrate_actor_storage_batch', [1n, 200n, false]);
+  assert.deepEqual(await fingerprints(storageTables), beforeStorage);
+  await cloud.call('migrate_actor_storage_batch', [1n, 200n, true]);
+  await cloud.call('migrate_actor_storage_batch', [1n, 200n, true]);
+  assert.equal((await cloud.query('SELECT * FROM actor_state')).length, 0);
+  assert.equal(
+    (await cloud.query('SELECT * FROM actor_state_compact')).length,
+    200,
+  );
   console.log(
     encode(
       await fingerprints([
         ...tables,
+        'actor_state_compact',
         'market_dynamics',
         'bucket_health',
         'actor_recovery',
@@ -185,6 +218,7 @@ if (phase === 'prepare') {
   assert.deepEqual(
     await fingerprints([
       ...tables,
+      'actor_state_compact',
       'market_dynamics',
       'bucket_health',
       'actor_recovery',
@@ -215,7 +249,7 @@ if (phase === 'prepare') {
     );
   }
   console.log(
-    'Old-world rows, explicit adoption, accounting, 20→10 Hz switch, segment evidence and restart/republish/recovery persistence verified.',
+    'Old-world rows, explicit adoption, accounting, reversible compact migration, 20→10 Hz switch, segment evidence and compact-row restart/republish/recovery persistence verified.',
   );
 } else if (phase === 'timed-prepare') {
   await cloud.call('set_cadence_profile', ['5hz']);

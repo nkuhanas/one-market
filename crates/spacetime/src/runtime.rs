@@ -6,7 +6,7 @@ use one_market_core::{
     auction::{self, Order},
     config::{config, configuration_hash, workload_hash_at_cadence},
     equity, extend_digest, mix,
-    policy::{self, Signals, Weights},
+    policy::{self, PolicyTick, Signals, Weights},
     schedule, Result,
 };
 use spacetimedb::{reducer, ReducerContext, ScheduleAt, Table};
@@ -304,6 +304,9 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
     // through buckets, sampling one tick per epoch; never log per actor.
     let buckets = u64::from(c.buckets);
     let profiling = cfg!(feature = "profile-ticks") && tick % buckets == (tick / buckets) % buckets;
+    // Host clock span: excludes transaction commit/replication after return.
+    let _whole_timer =
+        profiling.then(|| spacetimedb::log_stopwatch::LogStopwatch::new("profile/tick-body"));
     let mut run = ctx
         .db
         .run_record()
@@ -390,11 +393,11 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         },
     };
     let bucket = (tick % buckets) as u8;
+    let policy_tick = PolicyTick::new(signals, r.seed, tick, m.price_cents, &c);
     let timer = profiling
         .then(|| spacetimedb::log_stopwatch::LogStopwatch::new("profile/indexed-select-sort"));
-    // The only actor query in a measured tick is this indexed due-bucket query.
-    let mut actors: Vec<_> = ctx.db.actor_state().bucket().filter(bucket).collect();
-    actors.sort_unstable_by_key(|a| a.actor_id);
+    // Only indexed due-bucket reads, from each nonempty actor representation.
+    let mut actors = crate::actor_storage::load_bucket(ctx, bucket)?;
     drop(timer);
     let timer = profiling.then(|| {
         spacetimedb::log_stopwatch::LogStopwatch::new("profile/coverage-policy-lifecycle")
@@ -492,7 +495,7 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
             && transition != Some("REVIVED — INVENTORY RETAINED")
         {
             evaluations = add(evaluations, 1)?;
-            policy::decide(
+            policy_tick.decide(
                 Weights {
                     momentum: a.momentum_weight,
                     reversion: a.mean_reversion_weight,
@@ -501,14 +504,9 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
                     conviction: a.conviction_threshold_bps,
                     risk: a.risk_tolerance_bps,
                 },
-                signals,
-                r.seed,
                 a.actor_id,
-                tick,
                 a.cash_cents,
                 a.shares,
-                m.price_cents,
-                &c,
             )?
         } else {
             None
@@ -553,7 +551,9 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
     let timer = profiling
         .then(|| spacetimedb::log_stopwatch::LogStopwatch::new("profile/actor-settle-final-write"));
     let mut filled_orders = 0;
-    for (i, a) in actors.iter_mut().enumerate() {
+    let steps = actors.len() as u64;
+    let mut active_in_bucket = 0u64;
+    for (i, mut a) in actors.into_iter().enumerate() {
         if let Some(oi) = actor_orders[i] {
             let filled = clearing.fills[oi];
             if filled > 0 {
@@ -579,12 +579,13 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
                 }
             }
         }
-        lifecycle::finish(a, tick, clearing.price)?;
+        lifecycle::finish(&mut a, tick, clearing.price)?;
         if a.actor_id <= c.sample_size {
-            lifecycle::sample(ctx, a);
+            lifecycle::sample(ctx, &a);
         }
+        active_in_bucket += u64::from(a.status == ActorStatus::Active);
         // Exactly one final actor row write, including PASS/EXITING/COOLDOWN.
-        ctx.db.actor_state().actor_id().update(a.clone());
+        crate::actor_storage::update(ctx, a);
     }
     drop(timer);
     let timer =
@@ -734,7 +735,6 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         )
         .map_err(|_| "imbalance overflow")?
     };
-    let steps = actors.len() as u64;
     m.previous_traded_price_cents = m.price_cents;
     m.volatility_bps = u64::try_from(
         u128::from(clearing.price.abs_diff(m.price_cents)) * 10_000 / u128::from(m.price_cents),
@@ -772,11 +772,8 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         clearing.volume,
         m.active_actor_count,
         r.initialized,
-        actors
-            .iter()
-            .filter(|a| a.status == ActorStatus::Active)
-            .count() as u64,
-        actors.len() as u64,
+        active_in_bucket,
+        steps,
         &c,
     )?;
     ctx.db.market_dynamics().id().update(dynamics);

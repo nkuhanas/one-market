@@ -1,0 +1,147 @@
+{
+  "previous": {
+    "run_id": "3",
+    "build_hash": "54c64c6970696efc8eaeeb5f72e203e3b59ec37a76859940c1d0f980de3bc056",
+    "duration_seconds": 180,
+    "completed_ticks": 705,
+    "effective_hz": 3.9166666666666665,
+    "actor_updates": "35250171",
+    "skipped_slots": "194",
+    "start_gap_us": {
+      "count": 704,
+      "mean": 255336.27556818182,
+      "min": 241044,
+      "p50": 246764,
+      "p99": 718140,
+      "max": 803540
+    },
+    "start_lateness_us": {
+      "count": 705,
+      "mean": 154775.24113475176,
+      "min": 829,
+      "p50": 152473,
+      "p99": 624647,
+      "max": 741532
+    },
+    "long_gap_threshold_us": 400000,
+    "long_gap_count": 9,
+    "long_gaps": [
+      {
+        "logical_tick": "704",
+        "gap_us": 803540
+      },
+      {
+        "logical_tick": "786",
+        "gap_us": 788707
+      },
+      {
+        "logical_tick": "868",
+        "gap_us": 759175
+      },
+      {
+        "logical_tick": "950",
+        "gap_us": 716850
+      },
+      {
+        "logical_tick": "1032",
+        "gap_us": 718140
+      },
+      {
+        "logical_tick": "1114",
+        "gap_us": 729792
+      },
+      {
+        "logical_tick": "1196",
+        "gap_us": 746292
+      },
+      {
+        "logical_tick": "1278",
+        "gap_us": 755025
+      },
+      {
+        "logical_tick": "1361",
+        "gap_us": 730771
+      }
+    ],
+    "long_gap_spacing_ticks": [
+      82,
+      82,
+      82,
+      82,
+      82,
+      82,
+      82,
+      83
+    ],
+    "steady_gaps_below_threshold_us": {
+      "count": 695,
+      "mean": 248933.01582733812,
+      "p50": 246741,
+      "p99": 273168,
+      "max": 341248
+    }
+  },
+  "compact": {
+    "run_id": "4",
+    "build_hash": "e3d6299f56716aa8c05b56f9714f849d2ab133270fd6956590943c4b961b1bf2",
+    "duration_seconds": 180,
+    "completed_ticks": 747,
+    "effective_hz": 4.15,
+    "actor_updates": "37350140",
+    "skipped_slots": "152",
+    "start_gap_us": {
+      "count": 746,
+      "mean": 240885.54691689007,
+      "min": 229444,
+      "p50": 236672,
+      "p99": 274579,
+      "max": 942843
+    },
+    "start_lateness_us": {
+      "count": 747,
+      "mean": 141262.56894243642,
+      "min": 2485,
+      "p50": 139116,
+      "p99": 244239,
+      "max": 940259
+    },
+    "long_gap_threshold_us": 400000,
+    "long_gap_count": 5,
+    "long_gaps": [
+      {
+        "logical_tick": "1465",
+        "gap_us": 942843
+      },
+      {
+        "logical_tick": "1611",
+        "gap_us": 593280
+      },
+      {
+        "logical_tick": "1757",
+        "gap_us": 586228
+      },
+      {
+        "logical_tick": "1903",
+        "gap_us": 589543
+      },
+      {
+        "logical_tick": "2049",
+        "gap_us": 574083
+      }
+    ],
+    "long_gap_spacing_ticks": [
+      146,
+      146,
+      146,
+      146
+    ],
+    "steady_gaps_below_threshold_us": {
+      "count": 741,
+      "mean": 238076.43859649124,
+      "p50": 236659,
+      "p99": 261889,
+      "max": 288215
+    }
+  },
+  "note": "Sequential same-world three-minute Maincloud probes, not fresh-state A/B or capacity qualification. No synthetic viewer/order load. Long gap = at least two 200ms budgets. Outside-body timing is not isolated host commit or CPU time."
+}

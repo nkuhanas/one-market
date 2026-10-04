@@ -1,4 +1,6 @@
 use crate::{config::Config, equity, mix, mul, Result};
+mod arithmetic;
+use arithmetic::{ceil, signed, unsigned};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Weights {
@@ -31,8 +33,160 @@ pub struct Signals {
     pub news_bps: i64,
 }
 
+/// Immutable policy inputs shared by all actors in one auction. Not a cache of
+/// authoritative actor state; constructing it does not read or write the DB.
+pub struct PolicyTick<'a> {
+    signals: Signals,
+    seed: u64,
+    tick: u64,
+    mixed_tick: u64,
+    shared_signal: i128,
+    spread: u64,
+    price: u64,
+    config: &'a Config,
+}
+
+impl<'a> PolicyTick<'a> {
+    pub fn new(signals: Signals, seed: u64, tick: u64, price: u64, config: &'a Config) -> Self {
+        Self {
+            signals,
+            seed,
+            tick,
+            mixed_tick: mix(tick),
+            shared_signal: i128::from(signals.sentiment_bps)
+                + signed(
+                    i128::from(signals.news_bps) * i128::from(config.shared_news_weight_bps),
+                    10_000,
+                ),
+            spread: config.valuation_spread_bps.min(9999),
+            price,
+            config,
+        }
+    }
+
+    pub fn decide(
+        &self,
+        w: Weights,
+        actor: u64,
+        cash: u64,
+        shares: u64,
+    ) -> Result<Option<(bool, u64, u64)>> {
+        let Self {
+            signals: s,
+            seed,
+            tick,
+            spread,
+            price,
+            config: c,
+            ..
+        } = *self;
+        let actor_bits = mix(actor);
+        let horizon = c
+            .valuation_horizon_ticks
+            .checked_mul(1 + actor_bits % 5)
+            .filter(|x| *x > 0)
+            .ok_or("invalid valuation horizon")?;
+        let revision = unsigned(
+            u128::from(tick) + u128::from(actor_bits % horizon),
+            u128::from(horizon),
+        );
+        let bias = (mix(seed
+            ^ actor_bits
+            ^ mix(u64::try_from(revision).map_err(|_| "valuation revision overflow")?))
+            % (2 * spread + 1)) as i128
+            - i128::from(spread);
+        let fair = unsigned(
+            u128::from(s.reference_price_cents) * (10_000 + bias) as u128,
+            10_000,
+        )
+        .clamp(u128::from(c.min_price_cents), u128::from(c.max_price_cents));
+        let reversion = signed(
+            (fair as i128 - i128::from(price)) * 10_000,
+            i128::from(price),
+        );
+        let noise = (mix(seed ^ actor_bits ^ self.mixed_tick) % 2001) as i128 - 1000;
+        let signal = signed(
+            i128::from(w.momentum) * i128::from(s.momentum_bps)
+                + signed(
+                    i128::from(w.reversion.unsigned_abs())
+                        * reversion
+                        * i128::from(c.signal_reversion_bps),
+                    10_000,
+                )
+                - i128::from(w.contrarian) * i128::from(s.imbalance_bps)
+                + i128::from(w.news) * i128::from(s.news_bps),
+            1000,
+        ) + signed(self.shared_signal * (1000 + i128::from(w.news) / 2), 1000)
+            + noise;
+        if signal.unsigned_abs() < u128::from(w.conviction) {
+            return Ok(None);
+        }
+        let buy = signal > 0;
+        let allowance = unsigned(signal.unsigned_abs(), 10).clamp(1, 500);
+        let scaled = if buy {
+            10_000 + allowance
+        } else {
+            10_000 - allowance
+        };
+        let anchor_bps = unsigned(
+            u128::from(w.reversion.unsigned_abs().min(1000))
+                * u128::from(c.quote_reversion_bps.min(10_000)),
+            1000,
+        );
+        let reference = i128::from(price)
+            + signed(
+                (fair as i128 - i128::from(price)) * anchor_bps as i128,
+                10_000,
+            );
+        let reference = u128::try_from(reference).map_err(|_| "negative reservation price")?;
+        let scaled_limit = reference * scaled;
+        let limit = u64::try_from(
+            (if buy {
+                ceil(scaled_limit, 10_000)
+            } else {
+                unsigned(scaled_limit, 10_000)
+            })
+            .clamp(u128::from(c.min_price_cents), u128::from(c.max_price_cents)),
+        )
+        .map_err(|_| "limit overflow")?;
+        let risk_budget = unsigned(
+            u128::from(equity(cash, shares, price)?) * u128::from(w.risk),
+            10_000,
+        );
+        let desired = u64::try_from(
+            unsigned(signal.unsigned_abs(), 100).clamp(1, u128::from(c.actor_max_quantity)),
+        )
+        .map_err(|_| "sizing overflow")?;
+        let quantity = desired
+            .min(
+                u64::try_from(unsigned(risk_budget, u128::from(limit)))
+                    .map_err(|_| "risk budget overflow")?,
+            )
+            .min(if buy { cash / limit } else { shares });
+        Ok((quantity > 0).then_some((buy, quantity, limit)))
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn decide(
+    w: Weights,
+    s: Signals,
+    seed: u64,
+    actor: u64,
+    tick: u64,
+    cash: u64,
+    shares: u64,
+    price: u64,
+    c: &Config,
+) -> Result<Option<(bool, u64, u64)>> {
+    PolicyTick::new(s, seed, tick, price, c).decide(w, actor, cash, shares)
+}
+
+// Frozen pre-optimization implementation: differential tests include the exact
+// integer rounding, checked errors and wide-value fallback, not just balances.
+#[cfg(test)]
+#[allow(clippy::too_many_arguments)]
+fn reference_decide(
     w: Weights,
     s: Signals,
     seed: u64,
@@ -155,6 +309,42 @@ pub fn pnl(marked: u64, initial: u64, grants: u64) -> Result<i64> {
 mod tests {
     use super::*;
     use crate::config::config;
+
+    #[test]
+    fn prepared_policy_is_bit_exact_with_original_decisions_and_errors() {
+        let mut c = config();
+        for i in 0..100_000u64 {
+            let bits = mix(i);
+            let price = [1, 2, 10_000, c.max_price_cents, u64::MAX][i as usize % 5];
+            let tick = if i % 11 == 0 { u64::MAX } else { bits };
+            let cash = if i % 7 == 0 {
+                u64::MAX
+            } else {
+                bits % 10_000_000
+            };
+            let shares = if i % 13 == 0 { 0 } else { bits % 1000 };
+            let s = Signals {
+                momentum_bps: (bits % 20001) as i64 - 10000,
+                reference_price_cents: if i % 17 == 0 { u64::MAX } else { 10000 },
+                sentiment_bps: (bits % 2001) as i64 - 1000,
+                imbalance_bps: (bits % 10001) as i64 - 5000,
+                news_bps: (bits % 20001) as i64 - 10000,
+            };
+            let mut w = weights(20261003, i);
+            if i % 19 == 0 {
+                w.reversion = i32::MIN;
+            }
+            if i % 23 == 0 {
+                w.risk = u64::MAX;
+            }
+            c.valuation_horizon_ticks = if i % 29 == 0 { u64::MAX } else { 80 };
+            assert_eq!(
+                PolicyTick::new(s, 20261003, tick, price, &c).decide(w, i, cash, shares),
+                reference_decide(w, s, 20261003, i, tick, cash, shares, price, &c),
+                "case {i}"
+            );
+        }
+    }
 
     fn strong_buyer(reversion: i32) -> Weights {
         Weights {
