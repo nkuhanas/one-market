@@ -128,24 +128,46 @@ SpacetimeDB is the integration boundary between Chace and Kaleb.
 
 ### Base clock and intended deadlines
 
-**20 Hz global simulation**:
+**Selectable global cadence; 20 Hz by default**:
 
 ```text
-tick_interval_us = 50,000
 20 logical ticks = 1 logical epoch
-1 logical epoch targets 1 second of wall time
+
+profile    tick_interval_us    target epoch wall time
+20hz       50,000              1 second (default)
+10hz       100,000             2 seconds
+5hz        200,000             4 seconds
 ```
 
-An epoch is only one wall-clock second when the cadence is maintained. Do not infer elapsed time from processed tick counts during degradation.
+The versioned profile registry in `config/v02.json` is the source of cadence.
+The scheduler, recovery arithmetic, validators and presentation consume the
+selected profile; they do not independently hard-code 20 Hz. Epoch duration
+only meets the table above when cadence is maintained. Do not infer elapsed
+time from processed tick counts during degradation.
 
 Use **absolute-time scheduled tick records**, each carrying an explicit intended slot number. Maintain at most one outstanding next tick. Assign each deadline before its callback runs:
 
 ```text
-intended_at(slot) = run_start + slot × 50,000 microseconds
+intended_at(slot) = run_start + slot × selected_tick_interval_us
 start_lateness_us = invoked_at - intended_at
 ```
 
 `run_start`, `intended_at`, and `invoked_at` use SDK timestamps. Slot arithmetic uses checked intermediates. Never derive the intended deadline by flooring actual arrival time, and never re-anchor the schedule after a slow tick.
+
+An owner may select a cadence before starting a fresh world or after pausing an
+existing one. Selecting does not start the clock. A changed profile closes the
+previous evidence segment, retaining its origin, receipts, hashes and failures.
+An explicit `start_run` opens a new segment with a fresh origin; an existing-world
+continuation retains logical ticks, balances, inventory, orders, bucket membership
+and lifecycle/news/revival state, and cannot qualify capacity. Ordinary recovery
+within a segment stays anchored to that segment's original clock. Active changes
+are rejected; stale callback generations cannot advance a new segment.
+
+Cadence is stored in a bounded public singleton and snapshotted per run in
+private evidence. Legacy runs without timing metadata retain their historical
+20 Hz interpretation. Publishing alone never switches their cadence or resets
+their data. Completed evidence may be explicitly archived and pruned in bounded
+owner-only batches independently of a world reset.
 
 SpacetimeDB supports absolute-time schedules. Its native interval scheduler skips missed intervals, so counting callbacks alone cannot establish maintained cadence. [Schedule tables](https://spacetimedb.com/docs/tables/schedule-tables/).
 
@@ -164,9 +186,20 @@ due_bucket = logical_tick % 20
 
 Each actor is stepped and its row materially updated **exactly once per completed logical epoch**, including actors that pass, exit, or cool down. Only `ACTIVE` actors perform their normal policy evaluation. Risk checks occur when the actor's bucket runs, not instantaneously across the population.
 
-At a maintained cadence, `1,000,000` actors imply approximately `50,000` actor steps per tick and `1,000,000` baseline actor updates/sec. Actual bucket sizes and committed coverage are verified rather than assumed.
+At a maintained 20 Hz cadence, `1,000,000` actors imply approximately `50,000`
+actor steps per tick and `1,000,000` baseline actor updates/sec. With the same
+20 buckets at 10 Hz, each actor steps every two target seconds and the expected
+update rate halves; at 5 Hz it quarters. These are workload arithmetic, not
+measured capacity. Verify actual bucket sizes and committed coverage.
 
 Faster cadence classes are a stretch goal. The published headline always uses a fixed, versioned scheduling profile.
+
+Economic durations remain logical-tick/epoch quantities across cadence profiles:
+private valuations, sentiment, cooldown, revival and CHAOS keep their configured
+step counts. Their wall-clock durations scale with cadence. Human rate limits,
+offered human load, presentation rate limits and benchmark warm-up/measurement
+windows stay wall-clock based. Chart minute ranges use recorded timestamps, so
+history spanning a profile switch is not relabeled by its current tick rate.
 
 ---
 
@@ -572,7 +605,8 @@ sentiment, distress/recovery/backoff mode, streaks, episode, revived count,
 granted cash and constrained-grant count; `bucket_health` contains 20 rows.
 They supplement, not replace, `MarketState`. Lifecycle events (`COOLDOWN`,
 `RECAPITALIZED`, `REVIVED — INVENTORY RETAINED`) must never render as fills.
-The default observer workload remains the six configured subscriptions; operator
+The observer workload includes the bounded public `cadence_state` singleton
+alongside the six existing configured subscriptions; operator
 health queries may inspect the additional bounded tables without subscribing
 to private actor records.
 
@@ -642,6 +676,8 @@ set_actor_population(...)
 reset_market(...)
 publish_benchmark_result(...)
 benchmark_step(...)          // optional; refuses while scheduled simulation is enabled
+set_cadence_profile(profile)  // paused/empty only; never starts the simulation
+prune_run_evidence(run_id, confirmation) // explicit bounded completed-evidence pruning
 ```
 
 Scheduler-only wrapper:
@@ -662,9 +698,13 @@ Use the chosen 2.x client API's per-call reducer results and explicit event tabl
 
 ### One public headline
 
-> **Verified capacity: N persistent actors @ 20 Hz**
+> **Verified capacity: N persistent actors @ H Hz**
 
-This is the largest population actually tested successfully under a named fixed workload and environment. It is not a universal upper bound on SpacetimeDB, and it is not a claim about execution duration.
+This is the largest population actually tested successfully under a named fixed
+cadence, workload and environment. H comes from the qualified result, never a
+UI constant. Select results matching the displayed world's cadence and show
+their named environment/workload. A 10 Hz result cannot stand in for 20 Hz.
+It is not a universal upper bound on SpacetimeDB or an execution-duration claim.
 
 All persistent actors receive a row update once per completed 20-tick logical epoch, including passing, exiting, and cooling-down actors. Population setup happens before the run; resizing or resetting during measurement invalidates it.
 
@@ -672,13 +712,13 @@ All persistent actors receive a row update once per completed 20-tick logical ep
 
 | Parameter    | Qualification setting                                       |
 | ------------ | ----------------------------------------------------------- |
-| Tick target  | 20 Hz; `tick_interval_us = 50,000`                          |
+| Tick target  | Selected fixed profile: 20, 10 or 5 Hz; default 20 Hz       |
 | Buckets      | 20; every actor stepped once per logical epoch              |
 | Warm-up      | 30 seconds                                                  |
 | Measurement  | 180 seconds                                                 |
 | Confirmation | Three fresh runs at the final candidate population          |
 | Randomness   | Explicit seed and versioned policy configuration            |
-| Viewer load  | 10 connected clients using the production subscription set  |
+| Viewer load  | 3 connected clients using the production subscription set   |
 | Human load   | Five offered orders/sec total, using a deterministic script |
 | Read mode    | Confirmed reads                                             |
 | Environment  | Record local and Maincloud separately                       |
@@ -716,7 +756,7 @@ Every confirmation run must establish:
 - Zero skipped application slots.
 - Complete actor-update coverage for each measured logical epoch/bucket.
 - Zero reducer failures.
-- P99 start lateness **strictly below 50,000 microseconds**.
+- P99 start lateness **strictly below the selected tick interval**.
 - The offered workload and viewer load remained fixed.
 - Achieved committed throughput, with no growing schedule debt.
 
@@ -727,6 +767,14 @@ Report run status as `RUNNING`, `PASSED`, `FAILED`, or `INCONCLUSIVE`. Establish
 Repeat the final candidate three times with fresh initialized populations under the same versioned configuration. Publish the qualified result backed by all three runs, not the best lucky run. Preserve individual run evidence and environment/build metadata.
 
 This is a **schedule-adherence qualification**. Do not publish “P99 execution time below 50 ms” unless execution duration is measured using a validated host-side source. Exact host execution duration is optional; `ctx.timestamp` cannot supply it.
+
+Derive expected receipt counts from wall-clock window duration divided by the
+selected interval. Compute expected actor updates from the actual due buckets,
+including partial epochs, not population × seconds. Compare schedule debt over
+one target-second window at each end using the selected interval as the budget.
+Confirmation runs must share the cadence snapshot and cadence-sensitive workload
+hash. Exploratory runs never publish a qualified result. Preparing a profile
+does not qualify or even measure it; report only the explicit tests actually run.
 
 ### Benchmark details
 
@@ -742,7 +790,11 @@ At minimum, qualify **NORMAL** and **CHAOS** profiles. They use the same populat
 
 The base actor-write workload remains `N` updates per completed epoch in both profiles. Record the increase in order participation, auction clearing, settlement, lifecycle transitions, and additional persistent records rather than assuming the shock changes the number of baseline actor writes.
 
-Keep one primary headline: **Verified capacity: N persistent actors @ 20 Hz**, backed by the selected qualified environment/profile. Profile comparisons and the three fresh confirmation runs belong in Benchmark details. Local results cannot stand in for Maincloud qualification.
+Keep one primary headline: **Verified capacity: N persistent actors @ H Hz**,
+backed by the selected qualified environment, market workload and cadence.
+Profile comparisons and the three fresh confirmation runs belong in Benchmark
+details. Local results cannot stand in for Maincloud qualification. NORMAL/CHAOS
+are market workload profiles; 20hz/10hz/5hz are independent cadence profiles.
 
 ---
 
@@ -925,7 +977,7 @@ Freeze the agreed client contract, then split runtime and presentation work. A s
 
 - One identity-scoped trader, reservations, idempotent orders, server-side limits.
 - Caller-scoped views, bounded fills/activity, synchronized browser validation.
-- Deterministic human load and 10 production-subscription viewers for qualification.
+- Deterministic human load and 3 production-subscription viewers for qualification.
 
 ### P4 — CHAOS
 
@@ -969,7 +1021,7 @@ Do **not** burn time on:
 
 The difficult problem is already:
 
-> **How many persistent stateful actors can this runtime qualify at 20 Hz under the fixed workload?**
+> **How many persistent stateful actors can this runtime qualify at a named cadence under the fixed workload?**
 
 ---
 
@@ -981,7 +1033,7 @@ A judge should be able to:
 2. See the persistent actor count, distinct connected identities, and actual filled-order rate.
 3. Enter with a synthetic bankroll and place a buy or sell with a visible slippage allowance.
 4. See their own acceptance/fill status and the shared effects of actual settlement.
-5. See **Verified capacity: N persistent actors @ 20 Hz** from a qualified result.
+5. See **Verified capacity: N persistent actors @ H Hz** from a cadence-specific qualified result.
 6. Watch an admin trigger CHAOS and observe policies, auctions, fills, and drawdown stop-outs respond while clients remain synchronized.
 
 A crash is not guaranteed. If sellers have no buyers, the demo must honestly show a frozen price and incomplete exits. The public experience stays simple: **one market, a huge actor count, join from your phone, place a trade, then watch CHAOS hit.**

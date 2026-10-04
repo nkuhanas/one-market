@@ -96,6 +96,10 @@ fn execute() -> client::Result<bool> {
             .parse::<u64>()
             .map_err(|e| e.to_string())?,
         profile: required("--profile")?,
+        cadence_profile: args.get("--cadence").map_or_else(
+            || one_market_core::config::config().default_cadence,
+            |s| s.to_string(),
+        ),
         environment,
         output: required("--output")?.into(),
         exploration,

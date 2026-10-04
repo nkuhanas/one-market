@@ -1,18 +1,18 @@
 import { memo, useMemo } from 'react';
 import { centsToDollars, formatCount, formatUsd } from '../lib/units';
-import type { PriceSample } from '../market/contract';
+import { priceWindow, type PriceSample } from '../market/contract';
 import { EmptyState } from './value';
 
 const VIEW_W = 1000;
 const VIEW_H = 320;
-/** Capped so a redraw stays cheap while the runtime commits at 20 Hz. */
+/** Capped so redraw cost is independent of runtime cadence. */
 const MAX_POINTS = 320;
 
 export const RANGES = [
-  { id: 'live', label: 'Live', ticks: 600 },
-  { id: '1m', label: '1M', ticks: 1200 },
-  { id: '5m', label: '5M', ticks: 6000 },
-  { id: 'all', label: 'All', ticks: Number.POSITIVE_INFINITY },
+  { id: 'live', label: 'Live', seconds: 30 },
+  { id: '1m', label: '1M', seconds: 60 },
+  { id: '5m', label: '5M', seconds: 300 },
+  { id: 'all', label: 'All', seconds: Number.POSITIVE_INFINITY },
 ] as const;
 
 export type RangeId = (typeof RANGES)[number]['id'];
@@ -37,14 +37,8 @@ export const PriceChart = memo(function PriceChart({
   range: RangeId;
   onRange: (id: RangeId) => void;
 }) {
-  const window = RANGES.find((r) => r.id === range)!.ticks;
-  const scoped = useMemo(
-    () =>
-      Number.isFinite(window) && samples.length > window
-        ? samples.slice(samples.length - window)
-        : samples,
-    [samples, window],
-  );
+  const window = RANGES.find((r) => r.id === range)!.seconds;
+  const scoped = useMemo(() => priceWindow(samples, window), [samples, window]);
 
   const plot = useMemo(() => {
     const drawn = downsample(scoped);
@@ -61,7 +55,17 @@ export const PriceChart = memo(function PriceChart({
     const floor = low - pad;
     const ceil = high + pad;
     const pts = values.map((v, i) => {
-      const x = (i / (values.length - 1)) * VIEW_W;
+      const elapsed =
+        drawn[drawn.length - 1].recordedAtUs - drawn[0].recordedAtUs;
+      const x =
+        elapsed > 0n
+          ? (Number(
+              ((drawn[i].recordedAtUs - drawn[0].recordedAtUs) * 1_000_000n) /
+                elapsed,
+            ) /
+              1_000_000) *
+            VIEW_W
+          : (i / (values.length - 1)) * VIEW_W;
       const y = VIEW_H - ((v - floor) / (ceil - floor)) * VIEW_H;
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     });

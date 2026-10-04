@@ -610,3 +610,96 @@ recorded harness BLAKE3 remains `aeb7da36cf4df81a20d247237e7bd6b42e40cbc3ab23e99
 That guard runs before offered load and does not change measured tick work.
 This policy change alters the economics; its timings are not presented as a
 controlled performance comparison with the older, distressed CHAOS workload.
+
+## Selectable cadence investigation — 2026-10-04
+
+The [cadence delta](../deltas/selectable-cadence-profiles_2026-10-04_00-09-08_EST.md)
+adds persisted 20/10/5 Hz profiles, preserving 20 buckets. At 10 Hz each actor
+steps once per two target seconds: twice the population is not twice the actor
+update throughput. 5 Hz was initially prepared and arithmetic-tested only; the
+user subsequently stopped the 10 Hz search and requested a one-million-actor
+5 Hz probe. Maincloud's existing 100k world remains paused at tick 85,475.
+
+These are local Docker **exploratory** runs, not qualification or a Maincloud
+capacity claim. They use current weak-restoring dynamics/budgeted revival,
+confirmed reads, five offered human orders/sec, real persistent actor writes and
+the seven production subscriptions. The host exposes 12 logical CPUs of an AMD
+Ryzen 9 9950X under KVM, 31 GiB RAM and the pinned SpacetimeDB 2.10.1 runtime.
+No exclusive-core isolation is claimed. Builds, browser tests, other capacity
+probes and server restarts are kept outside measured windows.
+
+The first two NORMAL probes used ten viewers. The user then explicitly reduced
+the workload to **three viewers**, plus the human and evidence collector. The
+module and harness were rebuilt with that versioned configuration; all later
+probes use three. Do not pool the two loads or interpret them as a controlled
+cadence-only performance comparison.
+
+|    Actors | Viewers | Warm-up + measured | Result | P99 start lateness | Skips | Actor updates/s | Archive under `artifacts/exploration/` |
+| --------: | ------: | ------------------ | ------ | -----------------: | ----: | --------------: | -------------------------------------- |
+|   375,000 |      10 | 10 + 30 s          | Pass   |           2,095 µs |     0 |         187,500 | `20261004T052510Z-1124853`             |
+|   750,000 |      10 | 10 + 30 s          | Pass   |          52,663 µs |     0 |         375,000 | `20261004T052607Z-1129646`             |
+| 1,000,000 |       3 | 10 + 30 s          | Fail   |         130,839 µs |    79 |         398,335 | `20261004T052924Z-1146118`             |
+|   875,000 |       3 | 10 + 30 s          | Fail   |         110,488 µs |    31 |         401,032 | `20261004T053019Z-1150777`             |
+|   750,000 |       3 | 10 + 30 s          | Pass   |          47,139 µs |     0 |         375,000 | `20261004T053117Z-1155657`             |
+
+All five preserved healthy connections, offered load and balanced accounting.
+The failed probes missed application slots; they are not conservation failures.
+All actors remained ACTIVE, every observed tick matched shares, and no penny
+floor or grants occurred in these short windows. The one-million configured
+ceiling was tested and failed, rather than being advertised as capacity.
+
+The 812,500-actor refinement was explicitly paused when the user redirected the
+test to 5 Hz. Its 364 receipts and five observed skips remain in
+`artifacts/exploration/20261004T053209Z-1160117/`, alongside `CANCELLED.md`.
+It is interrupted evidence, not a completed capacity comparison. No longer
+10 Hz NORMAL/CHAOS confirmations were run after the change in direction.
+
+Frozen release modules (no test controls or phase instrumentation):
+
+- Ten viewers: `artifacts/builds/cadence-profiles/4b70e0f597675173.wasm`, SHA-256
+  `4b70e0f5976751739608f1ec5288f2ca8c46ab817c763959fed0734edc237a5e`.
+- Three viewers: `artifacts/builds/cadence-profiles/8f763839d849afe0.wasm`, SHA-256
+  `8f763839d849afe0481c2fcfe817aec1c2a6f1a16fd134c9c3eabd2c726b8072`.
+
+Each artifact retains exact workload bytes, workload/WASM/harness/source hashes,
+receipts, offered load, health history and accounting status. No current-workload
+population is qualified by these probes.
+
+### One million actors at 5 Hz, three viewers
+
+At the user's request, the next probe used the same three-viewer release WASM,
+one million actors, NORMAL, 30 seconds warm-up and 180 seconds measurement. It
+passed all exploratory gates: all 1,050 intended slots were observed, no slots
+were skipped, P99 **start lateness** was 13,255 µs against a 200,000 µs interval,
+and maximum lateness was 34,116 µs. These are not execution-duration timings.
+The measured window committed 45,000,000 actor updates, exactly 250,000/sec,
+with full bucket coverage, maintained load/connections and valid accounting.
+
+Across the complete 210-second health history, all one million actors stayed
+ACTIVE. Price ranged from **$94.43 to $105.78**, ending at $105.72. No penny-floor
+ticks, zero-volume ticks, wipeouts or recapitalization grants occurred. Measured
+matched volume was 94,892,091 shares (527,178/sec). This is a bounded observation,
+not a guarantee against later distress.
+
+Evidence: `artifacts/exploration/20261004T053329Z-1166856/5hz-1000000-normal/`.
+Harness BLAKE3: `f8d3c31d8f2e7772932d348b7636f185f05aba0293a2db6b5e9a2bc7e9f01c28`.
+The database was automatically paused after collection and retained with its
+rows. No probe databases or preexisting worlds were deleted.
+
+This establishes a passing **local NORMAL exploratory test at the configured
+one-million ceiling**, not a universal maximum or full qualification. No 5 Hz
+CHAOS test was performed; its unchanged trigger is at 240 target seconds, later
+than this entire NORMAL window, and it lasts another 240 seconds. No Maincloud
+module, frontend or live population was changed. The tradeoff is real: each actor
+steps once per four target seconds; the passing 750k/10 Hz short probe delivered
+375,000 updates/sec, versus 250,000 here. Populations and test lengths differ, so
+these are not a controlled cadence-only throughput comparison.
+
+Reproduction (rebuild the matching harness from this branch first):
+
+```sh
+CADENCE=5hz POPULATION=1000000 PROFILE=NORMAL \
+  WARMUP_SECONDS=30 MEASUREMENT_SECONDS=180 \
+  MODULE_WASM=artifacts/builds/cadence-profiles/8f763839d849afe0.wasm \
+  HARNESS_BIN=target/release/one-market-benchmark ./scripts/explore
+```

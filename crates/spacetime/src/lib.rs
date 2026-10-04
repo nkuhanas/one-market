@@ -10,6 +10,7 @@ mod schema;
 mod setup;
 #[cfg(feature = "test-support")]
 mod test_support;
+mod timing;
 
 use one_market_core::{config::config, Result};
 pub use runtime::simulation_tick;
@@ -79,6 +80,7 @@ pub fn init(ctx: &ReducerContext) {
         identity: ctx.sender(),
     });
     ctx.db.market_state().insert(fresh_market(ctx.timestamp, 0));
+    timing::ensure(ctx);
     revival::ensure(ctx, config().initial_price_cents);
     ctx.db.runtime_config().insert(RuntimeConfig {
         id: 0,

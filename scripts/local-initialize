@@ -27,6 +27,15 @@ if [[ "$phase" != READY ]]; then
   exit 1
 fi
 if [[ "$run_id" == 0 ]]; then
+  explicit_start="$(compose run --rm --no-deps tools spacetime --root-dir /state sql \
+    --server http://db:3000 --no-config --format json "$database" \
+    'SELECT requires_explicit_start FROM cadence_state' |
+    docker run --rm -i node:24.21.0-bookworm-slim node -e \
+      'let s="";process.stdin.on("data",c=>s+=c).on("end",()=>console.log(JSON.parse(s)[0].rows[0]?.[0] ?? false));')"
+  if [[ "$explicit_start" == true ]]; then
+    printf 'Cadence selected; existing world remains paused until an explicit start_run.\n'
+    exit 0
+  fi
   module_hash="$(compose run --rm --no-deps tools sha256sum target/wasm32-unknown-unknown/release/one_market_spacetime.wasm | cut -d ' ' -f 1)"
   call start_run '"NORMAL"' "\"$module_hash\"" false
 fi

@@ -1,5 +1,9 @@
 import { formatCount } from '../lib/units';
-import { TARGET_HZ, type ConnectionStatus } from '../market/contract';
+import {
+  cadenceLabel,
+  type Cadence,
+  type ConnectionStatus,
+} from '../market/contract';
 
 const SECTIONS = [
   { id: 'market', label: 'Market' },
@@ -11,9 +15,11 @@ const SECTIONS = [
 export function Header({
   status,
   logicalTick,
+  cadence,
 }: {
   status: ConnectionStatus;
   logicalTick?: bigint;
+  cadence?: Cadence;
 }) {
   const liveNow = status === 'Connected';
   return (
@@ -44,7 +50,7 @@ export function Header({
             {logicalTick === undefined ? '—' : formatCount(logicalTick)}
           </span>
         </span>
-        <span className="header-hz">{TARGET_HZ} Hz target</span>
+        <span className="header-hz">{cadenceLabel(cadence)}</span>
       </div>
     </header>
   );

@@ -57,6 +57,30 @@ pub struct RuntimeConfig {
     pub chaos_signal_bps: i64,
 }
 
+/// Public, bounded server-selected clock metadata. Selection never starts a run.
+#[table(accessor = cadence_state, public)]
+#[derive(Clone)]
+pub struct CadenceState {
+    #[primary_key]
+    pub id: u8,
+    pub profile: String,
+    pub tick_interval_us: u64,
+    pub bucket_count: u8,
+    pub requires_explicit_start: bool,
+}
+
+/// Immutable timing snapshot for one evidence segment; additive for old worlds.
+#[table(accessor = run_cadence)]
+#[derive(Clone)]
+pub struct RunCadence {
+    #[primary_key]
+    pub run_id: u64,
+    pub profile: String,
+    pub tick_interval_us: u64,
+    pub bucket_count: u8,
+    pub first_logical_tick: u64,
+}
+
 #[table(accessor = admin_allowlist)]
 pub struct AdminAllowlist {
     #[primary_key]

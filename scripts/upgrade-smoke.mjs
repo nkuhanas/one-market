@@ -54,7 +54,7 @@ async function fingerprints(names = tables) {
   );
 }
 async function advancing(before) {
-  for (let attempt = 0; attempt < 100; attempt++) {
+  for (let attempt = 0; attempt < 240; attempt++) {
     const state = await cloud.snapshot();
     if (state.market.logical_tick > before) return state;
     await new Promise((resolve) => setTimeout(resolve, 25));
@@ -84,6 +84,7 @@ if (phase === 'prepare') {
     JSON.parse(process.env.UPGRADE_BEFORE),
   );
   assert.equal((await cloud.query('SELECT * FROM market_dynamics')).length, 0);
+  assert.equal((await cloud.query('SELECT * FROM cadence_state')).length, 0);
   const before = await cloud.snapshot();
   const run = (await cloud.query('SELECT * FROM run_record'))[0];
   await cloud.call('benchmark_step'); // The version fence must fire before actor writes.
@@ -117,6 +118,10 @@ if (phase === 'prepare') {
   );
   assert.equal((await cloud.query('SELECT * FROM market_dynamics')).length, 1);
   assert.equal((await cloud.query('SELECT * FROM bucket_health')).length, 20);
+  assert.equal(
+    (await cloud.query('SELECT * FROM cadence_state'))[0].profile,
+    '20hz',
+  );
   const people = [
     ...(await cloud.query('SELECT * FROM actor_state')),
     ...(await cloud.query('SELECT * FROM human_trader')),
@@ -132,6 +137,38 @@ if (phase === 'prepare') {
       accounting.human_entry_cash_cents +
       accounting.recapitalization_cash_cents,
   );
+  const accountsBeforeSwitch = await fingerprints([
+    'actor_state',
+    'human_trader',
+    'pending_human_order',
+    'grant_accounting',
+    'market_dynamics',
+    'bucket_health',
+    'actor_recovery',
+  ]);
+  await cloud.call('set_cadence_profile', ['10hz']);
+  assert.deepEqual(
+    await fingerprints(Object.keys(accountsBeforeSwitch)),
+    accountsBeforeSwitch,
+  );
+  assert.equal(
+    (await cloud.snapshot()).market.logical_tick,
+    after.market.logical_tick,
+  );
+  const newBuild = createHash('sha256')
+    .update(
+      readFileSync(
+        'target/wasm32-unknown-unknown/release/one_market_spacetime.wasm',
+      ),
+    )
+    .digest('hex');
+  await cloud.call('start_run', ['NORMAL', newBuild, false]);
+  await advancing(after.market.logical_tick + 20n);
+  await cloud.call('pause_simulation');
+  assert.equal(
+    (await cloud.query('SELECT * FROM cadence_state'))[0].profile,
+    '10hz',
+  );
   console.log(
     encode(
       await fingerprints([
@@ -139,6 +176,8 @@ if (phase === 'prepare') {
         'market_dynamics',
         'bucket_health',
         'actor_recovery',
+        'cadence_state',
+        'run_cadence',
       ]),
     ),
   );
@@ -149,11 +188,34 @@ if (phase === 'prepare') {
       'market_dynamics',
       'bucket_health',
       'actor_recovery',
+      'cadence_state',
+      'run_cadence',
     ]),
     JSON.parse(process.env.UPGRADE_BEFORE),
   );
+  const before = await cloud.snapshot();
+  await cloud.call('recover_simulation');
+  await advancing(before.market.logical_tick);
+  await cloud.call('pause_simulation');
+  const after = await cloud.snapshot();
+  assert.equal(after.runtime.run_id, before.runtime.run_id);
+  const run = (await cloud.query('SELECT * FROM run_record')).find(
+    (r) => r.run_id === after.runtime.run_id,
+  );
+  const cadence = (await cloud.query('SELECT * FROM run_cadence')).find(
+    (r) => r.run_id === run.run_id,
+  );
+  assert.equal(cadence.tick_interval_us, 100000n);
+  for (const receipt of await cloud.query(
+    `SELECT * FROM detailed_benchmark_receipts WHERE run_id = ${run.run_id}`,
+  )) {
+    assert.equal(
+      receipt.intended_at[0],
+      run.origin[0] + receipt.intended_slot * cadence.tick_interval_us,
+    );
+  }
   console.log(
-    'Old-world rows, explicit adoption, accounting, failure evidence and paused restart persistence verified.',
+    'Old-world rows, explicit adoption, accounting, 20→10 Hz switch, segment evidence and restart/republish/recovery persistence verified.',
   );
 } else {
   throw new Error('Choose prepare, adopt or restart');

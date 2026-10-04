@@ -28,6 +28,10 @@ const samples = lines.map((line) => {
   return Object.fromEntries(fields.map((field, i) => [field, values[i]]));
 });
 const run = JSON.parse(fs.readFileSync(artifact, 'utf8'));
+// Historical archives predate selectable cadence and were all 20 Hz.
+const intervalUs = run.tick_interval_us ?? 50_000;
+if (!Number.isSafeInteger(intervalUs) || intervalUs <= 0)
+  throw Error('invalid artifact tick interval');
 if (run.mode !== 'EXPLORE' || samples.length < 2)
   throw Error('diagnostic exploration required');
 const counterFields = [
@@ -54,8 +58,8 @@ const columns = [
 ];
 const correlations = [];
 for (const receipt of run.receipts) {
-  const start = receipt.intended_at_us - 50_000;
-  const end = receipt.invoked_at_us + 50_000;
+  const start = receipt.intended_at_us - intervalUs;
+  const end = receipt.invoked_at_us + intervalUs;
   const before = samples.findLast((s) => s.at_us <= start);
   const after = samples.find((s) => s.at_us >= end);
   if (!before || !after) continue; // Never extrapolate beyond captured load.
@@ -92,7 +96,7 @@ console.log(
         .sort((a, b) => b[2] - a[2])
         .slice(0, 10),
       limitation:
-        'Overlapping ~100ms sampled process-wide windows; correlation is not per-tick causal attribution. Thread churn can invalidate scheduler deltas.',
+        'Overlapping cadence-scaled sampled process-wide windows; correlation is not per-tick causal attribution. Thread churn can invalidate scheduler deltas.',
     },
     null,
     2,

@@ -6,7 +6,7 @@ compose build tools web
 compose run --rm --no-deps web npm ci --no-audit --no-fund
 compose run --rm --no-deps web npm run format:check
 compose run --rm --no-deps web npm run lint
-compose run --rm --no-deps web node --test scripts/maincloud.test.mjs
+compose run --rm --no-deps web node --test scripts/maincloud.test.mjs scripts/cadence.test.mjs
 compose run --rm --no-deps web npm run typecheck
 compose run --rm --no-deps web npm run build
 compose run --rm --no-deps tools cargo fmt --all -- --check

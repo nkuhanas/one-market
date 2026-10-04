@@ -10,6 +10,8 @@ the exact measured binaries independently of Docker cache lifetime.
 | `capacity-delta/direct-index.wasm` | `055bb41343a998a16aa9d8b78fa90572601a8508b70aef33323604d61126b4ef` | `2b6afc4`, index only |
 | `capacity-delta/digest-only.wasm` | `814625047ade3b0fa8833ad2fbeeda0b967800a6c51ffce5eb0b1703e62d8e40` | `85afef9`, digest only, baseline B-tree primary key |
 | `capacity-delta/combined.wasm` | `d13c1a9fcd0cc82af969fd49250d9778603a10a0479f8f793c0371841975f68c` | `4f84bca`, direct index and fixed digest array |
+| `cadence-profiles/4b70e0f597675173.wasm` | `4b70e0f5976751739608f1ec5288f2ca8c46ab817c763959fed0734edc237a5e` | Selectable cadence delta, initial ten-viewer workload |
+| `cadence-profiles/8f763839d849afe0.wasm` | `8f763839d849afe0481c2fcfe817aec1c2a6f1a16fd134c9c3eabd2c726b8072` | Selectable cadence delta, revised three-viewer workload |
 
 All were built with the repository's pinned Rust 1.93.0 / SpacetimeDB 2.10.1
 release toolchain. None includes test controls or phase-timing instrumentation.

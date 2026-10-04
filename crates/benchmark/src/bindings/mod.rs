@@ -27,6 +27,8 @@ pub mod bucket_health_table;
 pub mod bucket_health_type;
 pub mod bucket_manifest_table;
 pub mod bucket_manifest_type;
+pub mod cadence_state_table;
+pub mod cadence_state_type;
 pub mod connected_reducer;
 pub mod connection_state_table;
 pub mod connection_state_type;
@@ -59,17 +61,21 @@ pub mod ping_reducer;
 pub mod place_order_reducer;
 pub mod price_point_table;
 pub mod price_point_type;
+pub mod prune_run_evidence_reducer;
 pub mod public_activity_table;
 pub mod public_activity_type;
 pub mod publish_benchmark_result_reducer;
 pub mod recover_simulation_reducer;
 pub mod reset_batch_reducer;
 pub mod reset_market_reducer;
+pub mod run_cadence_table;
+pub mod run_cadence_type;
 pub mod run_record_table;
 pub mod run_record_type;
 pub mod runtime_config_table;
 pub mod runtime_config_type;
 pub mod set_actor_population_reducer;
+pub mod set_cadence_profile_reducer;
 pub mod simulation_tick_reducer;
 pub mod start_run_reducer;
 pub mod tick_receipt_type;
@@ -101,6 +107,8 @@ pub use bucket_health_table::*;
 pub use bucket_health_type::BucketHealth;
 pub use bucket_manifest_table::*;
 pub use bucket_manifest_type::BucketManifest;
+pub use cadence_state_table::*;
+pub use cadence_state_type::CadenceState;
 pub use connected_reducer::connected;
 pub use connection_state_table::*;
 pub use connection_state_type::ConnectionState;
@@ -133,17 +141,21 @@ pub use ping_reducer::ping;
 pub use place_order_reducer::place_order;
 pub use price_point_table::*;
 pub use price_point_type::PricePoint;
+pub use prune_run_evidence_reducer::prune_run_evidence;
 pub use public_activity_table::*;
 pub use public_activity_type::PublicActivity;
 pub use publish_benchmark_result_reducer::publish_benchmark_result;
 pub use recover_simulation_reducer::recover_simulation;
 pub use reset_batch_reducer::reset_batch;
 pub use reset_market_reducer::reset_market;
+pub use run_cadence_table::*;
+pub use run_cadence_type::RunCadence;
 pub use run_record_table::*;
 pub use run_record_type::RunRecord;
 pub use runtime_config_table::*;
 pub use runtime_config_type::RuntimeConfig;
 pub use set_actor_population_reducer::set_actor_population;
+pub use set_cadence_profile_reducer::set_cadence_profile;
 pub use simulation_tick_reducer::simulation_tick;
 pub use start_run_reducer::start_run;
 pub use tick_receipt_type::TickReceipt;
@@ -180,6 +192,10 @@ pub enum Reducer {
         quantity: u64,
         limit_price_cents: u64,
     },
+    PruneRunEvidence {
+        run_id: u64,
+        confirmation: String,
+    },
     PublishBenchmarkResult {
         run_ids: Vec<u64>,
         environment: String,
@@ -193,6 +209,9 @@ pub enum Reducer {
     SetActorPopulation {
         population: u64,
         seed: u64,
+    },
+    SetCadenceProfile {
+        profile: String,
     },
     SimulationTick {
         scheduled: TickSchedule,
@@ -227,11 +246,13 @@ impl __sdk::Reducer for Reducer {
             Reducer::PauseSimulation => "pause_simulation",
             Reducer::Ping => "ping",
             Reducer::PlaceOrder { .. } => "place_order",
+            Reducer::PruneRunEvidence { .. } => "prune_run_evidence",
             Reducer::PublishBenchmarkResult { .. } => "publish_benchmark_result",
             Reducer::RecoverSimulation => "recover_simulation",
             Reducer::ResetBatch => "reset_batch",
             Reducer::ResetMarket { .. } => "reset_market",
             Reducer::SetActorPopulation { .. } => "set_actor_population",
+            Reducer::SetCadenceProfile { .. } => "set_cadence_profile",
             Reducer::SimulationTick { .. } => "simulation_tick",
             Reducer::StartRun { .. } => "start_run",
             Reducer::TriggerChaos => "trigger_chaos",
@@ -277,6 +298,13 @@ impl __sdk::Reducer for Reducer {
                 quantity: quantity.clone(),
                 limit_price_cents: limit_price_cents.clone(),
             }),
+            Reducer::PruneRunEvidence {
+                run_id,
+                confirmation,
+            } => __sats::bsatn::to_vec(&prune_run_evidence_reducer::PruneRunEvidenceArgs {
+                run_id: run_id.clone(),
+                confirmation: confirmation.clone(),
+            }),
             Reducer::PublishBenchmarkResult {
                 run_ids,
                 environment,
@@ -301,6 +329,11 @@ impl __sdk::Reducer for Reducer {
                 __sats::bsatn::to_vec(&set_actor_population_reducer::SetActorPopulationArgs {
                     population: population.clone(),
                     seed: seed.clone(),
+                })
+            }
+            Reducer::SetCadenceProfile { profile } => {
+                __sats::bsatn::to_vec(&set_cadence_profile_reducer::SetCadenceProfileArgs {
+                    profile: profile.clone(),
                 })
             }
             Reducer::SimulationTick { scheduled } => {
@@ -350,6 +383,7 @@ pub struct DbUpdate {
     benchmark_runs: __sdk::TableUpdate<RunRecord>,
     bucket_health: __sdk::TableUpdate<BucketHealth>,
     bucket_manifest: __sdk::TableUpdate<BucketManifest>,
+    cadence_state: __sdk::TableUpdate<CadenceState>,
     connection_state: __sdk::TableUpdate<ConnectionState>,
     detailed_benchmark_receipts: __sdk::TableUpdate<TickReceipt>,
     grant_accounting: __sdk::TableUpdate<GrantAccounting>,
@@ -365,6 +399,7 @@ pub struct DbUpdate {
     pending_human_order: __sdk::TableUpdate<PendingHumanOrder>,
     price_point: __sdk::TableUpdate<PricePoint>,
     public_activity: __sdk::TableUpdate<PublicActivity>,
+    run_cadence: __sdk::TableUpdate<RunCadence>,
     run_record: __sdk::TableUpdate<RunRecord>,
     runtime_config: __sdk::TableUpdate<RuntimeConfig>,
     tick_schedule: __sdk::TableUpdate<TickSchedule>,
@@ -407,6 +442,9 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "bucket_manifest" => db_update
                     .bucket_manifest
                     .append(bucket_manifest_table::parse_table_update(table_update)?),
+                "cadence_state" => db_update
+                    .cadence_state
+                    .append(cadence_state_table::parse_table_update(table_update)?),
                 "connection_state" => db_update
                     .connection_state
                     .append(connection_state_table::parse_table_update(table_update)?),
@@ -452,6 +490,9 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "public_activity" => db_update
                     .public_activity
                     .append(public_activity_table::parse_table_update(table_update)?),
+                "run_cadence" => db_update
+                    .run_cadence
+                    .append(run_cadence_table::parse_table_update(table_update)?),
                 "run_record" => db_update
                     .run_record
                     .append(run_record_table::parse_table_update(table_update)?),
@@ -514,6 +555,9 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.bucket_manifest = cache
             .apply_diff_to_table::<BucketManifest>("bucket_manifest", &self.bucket_manifest)
             .with_updates_by_pk(|row| &row.bucket);
+        diff.cadence_state = cache
+            .apply_diff_to_table::<CadenceState>("cadence_state", &self.cadence_state)
+            .with_updates_by_pk(|row| &row.id);
         diff.connection_state = cache
             .apply_diff_to_table::<ConnectionState>("connection_state", &self.connection_state)
             .with_updates_by_pk(|row| &row.connection_id);
@@ -559,6 +603,9 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.public_activity = cache
             .apply_diff_to_table::<PublicActivity>("public_activity", &self.public_activity)
             .with_updates_by_pk(|row| &row.id);
+        diff.run_cadence = cache
+            .apply_diff_to_table::<RunCadence>("run_cadence", &self.run_cadence)
+            .with_updates_by_pk(|row| &row.run_id);
         diff.run_record = cache
             .apply_diff_to_table::<RunRecord>("run_record", &self.run_record)
             .with_updates_by_pk(|row| &row.run_id);
@@ -619,6 +666,9 @@ impl __sdk::DbUpdate for DbUpdate {
                 "bucket_manifest" => db_update
                     .bucket_manifest
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "cadence_state" => db_update
+                    .cadence_state
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "connection_state" => db_update
                     .connection_state
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
@@ -663,6 +713,9 @@ impl __sdk::DbUpdate for DbUpdate {
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "public_activity" => db_update
                     .public_activity
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "run_cadence" => db_update
+                    .run_cadence
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "run_record" => db_update
                     .run_record
@@ -719,6 +772,9 @@ impl __sdk::DbUpdate for DbUpdate {
                 "bucket_manifest" => db_update
                     .bucket_manifest
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "cadence_state" => db_update
+                    .cadence_state
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "connection_state" => db_update
                     .connection_state
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
@@ -764,6 +820,9 @@ impl __sdk::DbUpdate for DbUpdate {
                 "public_activity" => db_update
                     .public_activity
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "run_cadence" => db_update
+                    .run_cadence
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "run_record" => db_update
                     .run_record
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
@@ -801,6 +860,7 @@ pub struct AppliedDiff<'r> {
     benchmark_runs: __sdk::TableAppliedDiff<'r, RunRecord>,
     bucket_health: __sdk::TableAppliedDiff<'r, BucketHealth>,
     bucket_manifest: __sdk::TableAppliedDiff<'r, BucketManifest>,
+    cadence_state: __sdk::TableAppliedDiff<'r, CadenceState>,
     connection_state: __sdk::TableAppliedDiff<'r, ConnectionState>,
     detailed_benchmark_receipts: __sdk::TableAppliedDiff<'r, TickReceipt>,
     grant_accounting: __sdk::TableAppliedDiff<'r, GrantAccounting>,
@@ -816,6 +876,7 @@ pub struct AppliedDiff<'r> {
     pending_human_order: __sdk::TableAppliedDiff<'r, PendingHumanOrder>,
     price_point: __sdk::TableAppliedDiff<'r, PricePoint>,
     public_activity: __sdk::TableAppliedDiff<'r, PublicActivity>,
+    run_cadence: __sdk::TableAppliedDiff<'r, RunCadence>,
     run_record: __sdk::TableAppliedDiff<'r, RunRecord>,
     runtime_config: __sdk::TableAppliedDiff<'r, RuntimeConfig>,
     tick_schedule: __sdk::TableAppliedDiff<'r, TickSchedule>,
@@ -877,6 +938,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         callbacks.invoke_table_row_callbacks::<BucketManifest>(
             "bucket_manifest",
             &self.bucket_manifest,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<CadenceState>(
+            "cadence_state",
+            &self.cadence_state,
             event,
         );
         callbacks.invoke_table_row_callbacks::<ConnectionState>(
@@ -942,6 +1008,7 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.public_activity,
             event,
         );
+        callbacks.invoke_table_row_callbacks::<RunCadence>("run_cadence", &self.run_cadence, event);
         callbacks.invoke_table_row_callbacks::<RunRecord>("run_record", &self.run_record, event);
         callbacks.invoke_table_row_callbacks::<RuntimeConfig>(
             "runtime_config",
@@ -1628,6 +1695,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         benchmark_runs_table::register_table(client_cache);
         bucket_health_table::register_table(client_cache);
         bucket_manifest_table::register_table(client_cache);
+        cadence_state_table::register_table(client_cache);
         connection_state_table::register_table(client_cache);
         detailed_benchmark_receipts_table::register_table(client_cache);
         grant_accounting_table::register_table(client_cache);
@@ -1643,6 +1711,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         pending_human_order_table::register_table(client_cache);
         price_point_table::register_table(client_cache);
         public_activity_table::register_table(client_cache);
+        run_cadence_table::register_table(client_cache);
         run_record_table::register_table(client_cache);
         runtime_config_table::register_table(client_cache);
         tick_schedule_table::register_table(client_cache);
@@ -1659,6 +1728,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "benchmark_runs",
         "bucket_health",
         "bucket_manifest",
+        "cadence_state",
         "connection_state",
         "detailed_benchmark_receipts",
         "grant_accounting",
@@ -1674,6 +1744,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "pending_human_order",
         "price_point",
         "public_activity",
+        "run_cadence",
         "run_record",
         "runtime_config",
         "tick_schedule",

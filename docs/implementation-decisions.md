@@ -3,13 +3,34 @@
 `config/v02.json` is the versioned workload configuration. Its exact UTF-8 bytes
 are hashed with BLAKE3; formatting changes therefore change the configuration
 hash in `market_state`. The run/result workload hash is BLAKE3 over the domain
-`one-market-workload-v1` plus a NUL byte, the exact config bytes, selected
+`one-market-workload-v2` plus a NUL byte, the exact config bytes, selected
 population as little-endian u64, seed as little-endian u64, and profile UTF-8
-bytes. Thus selecting a different population, seed, or profile cannot reuse a
+bytes, then `\0cadence\0`, cadence ID UTF-8 bytes and its interval as little-endian
+u64. Thus selecting a different population, seed, market profile or cadence cannot reuse a
 qualified workload hash. The compiled module and Rust harness share the pure
 `one-market-core` crate. The build hash is SHA-256 of the published release WASM.
 
 ## Frozen baseline rules
+
+- `one-market-v02-cadence-profiles-1` keeps the dynamics/revival economic rules
+  and adds a versioned 20hz/10hz/5hz registry. 20hz is the default; scheduler and
+  benchmark timings derive from the selected interval. All retain 20 buckets,
+  so actor steps target 1/2/4 seconds respectively. Economic timers stay in
+  logical ticks; human/load/measurement timers stay in wall-clock units.
+  Per the user's revised load target, benchmarks use three ordinary production
+  viewers (plus the human and evidence collector); historical ten-viewer results
+  retain their original hashes and are not current-workload qualification.
+- `cadence_state` is a public singleton; `run_cadence` privately snapshots each
+  run's cadence, bucket count and first logical tick. No existing persistent
+  row layout changes. A paused cadence change closes the old evidence segment
+  and requires explicit `start_run`; it never resets balances, inventory, pending
+  orders, news, recovery state or logical ticks. Continuations cannot qualify.
+  Ordinary `recover_simulation` preserves its run's clock grid and failure.
+  Legacy runs without a snapshot retain their historical 20 Hz interpretation.
+- Detailed evidence remains bounded at six runs. Owner-only `prune_run_evidence`
+  accepts `PRUNE RUN <id>`, removes at most 500 receipts per call, then removes
+  that completed non-current run's metadata when empty. Archive first; selection
+  does not prune automatically, and this operation never resets the world.
 
 - Integer prices range from 1 to 100,000,000 cents. No floating-point settlement.
 - Actors use SplitMix64 derivation, indexed buckets, and integer weighted signals.

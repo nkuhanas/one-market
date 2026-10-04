@@ -1,4 +1,9 @@
-use crate::{bucket, config::config, extend_digest, schedule::deadline};
+use crate::{
+    bucket,
+    config::{config, Cadence},
+    extend_digest,
+    schedule::deadline,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -42,6 +47,29 @@ pub fn validate(
     load_valid: bool,
     healthy: bool,
 ) -> Validation {
+    validate_at_cadence(
+        receipts,
+        run_id,
+        population,
+        origin_us,
+        run_failed,
+        load_valid,
+        healthy,
+        &config().default_cadence(),
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn validate_at_cadence(
+    receipts: &[Receipt],
+    run_id: u64,
+    population: u64,
+    origin_us: i64,
+    run_failed: bool,
+    load_valid: bool,
+    healthy: bool,
+    cadence: &Cadence,
+) -> Validation {
     let c = config();
     let mut result = Validation {
         status: "PASSED".into(),
@@ -70,15 +98,20 @@ pub fn validate(
             .reasons
             .push("client disconnect or incomplete evidence".into());
     }
-    let expected_total = (c.warmup_seconds + c.measurement_seconds) * 20;
+    let warmup_ticks = cadence
+        .ticks_for_seconds(c.warmup_seconds)
+        .expect("validated cadence");
+    let expected_total = cadence
+        .ticks_for_seconds(c.warmup_seconds + c.measurement_seconds)
+        .expect("validated cadence");
     if receipts.len() as u64 != expected_total {
         incomplete = true;
         result
             .reasons
             .push("missing or excess tick receipts".into());
     }
-    let mut digests = vec![vec![0; 32]; 20];
-    let mut counts = [0u64; 20];
+    let mut digests = vec![vec![0; 32]; usize::from(c.buckets)];
+    let mut counts = vec![0u64; usize::from(c.buckets)];
     for id in 1..=population {
         let b = bucket(id) as usize;
         counts[b] += 1;
@@ -100,19 +133,20 @@ pub fn validate(
             && Some(r.intended_slot) == r.logical_tick.checked_add(1)
             && r.logical_tick < expected_total
             && (i == 0 || sorted[i - 1].logical_tick != r.logical_tick);
-        let b = (r.logical_tick % 20) as usize;
+        let b = (r.logical_tick % u64::from(c.buckets)) as usize;
         coverage_ok &= r.bucket as usize == b
             && r.actor_steps == counts[b]
             && r.actor_rows_updated == counts[b]
             && r.membership_digest == digests[b]
             && r.previous_steps_valid
             && r.policy_evaluations <= r.actor_steps;
-        deadlines_ok &= deadline(origin_us, r.intended_slot).ok() == Some(r.intended_at_us)
+        deadlines_ok &= deadline(origin_us, r.intended_slot, cadence.tick_interval_us).ok()
+            == Some(r.intended_at_us)
             && i128::from(r.invoked_at_us) - i128::from(r.intended_at_us)
                 == i128::from(r.start_lateness_us)
             && r.schedule_debt_us == r.start_lateness_us;
         result.skipped_slots = result.skipped_slots.saturating_add(r.skipped_slots);
-        if r.logical_tick >= c.warmup_seconds * 20 && r.logical_tick < expected_total {
+        if r.logical_tick >= warmup_ticks && r.logical_tick < expected_total {
             lateness.push(r.start_lateness_us);
             result.measured_actor_updates = result
                 .measured_actor_updates
@@ -145,25 +179,28 @@ pub fn validate(
     if !lateness.is_empty() {
         lateness.sort_unstable();
         result.start_lateness_p99_us = lateness[(lateness.len() * 99).div_ceil(100) - 1];
-        if result.start_lateness_p99_us >= 50_000 {
+        if result.start_lateness_p99_us >= cadence.tick_interval_us {
             failure = true;
             result
                 .reasons
-                .push("P99 start lateness is not below 50ms".into());
+                .push("P99 start lateness is not below the selected tick interval".into());
         }
-        // No growing debt: the mean of the final 20 ticks cannot exceed the first
-        // 20 by >= one slot. Slot gaps already fail above; report debt separately.
-        let measured: Vec<_> = sorted.iter().filter(|r| r.logical_tick >= 600).collect();
-        if measured.len() >= 40 {
-            let first: u128 = measured[..20]
+        // Compare one target second at each end, using the selected slot budget.
+        let measured: Vec<_> = sorted
+            .iter()
+            .filter(|r| r.logical_tick >= warmup_ticks && r.logical_tick < expected_total)
+            .collect();
+        let debt_window = cadence.ticks_for_seconds(1).expect("validated cadence") as usize;
+        if measured.len() >= 2 * debt_window {
+            let first: u128 = measured[..debt_window]
                 .iter()
                 .map(|r| u128::from(r.schedule_debt_us))
                 .sum();
-            let last: u128 = measured[measured.len() - 20..]
+            let last: u128 = measured[measured.len() - debt_window..]
                 .iter()
                 .map(|r| u128::from(r.schedule_debt_us))
                 .sum();
-            if last > first + 20 * 50_000 {
+            if last >= first + debt_window as u128 * u128::from(cadence.tick_interval_us) {
                 failure = true;
                 result.reasons.push("growing schedule debt".into());
             }
@@ -171,7 +208,10 @@ pub fn validate(
     } else {
         incomplete = true;
     }
-    if result.measured_actor_updates != population.saturating_mul(c.measurement_seconds) {
+    let expected_updates: u64 = (warmup_ticks..expected_total)
+        .map(|tick| counts[(tick % u64::from(c.buckets)) as usize])
+        .sum();
+    if result.measured_actor_updates != expected_updates {
         incomplete = true;
         result
             .reasons
@@ -224,6 +264,31 @@ mod tests {
             })
             .collect()
     }
+    #[test]
+    fn ten_hz_uses_its_own_budget_and_half_as_many_actor_updates() {
+        let cadence = config().cadence("10hz").unwrap();
+        let mut rows = evidence();
+        rows.truncate(cadence.ticks_for_seconds(210).unwrap() as usize);
+        for r in &mut rows {
+            r.intended_at_us = deadline(0, r.intended_slot, cadence.tick_interval_us).unwrap();
+            r.invoked_at_us = r.intended_at_us + 60_000;
+            r.start_lateness_us = 60_000;
+            r.schedule_debt_us = 60_000;
+        }
+        let validate =
+            |rows: &[Receipt]| validate_at_cadence(rows, 1, 20, 0, false, true, true, &cadence);
+        let good = validate(&rows);
+        assert_eq!(good.status, "PASSED", "{:?}", good.reasons);
+        assert_eq!(good.measured_actor_updates, 20 * 90);
+        assert_eq!(good.start_lateness_p99_us, 60_000);
+        assert_eq!(
+            super::validate(&rows, 1, 20, 0, false, true, true).status,
+            "FAILED"
+        );
+        rows[400].actor_rows_updated -= 1;
+        assert_eq!(validate(&rows).status, "FAILED");
+    }
+
     #[test]
     fn missing_duplicate_and_reduced_workload_never_qualify() {
         let good = evidence();

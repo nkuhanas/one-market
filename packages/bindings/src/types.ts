@@ -114,6 +114,15 @@ export const BucketManifest = __t.object("BucketManifest", {
 });
 export type BucketManifest = __Infer<typeof BucketManifest>;
 
+export const CadenceState = __t.object("CadenceState", {
+  id: __t.u8(),
+  profile: __t.string(),
+  tickIntervalUs: __t.u64(),
+  bucketCount: __t.u8(),
+  requiresExplicitStart: __t.bool(),
+});
+export type CadenceState = __Infer<typeof CadenceState>;
+
 export const ConnectionState = __t.object("ConnectionState", {
   connectionId: __t.connectionId(),
   identity: __t.identity(),
@@ -263,6 +272,15 @@ export const PublicActivity = __t.object("PublicActivity", {
   wipeoutCount: __t.u64(),
 });
 export type PublicActivity = __Infer<typeof PublicActivity>;
+
+export const RunCadence = __t.object("RunCadence", {
+  runId: __t.u64(),
+  profile: __t.string(),
+  tickIntervalUs: __t.u64(),
+  bucketCount: __t.u8(),
+  firstLogicalTick: __t.u64(),
+});
+export type RunCadence = __Infer<typeof RunCadence>;
 
 export const RunRecord = __t.object("RunRecord", {
   runId: __t.u64(),

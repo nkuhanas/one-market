@@ -3,7 +3,6 @@ import { DbConnection } from '@one-market/bindings';
 import { openOrderedWebSocket } from '@one-market/transport';
 import type {
   ActorSample,
-  BenchmarkResult,
   HumanOrderReceipt,
   HumanTrader,
   MarketState,
@@ -22,7 +21,8 @@ import {
   live,
   pending,
   PRICE_HISTORY_TICKS,
-  TICKS_PER_EPOCH,
+  selectCapacity,
+  type Cadence,
   type ActivityEntry,
   type ActorRow,
   type CapacityResult,
@@ -36,13 +36,12 @@ import {
   type Trader,
 } from './contract';
 
-const EPOCH_TICKS = BigInt(TICKS_PER_EPOCH);
 const NO_RUN = 'No qualified run yet';
 const NOT_JOINED = 'Not trading yet';
 
 /**
  * Feeds other than the clock are flushed on an interval rather than on every
- * row. The runtime commits at 20 Hz, and repainting a 3,600-point chart or a
+ * row. Repainting a 3,600-point chart or a
  * 500-row tape that often costs far more than it communicates.
  */
 const FEED_FLUSH_MS = 250;
@@ -51,7 +50,6 @@ function toSnapshot(row: MarketState): MarketSnapshot {
   return {
     logicalTick: row.logicalTick,
     epoch: row.epoch,
-    slot: Number(row.logicalTick % EPOCH_TICKS),
     priceCents: row.priceCents,
     previousTradedPriceCents: row.previousTradedPriceCents,
     matchedShareVolume: row.matchedShareVolume,
@@ -70,6 +68,7 @@ function toSnapshot(row: MarketState): MarketSnapshot {
 
 const toSample = (row: PricePoint): PriceSample => ({
   logicalTick: row.logicalTick,
+  recordedAtUs: row.recordedAt.microsSinceUnixEpoch,
   priceCents: row.priceCents,
   matchedShareVolume: row.matchedShareVolume,
 });
@@ -133,28 +132,8 @@ const toReceipt = (row: HumanOrderReceipt): FillReceipt => ({
   status: row.status,
 });
 
-/**
- * Picks the capacity headline (section 14). The frontend selects a qualified
- * result and never derives capacity from the live population. With several
- * passes on record, the largest qualified population wins.
- */
-function selectCapacity(rows: BenchmarkResult[]): Pending<CapacityResult> {
-  const qualified = rows.filter(
-    (row) => row.status === 'PASSED' && row.completedAt !== undefined,
-  );
-  if (qualified.length === 0) return pending(NO_RUN);
-  const best = qualified.reduce((a, b) =>
-    b.actorCount > a.actorCount ? b : a,
-  );
-  return live({
-    actorCount: best.actorCount,
-    tickIntervalUs: best.tickIntervalUs,
-    environment: best.environment,
-    workloadProfile: best.workloadProfile,
-  });
-}
-
 export interface OneMarket {
+  readonly cadence?: Cadence;
   readonly snapshot?: MarketSnapshot;
   readonly priceHistory: readonly PriceSample[];
   readonly activity: readonly ActivityEntry[];
@@ -177,6 +156,7 @@ export interface OneMarket {
 }
 
 export function useOneMarket(): OneMarket {
+  const [cadence, setCadence] = useState<Cadence>();
   const [snapshot, setSnapshot] = useState<MarketSnapshot>();
   const [priceHistory, setPriceHistory] = useState<readonly PriceSample[]>([]);
   const [activity, setActivity] = useState<readonly ActivityEntry[]>([]);
@@ -202,6 +182,8 @@ export function useOneMarket(): OneMarket {
     setStatus('Connecting');
     setError('');
     setSnapshot(undefined);
+    setCadence(undefined);
+    setCapacity(pending(NO_RUN));
     setPriceHistory([]);
     setActivity([]);
     setActors([]);
@@ -238,6 +220,7 @@ export function useOneMarket(): OneMarket {
           })
           .subscribe([
             'SELECT * FROM market_state',
+            'SELECT * FROM cadence_state',
             'SELECT * FROM price_point',
             'SELECT * FROM public_activity',
             'SELECT * FROM news_event',
@@ -298,7 +281,20 @@ export function useOneMarket(): OneMarket {
       setShock(
         shocks.find((n) => current >= n.startTick && current <= n.endTick),
       );
-      setCapacity(selectCapacity([...db.db.benchmarkResult.iter()]));
+      const timing = db.db.cadenceState.id.find(0);
+      const selected =
+        timing &&
+        timing.tickIntervalUs > 0n &&
+        timing.tickIntervalUs <= 1_000_000n &&
+        timing.bucketCount > 0
+          ? {
+              profile: timing.profile,
+              tickIntervalUs: timing.tickIntervalUs,
+              bucketCount: timing.bucketCount,
+            }
+          : undefined;
+      setCadence(selected);
+      setCapacity(selectCapacity([...db.db.benchmarkResult.iter()], selected));
       const mine = [...db.db.myTrader.iter()][0];
       setTrader(mine ? live(toTrader(mine)) : pending(NOT_JOINED));
       const order = [...db.db.myPendingOrder.iter()][0];
@@ -356,6 +352,7 @@ export function useOneMarket(): OneMarket {
   const reconnect = useCallback(() => setAttempt((value) => value + 1), []);
 
   return {
+    cadence,
     snapshot,
     priceHistory,
     activity,

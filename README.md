@@ -1,8 +1,8 @@
 # One Market
 
 A globally shared synthetic market for humans and persistent autonomous policy
-actors. The experiment asks how many actors SpacetimeDB can sustain at a 20 Hz
-simulation cadence. All money is synthetic.
+actors. The experiment asks how many actors SpacetimeDB can sustain at a selected
+simulation cadence (20 Hz by default). All money is synthetic.
 
 [SPEC.md](SPEC.md) describes the product and intended architecture. The v0.2
 backend implements persistent actors, uniform-price clearing, human orders,
@@ -138,7 +138,8 @@ The [client contract](docs/client-contract.md) defines public market/feed tables
 identity-scoped human views, and reducer calls. JavaScript uses `bigint` for
 64-bit quantities. Deprecated `tick` and `price` aliases keep the current observer
 working. One private absolute-time schedule targets the original 50 ms deadline
-grid. Scheduler-origin and admin guards protect clock/control reducers.
+grid at the default 20 Hz, or the selected profile's 100/200 ms grid at 10/5 Hz.
+Scheduler-origin and admin guards protect clock/control reducers.
 Missed slots, pause, and recovery invalidate qualification; they never erase
 failure evidence. Ordinary publication/restart preserves rows and scheduling.
 
@@ -170,3 +171,37 @@ See [Maincloud deployment](docs/maincloud-deployment.md) for fresh-name
 publication, bounded actor initialization, frontend configuration, and safe
 inspection/pause commands. The authenticated Docker CLI may be reused without
 putting publishing credentials in the frontend environment.
+
+## Cadence profiles
+
+`config/v02.json` defines `20hz` (default), `10hz`, and `5hz`. All use 20 actor
+buckets: each actor steps once per 1/2/4 target seconds respectively. Economic
+durations stay in logical ticks, so they slow down too. Human rate limits and
+benchmark measurement windows remain wall-clock based. The frontend reads the
+server's cadence and uses actual timestamps for chart minute ranges.
+
+For local, non-qualifying capacity exploration:
+
+```sh
+CADENCE=10hz POPULATION=375000 WARMUP_SECONDS=10 MEASUREMENT_SECONDS=30 ./scripts/explore
+```
+
+Each invocation creates its own fresh local database. `CADENCE` is also supported
+by the qualification scripts; it never changes the existing live world.
+At 10 Hz, CHAOS starts at 120 target seconds and lasts 1,200 logical ticks
+(120 seconds when cadence holds); use a longer probe to include its aftermath.
+At 5 Hz, each actor steps every four target seconds. See the capacity worklog for
+the tested populations, windows and workload limits; availability is not qualification.
+
+An owner can switch an existing world with `pause_simulation`,
+`set_cadence_profile("10hz")`, then `start_run("NORMAL", module_sha256, false)`.
+Selection alone never resumes. Balances, actors, pending orders and logical
+ticks survive; old evidence retains its original cadence. A continuation cannot
+qualify capacity. For same-profile pause recovery, use `recover_simulation`.
+See the [cadence delta](deltas/selectable-cadence-profiles_2026-10-04_00-09-08_EST.md)
+for safeguards and measured results.
+
+Publish the additive module before deploying the matching frontend: the new
+client subscribes to `cadence_state`, which older modules do not expose. Local
+development must likewise point to a database with the matching module. This
+branch's tests do not publish to Maincloud or change the hosted frontend.
