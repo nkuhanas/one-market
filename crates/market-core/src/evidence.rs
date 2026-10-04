@@ -77,7 +77,7 @@ pub fn validate(
             .reasons
             .push("missing or excess tick receipts".into());
     }
-    let mut digests = vec![vec![0; 32]; 20];
+    let mut digests = [[0; 32]; 20];
     let mut counts = [0u64; 20];
     for id in 1..=population {
         let b = bucket(id) as usize;
@@ -192,7 +192,7 @@ pub fn validate(
 mod tests {
     use super::*;
     fn evidence() -> Vec<Receipt> {
-        let mut digest = vec![vec![0; 32]; 20];
+        let mut digest = [[0; 32]; 20];
         let mut counts = [0; 20];
         for id in 1..=20 {
             let b = bucket(id) as usize;
@@ -215,7 +215,7 @@ mod tests {
                     actor_steps: counts[b],
                     policy_evaluations: counts[b],
                     actor_rows_updated: counts[b],
-                    membership_digest: digest[b].clone(),
+                    membership_digest: digest[b].to_vec(),
                     previous_steps_valid: true,
                     orders_submitted: 0,
                     orders_filled: 0,

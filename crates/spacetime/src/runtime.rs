@@ -289,7 +289,7 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         .bucket()
         .find(bucket)
         .ok_or("manifest missing")?;
-    let mut digest = vec![0; 32];
+    let mut digest = [0; 32];
     let mut orders = vec![];
     let mut actor_orders = vec![None; actors.len()];
     let mut evaluations = 0;
@@ -639,7 +639,7 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         actor_steps: steps,
         policy_evaluations: evaluations,
         actor_rows_updated: steps,
-        membership_digest: digest,
+        membership_digest: digest.to_vec(),
         previous_steps_valid: true,
         orders_submitted: orders.len() as u64,
         orders_filled: filled_orders,

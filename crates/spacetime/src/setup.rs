@@ -77,7 +77,7 @@ pub fn initialize_batch(ctx: &ReducerContext, count: u64) -> Result<()> {
             .find(b)
             .ok_or("manifest missing")?;
         manifest.actor_count = add(manifest.actor_count, 1)?;
-        manifest.membership_digest = extend_digest(&manifest.membership_digest, actor_id);
+        manifest.membership_digest = extend_digest(&manifest.membership_digest, actor_id).to_vec();
         ctx.db.bucket_manifest().bucket().update(manifest);
     }
     let mut g = ctx
