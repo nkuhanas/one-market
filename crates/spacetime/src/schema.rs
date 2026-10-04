@@ -104,6 +104,19 @@ pub struct TickSchedule {
     pub intended_slot: u64,
 }
 
+/// One durable wall-clock stop, separate from the simulation's tick schedule.
+#[table(accessor = timed_run_stop, scheduled(crate::stop_timed_run))]
+#[derive(Clone)]
+pub struct TimedRunStop {
+    #[primary_key]
+    #[auto_inc]
+    pub scheduled_id: u64,
+    pub scheduled_at: ScheduleAt,
+    pub deadline: Timestamp,
+    pub run_id: u64,
+    pub generation: u64,
+}
+
 /// Private storage encoding only; public samples retain their string status.
 #[derive(SpacetimeType, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ActorStatus {

@@ -10,12 +10,14 @@ mod schema;
 mod setup;
 #[cfg(feature = "test-support")]
 mod test_support;
+mod timed_run;
 mod timing;
 
 use one_market_core::{config::config, Result};
 pub use runtime::simulation_tick;
 use schema::*;
 use spacetimedb::{reducer, ReducerContext, Table, Timestamp};
+pub use timed_run::stop_timed_run;
 
 fn market(ctx: &ReducerContext) -> Result<MarketState> {
     ctx.db

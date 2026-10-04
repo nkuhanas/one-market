@@ -217,6 +217,59 @@ if (phase === 'prepare') {
   console.log(
     'Old-world rows, explicit adoption, accounting, 20→10 Hz switch, segment evidence and restart/republish/recovery persistence verified.',
   );
+} else if (phase === 'timed-prepare') {
+  await cloud.call('set_cadence_profile', ['5hz']);
+  const hash = createHash('sha256')
+    .update(
+      readFileSync(
+        'target/wasm32-unknown-unknown/release/one_market_spacetime.wasm',
+      ),
+    )
+    .digest('hex');
+  await cloud.call('start_timed_run', ['NORMAL', hash, 20n]);
+  const [stop] = await cloud.query('SELECT * FROM timed_run_stop');
+  assert.ok(stop);
+  assert.equal((await cloud.snapshot()).runtime.enabled, true);
+  console.log(encode(stop));
+} else if (phase === 'timed-restart') {
+  const expected = JSON.parse(process.env.UPGRADE_TIMED);
+  const until = performance.now() + 30_000;
+  for (;;) {
+    const { runtime: r } = await cloud.snapshot();
+    assert.equal(r.run_id.toString(), expected.run_id);
+    const stops = await cloud.query('SELECT * FROM timed_run_stop');
+    if (!r.enabled) {
+      assert.equal(stops.length, 0);
+      assert.equal(
+        (await cloud.query('SELECT * FROM tick_schedule')).length,
+        0,
+      );
+      break;
+    }
+    // It may expire between these separate reads; any surviving timer must
+    // retain its original deadline across recreation and publication.
+    if (stops.length) assert.equal(encode(stops[0]), encode(expected));
+    assert.ok(
+      performance.now() < until,
+      'persisted stop did not pause the world',
+    );
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  const receipts = await cloud.query(
+    `SELECT * FROM detailed_benchmark_receipts WHERE run_id = ${BigInt(expected.run_id)}`,
+  );
+  assert.ok(receipts.length > 0);
+  for (const receipt of receipts) {
+    assert.ok(receipt.invoked_at[0] < BigInt(expected.deadline[0]));
+  }
+  const tick = (await cloud.snapshot()).market.logical_tick;
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  assert.equal((await cloud.snapshot()).market.logical_tick, tick);
+  console.log(
+    'Persisted 5 Hz timed stop survived server recreation/republish and stopped without an external pause.',
+  );
 } else {
-  throw new Error('Choose prepare, adopt or restart');
+  throw new Error(
+    'Choose prepare, adopt, restart, timed-prepare or timed-restart',
+  );
 }

@@ -21,6 +21,7 @@ import ResetMarketReducer from "../reset_market_reducer";
 import SetActorPopulationReducer from "../set_actor_population_reducer";
 import SetCadenceProfileReducer from "../set_cadence_profile_reducer";
 import StartRunReducer from "../start_run_reducer";
+import StartTimedRunReducer from "../start_timed_run_reducer";
 import TriggerChaosReducer from "../trigger_chaos_reducer";
 import ValidateRunReducer from "../validate_run_reducer";
 
@@ -39,6 +40,7 @@ export type ResetMarketParams = __Infer<typeof ResetMarketReducer>;
 export type SetActorPopulationParams = __Infer<typeof SetActorPopulationReducer>;
 export type SetCadenceProfileParams = __Infer<typeof SetCadenceProfileReducer>;
 export type StartRunParams = __Infer<typeof StartRunReducer>;
+export type StartTimedRunParams = __Infer<typeof StartTimedRunReducer>;
 export type TriggerChaosParams = __Infer<typeof TriggerChaosReducer>;
 export type ValidateRunParams = __Infer<typeof ValidateRunReducer>;
 

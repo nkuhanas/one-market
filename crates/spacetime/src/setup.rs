@@ -115,6 +115,7 @@ pub fn reset_market(ctx: &ReducerContext, confirmation: String) -> Result<()> {
     if confirmation != "RESET WORLD" {
         return Err("explicit RESET WORLD confirmation required".into());
     }
+    crate::timed_run::clear(ctx);
     let mut r = runtime(ctx)?;
     crate::runtime::fail_run(ctx, r.run_id, "world reset")?;
     r.enabled = false;

@@ -19,3 +19,10 @@ compose run --rm --no-deps tools spacetime --root-dir /state publish \
   --server http://db:3000 --bin-path target/wasm32-unknown-unknown/release/one_market_spacetime.wasm \
   --no-config --delete-data=never --yes=remote,migrate,skip-login "$UPGRADE_DATABASE"
 compose run --rm --no-deps -e UPGRADE_DATABASE -e UPGRADE_BEFORE cloud-admin node scripts/upgrade-smoke.mjs restart
+UPGRADE_TIMED="$(compose run --rm --no-deps -e UPGRADE_DATABASE cloud-admin node scripts/upgrade-smoke.mjs timed-prepare)"
+export UPGRADE_TIMED
+compose up -d --force-recreate --wait db
+compose run --rm --no-deps tools spacetime --root-dir /state publish \
+  --server http://db:3000 --bin-path target/wasm32-unknown-unknown/release/one_market_spacetime.wasm \
+  --no-config --delete-data=never --yes=remote,migrate,skip-login "$UPGRADE_DATABASE"
+compose run --rm --no-deps -e UPGRADE_DATABASE -e UPGRADE_TIMED cloud-admin node scripts/upgrade-smoke.mjs timed-restart

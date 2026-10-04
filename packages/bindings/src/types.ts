@@ -355,6 +355,15 @@ export const TickSchedule = __t.object("TickSchedule", {
 });
 export type TickSchedule = __Infer<typeof TickSchedule>;
 
+export const TimedRunStop = __t.object("TimedRunStop", {
+  scheduledId: __t.u64(),
+  scheduledAt: __t.scheduleAt(),
+  deadline: __t.timestamp(),
+  runId: __t.u64(),
+  generation: __t.u64(),
+});
+export type TimedRunStop = __Infer<typeof TimedRunStop>;
+
 export const ValidatedRun = __t.object("ValidatedRun", {
   runId: __t.u64(),
   evidenceHash: __t.string(),

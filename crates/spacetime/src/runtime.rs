@@ -83,6 +83,7 @@ pub fn start_run(
     if ctx.db.run_record().count() >= config().detailed_run_retention {
         return Err("archive and explicitly prune completed run evidence first".into());
     }
+    crate::timed_run::clear(ctx);
     r.origin = timestamp(
         now_us(ctx)
             .checked_add(1_000_000)
@@ -134,10 +135,15 @@ pub fn start_run(
 #[reducer]
 pub fn pause_simulation(ctx: &ReducerContext) -> Result<()> {
     admin(ctx)?;
+    pause(ctx, "simulation paused")
+}
+
+pub(crate) fn pause(ctx: &ReducerContext, reason: &str) -> Result<()> {
     let mut r = runtime(ctx)?;
-    fail_run(ctx, r.run_id, "simulation paused")?;
+    fail_run(ctx, r.run_id, reason)?;
     r.enabled = false;
     r.generation = add(r.generation, 1)?;
+    crate::timed_run::clear(ctx);
     for row in ctx.db.tick_schedule().iter() {
         ctx.db
             .tick_schedule()
@@ -164,6 +170,7 @@ pub fn recover_simulation(ctx: &ReducerContext) -> Result<()> {
     if run.completed_at.is_some() {
         return Err("completed runs cannot resume".into());
     }
+    crate::timed_run::clear(ctx);
     // Explicit owner recovery can adopt new rules without resetting inventory.
     // Preserve the old run hashes: this mixed-version continuation is FAILED,
     // not new benchmark evidence, and its reason records the adopted workload.
@@ -234,6 +241,9 @@ pub fn simulation_tick(ctx: &ReducerContext, scheduled: TickSchedule) -> Result<
     let r = runtime(ctx)?;
     if !r.enabled || scheduled.generation != r.generation || scheduled.intended_slot != r.next_slot
     {
+        return Ok(());
+    }
+    if crate::timed_run::stop_if_due(ctx, &r)? {
         return Ok(());
     }
     // Delete explicitly as well as runtime's one-shot cleanup; no duplicate next tick.

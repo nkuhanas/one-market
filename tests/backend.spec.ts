@@ -85,6 +85,7 @@ test.describe
       'SELECT * FROM actor_recovery',
       'SELECT * FROM cadence_state',
       'SELECT * FROM run_cadence',
+      'SELECT * FROM timed_run_stop',
     ]);
     for (const client of [alice, bob]) {
       await subscribe(client, [
@@ -173,6 +174,7 @@ test.describe
       'actor_state',
       'actor_recovery',
       'run_cadence',
+      'timed_run_stop',
       'detailed_benchmark_receipts',
     ]) {
       const outsider = await connect();
@@ -902,6 +904,89 @@ test.describe
     expect(owner.db.runCadence.runId.find(firstId)).toBeNull();
     expect(row().logicalTick).toBe(next.logicalTick);
     expect([...owner.db.actorState.iter()]).toHaveLength(20);
-    // 5 Hz is deliberately never selected or started in runtime verification.
+  });
+
+  test('timed 5 Hz runs arm atomically and stop on their server deadline', async () => {
+    await owner.reducers.setCadenceProfile({ profile: '5hz' });
+    await expect.poll(() => owner.db.runtimeConfig.id.find(0)!.runId).toBe(0n);
+    const before = row().logicalTick;
+    const args = { profile: 'NORMAL', buildHash, durationSeconds: 1n };
+    await expect(alice.reducers.startTimedRun(args)).rejects.toThrow();
+    for (const durationSeconds of [0n, 3601n, 18446744073709551615n]) {
+      await expect(
+        owner.reducers.startTimedRun({ ...args, durationSeconds }),
+      ).rejects.toThrow();
+    }
+    expect(owner.db.runtimeConfig.id.find(0)!.enabled).toBe(false);
+    expect([...owner.db.timedRunStop.iter()]).toHaveLength(0);
+    expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+    await owner.reducers.startTimedRun(args);
+    await expect.poll(() => [...owner.db.timedRunStop.iter()].length).toBe(1);
+    const stop = [...owner.db.timedRunStop.iter()][0];
+    const run = owner.db.runRecord.runId.find(stop.runId)!;
+    expect(run.qualification).toBe(false);
+    expect(owner.db.runCadence.runId.find(stop.runId)!.tickIntervalUs).toBe(
+      200000n,
+    );
+    expect(stop.deadline.microsSinceUnixEpoch).toBe(
+      run.origin.microsSinceUnixEpoch + 1000000n,
+    );
+    await expect(
+      owner.reducers.stopTimedRun({ scheduled: stop }),
+    ).rejects.toThrow();
+    await expect(
+      alice.reducers.stopTimedRun({ scheduled: stop }),
+    ).rejects.toThrow();
+    await expect(owner.reducers.startTimedRun(args)).rejects.toThrow();
+    await expect.poll(() => row().logicalTick).toBeGreaterThan(before);
+    await expect
+      .poll(() => owner.db.runtimeConfig.id.find(0)!.enabled)
+      .toBe(false);
+    const stopped = await readServer();
+    await expect.poll(readCache).toEqual(stopped);
+    expect([...owner.db.timedRunStop.iter()]).toHaveLength(0);
+    expect([...owner.db.tickSchedule.iter()]).toHaveLength(0);
+    expect([...owner.db.actorState.iter()]).toHaveLength(20);
+    expect(owner.db.runRecord.runId.find(stop.runId)!.status).toBe('FAILED');
+    const receipts = [...owner.db.detailedBenchmarkReceipts.iter()].filter(
+      (r) => r.runId === stop.runId,
+    );
+    expect(receipts.length).toBeGreaterThan(0);
+    for (const receipt of receipts) {
+      expect(receipt.invokedAt.microsSinceUnixEpoch).toBeLessThan(
+        stop.deadline.microsSinceUnixEpoch,
+      );
+    }
+    await assertRemainsPaused(stopped, readServer, readCache);
+  });
+
+  test('early pause cancels the deadline and cannot stop a later run', async () => {
+    await owner.reducers.setCadenceProfile({ profile: '10hz' });
+    await owner.reducers.startTimedRun({
+      profile: 'NORMAL',
+      buildHash,
+      durationSeconds: 1n,
+    });
+    await expect.poll(() => [...owner.db.timedRunStop.iter()].length).toBe(1);
+    const cancelled = [...owner.db.timedRunStop.iter()][0];
+    await pause();
+    await expect.poll(() => [...owner.db.timedRunStop.iter()].length).toBe(0);
+    await owner.reducers.setCadenceProfile({ profile: '5hz' });
+    await owner.reducers.startRun({
+      profile: 'NORMAL',
+      buildHash,
+      qualification: false,
+    });
+    await expect.poll(() => row().logicalTick).toBeGreaterThan(0n);
+    // 20 ticks at 5 Hz pass the cancelled timer's one-second deadline even if
+    // the test machine is delayed; no sleep-based cache snapshot assertion.
+    const before = row().logicalTick;
+    await expect
+      .poll(() => row().logicalTick, { timeout: 10000 })
+      .toBeGreaterThan(before + 20n);
+    expect(owner.db.runtimeConfig.id.find(0)!.enabled).toBe(true);
+    expect(owner.db.runtimeConfig.id.find(0)!.runId).not.toBe(cancelled.runId);
+    expect([...owner.db.timedRunStop.iter()]).toHaveLength(0);
+    await pause();
   });
 });

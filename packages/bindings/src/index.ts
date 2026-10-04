@@ -49,6 +49,7 @@ import ResetMarketReducer from "./reset_market_reducer";
 import SetActorPopulationReducer from "./set_actor_population_reducer";
 import SetCadenceProfileReducer from "./set_cadence_profile_reducer";
 import StartRunReducer from "./start_run_reducer";
+import StartTimedRunReducer from "./start_timed_run_reducer";
 import TriggerChaosReducer from "./trigger_chaos_reducer";
 import ValidateRunReducer from "./validate_run_reducer";
 
@@ -227,6 +228,7 @@ const reducersSchema = __reducers(
   __reducerSchema("set_actor_population", SetActorPopulationReducer),
   __reducerSchema("set_cadence_profile", SetCadenceProfileReducer),
   __reducerSchema("start_run", StartRunReducer),
+  __reducerSchema("start_timed_run", StartTimedRunReducer),
   __reducerSchema("trigger_chaos", TriggerChaosReducer),
   __reducerSchema("validate_run", ValidateRunReducer),
 );

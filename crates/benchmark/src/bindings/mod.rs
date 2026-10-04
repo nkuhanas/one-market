@@ -78,9 +78,13 @@ pub mod set_actor_population_reducer;
 pub mod set_cadence_profile_reducer;
 pub mod simulation_tick_reducer;
 pub mod start_run_reducer;
+pub mod start_timed_run_reducer;
+pub mod stop_timed_run_reducer;
 pub mod tick_receipt_type;
 pub mod tick_schedule_table;
 pub mod tick_schedule_type;
+pub mod timed_run_stop_table;
+pub mod timed_run_stop_type;
 pub mod trigger_chaos_reducer;
 pub mod validate_run_reducer;
 pub mod validated_run_table;
@@ -158,9 +162,13 @@ pub use set_actor_population_reducer::set_actor_population;
 pub use set_cadence_profile_reducer::set_cadence_profile;
 pub use simulation_tick_reducer::simulation_tick;
 pub use start_run_reducer::start_run;
+pub use start_timed_run_reducer::start_timed_run;
+pub use stop_timed_run_reducer::stop_timed_run;
 pub use tick_receipt_type::TickReceipt;
 pub use tick_schedule_table::*;
 pub use tick_schedule_type::TickSchedule;
+pub use timed_run_stop_table::*;
+pub use timed_run_stop_type::TimedRunStop;
 pub use trigger_chaos_reducer::trigger_chaos;
 pub use validate_run_reducer::validate_run;
 pub use validated_run_table::*;
@@ -221,6 +229,14 @@ pub enum Reducer {
         build_hash: String,
         qualification: bool,
     },
+    StartTimedRun {
+        profile: String,
+        build_hash: String,
+        duration_seconds: u64,
+    },
+    StopTimedRun {
+        scheduled: TimedRunStop,
+    },
     TriggerChaos,
     ValidateRun {
         run_id: u64,
@@ -255,6 +271,8 @@ impl __sdk::Reducer for Reducer {
             Reducer::SetCadenceProfile { .. } => "set_cadence_profile",
             Reducer::SimulationTick { .. } => "simulation_tick",
             Reducer::StartRun { .. } => "start_run",
+            Reducer::StartTimedRun { .. } => "start_timed_run",
+            Reducer::StopTimedRun { .. } => "stop_timed_run",
             Reducer::TriggerChaos => "trigger_chaos",
             Reducer::ValidateRun { .. } => "validate_run",
             _ => unreachable!(),
@@ -350,6 +368,20 @@ impl __sdk::Reducer for Reducer {
                 build_hash: build_hash.clone(),
                 qualification: qualification.clone(),
             }),
+            Reducer::StartTimedRun {
+                profile,
+                build_hash,
+                duration_seconds,
+            } => __sats::bsatn::to_vec(&start_timed_run_reducer::StartTimedRunArgs {
+                profile: profile.clone(),
+                build_hash: build_hash.clone(),
+                duration_seconds: duration_seconds.clone(),
+            }),
+            Reducer::StopTimedRun { scheduled } => {
+                __sats::bsatn::to_vec(&stop_timed_run_reducer::StopTimedRunArgs {
+                    scheduled: scheduled.clone(),
+                })
+            }
             Reducer::TriggerChaos => {
                 __sats::bsatn::to_vec(&trigger_chaos_reducer::TriggerChaosArgs {})
             }
@@ -403,6 +435,7 @@ pub struct DbUpdate {
     run_record: __sdk::TableUpdate<RunRecord>,
     runtime_config: __sdk::TableUpdate<RuntimeConfig>,
     tick_schedule: __sdk::TableUpdate<TickSchedule>,
+    timed_run_stop: __sdk::TableUpdate<TimedRunStop>,
     validated_run: __sdk::TableUpdate<ValidatedRun>,
 }
 
@@ -502,6 +535,9 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "tick_schedule" => db_update
                     .tick_schedule
                     .append(tick_schedule_table::parse_table_update(table_update)?),
+                "timed_run_stop" => db_update
+                    .timed_run_stop
+                    .append(timed_run_stop_table::parse_table_update(table_update)?),
                 "validated_run" => db_update
                     .validated_run
                     .append(validated_run_table::parse_table_update(table_update)?),
@@ -615,6 +651,9 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.tick_schedule = cache
             .apply_diff_to_table::<TickSchedule>("tick_schedule", &self.tick_schedule)
             .with_updates_by_pk(|row| &row.scheduled_id);
+        diff.timed_run_stop = cache
+            .apply_diff_to_table::<TimedRunStop>("timed_run_stop", &self.timed_run_stop)
+            .with_updates_by_pk(|row| &row.scheduled_id);
         diff.validated_run = cache
             .apply_diff_to_table::<ValidatedRun>("validated_run", &self.validated_run)
             .with_updates_by_pk(|row| &row.run_id);
@@ -726,6 +765,9 @@ impl __sdk::DbUpdate for DbUpdate {
                 "tick_schedule" => db_update
                     .tick_schedule
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "timed_run_stop" => db_update
+                    .timed_run_stop
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "validated_run" => db_update
                     .validated_run
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
@@ -832,6 +874,9 @@ impl __sdk::DbUpdate for DbUpdate {
                 "tick_schedule" => db_update
                     .tick_schedule
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "timed_run_stop" => db_update
+                    .timed_run_stop
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "validated_run" => db_update
                     .validated_run
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
@@ -880,6 +925,7 @@ pub struct AppliedDiff<'r> {
     run_record: __sdk::TableAppliedDiff<'r, RunRecord>,
     runtime_config: __sdk::TableAppliedDiff<'r, RuntimeConfig>,
     tick_schedule: __sdk::TableAppliedDiff<'r, TickSchedule>,
+    timed_run_stop: __sdk::TableAppliedDiff<'r, TimedRunStop>,
     validated_run: __sdk::TableAppliedDiff<'r, ValidatedRun>,
     __unused: std::marker::PhantomData<&'r ()>,
 }
@@ -1018,6 +1064,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         callbacks.invoke_table_row_callbacks::<TickSchedule>(
             "tick_schedule",
             &self.tick_schedule,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<TimedRunStop>(
+            "timed_run_stop",
+            &self.timed_run_stop,
             event,
         );
         callbacks.invoke_table_row_callbacks::<ValidatedRun>(
@@ -1715,6 +1766,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         run_record_table::register_table(client_cache);
         runtime_config_table::register_table(client_cache);
         tick_schedule_table::register_table(client_cache);
+        timed_run_stop_table::register_table(client_cache);
         validated_run_table::register_table(client_cache);
     }
     const ALL_TABLE_NAMES: &'static [&'static str] = &[
@@ -1748,6 +1800,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "run_record",
         "runtime_config",
         "tick_schedule",
+        "timed_run_stop",
         "validated_run",
     ];
 }
