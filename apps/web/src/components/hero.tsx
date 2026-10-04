@@ -45,13 +45,11 @@ export function Hero({
   snapshot,
   cadence,
   fillRate,
-  connected,
   samples,
 }: {
   snapshot?: MarketSnapshot;
   cadence?: Cadence;
   fillRate?: number;
-  connected: boolean;
   samples: readonly PriceSample[];
 }) {
   const bg = backdrop(samples);
@@ -68,9 +66,6 @@ export function Hero({
           <path className="hero-backdrop-line" d={bg.line} />
         </svg>
       )}
-      <span className={`hero-flag ${connected ? 'hero-flag-on' : ''}`}>
-        {connected ? 'Live now' : 'Connecting'}
-      </span>
 
       <div className="hero-lockup">
         <img

@@ -5,6 +5,7 @@ import { ChaosBanner } from './components/chaos-banner';
 import { CursorTrail } from './components/cursor-trail';
 import { Explainer } from './components/explainer';
 import { Hero } from './components/hero';
+import { KillFeed } from './components/kill-feed';
 import { Header } from './components/header';
 import { MarketHeader } from './components/market-header';
 import { OrderPanel } from './components/order-panel';
@@ -21,11 +22,6 @@ export function App() {
   const market = useOneMarket();
   useScrollReveal();
   const [range, setRange] = useState<RangeId>('live');
-  // The runtime authorises the shock against its private admin allowlist. This
-  // flag only decides whether the control is offered, never whether it works.
-  const [showChaos] = useState(() =>
-    new URLSearchParams(window.location.search).has('admin'),
-  );
   const { snapshot } = market;
 
   // A rate has to come from the change in a counter over elapsed time. The
@@ -50,7 +46,6 @@ export function App() {
           snapshot={snapshot}
           cadence={market.cadence}
           fillRate={fillRate}
-          connected={market.status === 'Connected'}
           samples={market.priceHistory}
         />
 
@@ -139,6 +134,7 @@ export function App() {
 
         <div className="panels" data-reveal>
           <ActivityFeed activity={market.activity} />
+          <KillFeed kills={market.kills} />
           <ActorsPanel
             actors={market.actors}
             actorCount={snapshot?.actorCount}
@@ -153,7 +149,6 @@ export function App() {
           status={market.status}
           error={market.error}
           pricePoints={market.priceHistory.length}
-          showChaos={showChaos}
           onPing={market.ping}
           onTriggerChaos={market.triggerChaos}
           onReconnect={market.reconnect}

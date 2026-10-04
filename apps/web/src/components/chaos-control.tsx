@@ -3,14 +3,12 @@ import { useState } from 'react';
 /**
  * The admin shock control (SPEC.md sections 10 and 13).
  *
- * `trigger_chaos` is authorised against the private admin allowlist by the
- * runtime, so this is only ever an offer to call it: the `?admin` flag decides
- * whether the control is shown, never whether it is permitted. A visitor who
- * finds the flag still gets "admin authorization required" from the server.
+ * The runtime authorises `trigger_chaos` against its private admin allowlist,
+ * so this is only ever an offer to call it. Anyone who finds it and is not an
+ * admin gets the refusal straight from the server.
  *
- * It is kept off the default view because firing it deliberately fails the
- * active benchmark run, which is not something a passer-by should do by
- * accident.
+ * It lives inside the collapsed diagnostics panel because firing the shock
+ * calls `fail_run` and invalidates the benchmark in progress.
  */
 export function ChaosControl({
   chaosActive,
@@ -43,30 +41,18 @@ export function ChaosControl({
 
   return (
     <div className="chaos-control">
-      <div>
-        <h3>Chaos</h3>
-        <p>
-          Releases a fixed news shock into every agent&apos;s signal. It does
-          not move the price directly, and it fails the active benchmark run.
-        </p>
-      </div>
-      <div className="chaos-control-actions">
-        <button
-          type="button"
-          className="danger"
-          disabled={!connected || busy || chaosActive}
-          onClick={fire}
-        >
-          {chaosActive
-            ? 'Shock in effect'
-            : busy
-              ? 'Releasing…'
-              : 'Trigger chaos'}
-        </button>
-        <p className="chaos-control-note" aria-live="polite" aria-atomic="true">
-          {message}
-        </p>
-      </div>
+      <button
+        type="button"
+        className="danger"
+        disabled={!connected || busy || chaosActive}
+        onClick={fire}
+        title="Releases a news shock into every agent's signal and fails the benchmark run in progress"
+      >
+        {chaosActive ? 'Already going' : busy ? 'Releasing…' : "Don't click"}
+      </button>
+      <p className="chaos-control-note" aria-live="polite" aria-atomic="true">
+        {message}
+      </p>
     </div>
   );
 }

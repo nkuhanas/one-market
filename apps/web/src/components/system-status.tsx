@@ -19,7 +19,6 @@ export function SystemStatus({
   status,
   error,
   pricePoints,
-  showChaos,
   onPing,
   onTriggerChaos,
   onReconnect,
@@ -29,7 +28,6 @@ export function SystemStatus({
   status: ConnectionStatus;
   error: string;
   pricePoints: number;
-  showChaos: boolean;
   onPing: () => Promise<void>;
   onTriggerChaos: () => Promise<void>;
   onReconnect: () => void;
@@ -131,15 +129,12 @@ export function SystemStatus({
               </dd>
             </div>
           </dl>
+          <ChaosControl
+            chaosActive={snapshot?.chaosActive ?? false}
+            connected={status === 'Connected'}
+            onTrigger={onTriggerChaos}
+          />
         </div>
-      )}
-
-      {showChaos && (
-        <ChaosControl
-          chaosActive={snapshot?.chaosActive ?? false}
-          connected={status === 'Connected'}
-          onTrigger={onTriggerChaos}
-        />
       )}
 
       {error && (
