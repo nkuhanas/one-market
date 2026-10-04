@@ -504,40 +504,6 @@ main {
   overflow: visible;
 }
 
-.chart-line {
-  fill: none;
-  stroke: var(--text-2);
-  stroke-width: 1.75;
-  vector-effect: non-scaling-stroke;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-}
-
-.chart-area {
-  fill: rgb(34 194 232 / 0.08);
-  stroke: none;
-}
-
-svg.up .chart-line {
-  stroke: var(--up);
-}
-svg.up .chart-area {
-  fill: rgb(34 197 94 / 0.09);
-}
-svg.down .chart-line {
-  stroke: var(--down);
-}
-svg.down .chart-area {
-  fill: rgb(255 90 90 / 0.08);
-}
-svg.flat .chart-line {
-  stroke: var(--text-3);
-  stroke-dasharray: 4 6;
-}
-svg.flat .chart-area {
-  fill: transparent;
-}
-
 .chart-scale {
   display: flex;
   flex-direction: column;
@@ -1748,21 +1714,6 @@ button.carousel-play:hover {
 
 /* Volume band and chart statistics ------------------------------------------ */
 
-.chart-volume rect {
-  fill: var(--text-3);
-  opacity: 0.4;
-}
-
-svg.up .chart-volume rect {
-  fill: var(--up);
-  opacity: 0.32;
-}
-
-svg.down .chart-volume rect {
-  fill: var(--down);
-  opacity: 0.3;
-}
-
 .chart-scale-volume {
   color: var(--text-3);
   opacity: 0.8;
@@ -1822,4 +1773,34 @@ svg.down .chart-volume rect {
   .row-actor .row-detail:last-child {
     grid-column: 3 / -1;
   }
+}
+
+/* Candlesticks --------------------------------------------------------------
+   Every figure in a candle is a price the auction actually cleared at: the
+   open is the first clearing in its bucket, the close the last, the wick the
+   extremes. Nothing is averaged, so the shape is the market, not a filter. */
+
+.candle line {
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.candle-up line,
+.candle-up rect {
+  stroke: var(--up);
+  fill: var(--up);
+}
+
+.candle-down line,
+.candle-down rect {
+  stroke: var(--down);
+  fill: var(--down);
+}
+
+.candle rect {
+  stroke: none;
+}
+
+.candle-volume {
+  opacity: 0.3;
 }
