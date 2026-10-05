@@ -37,6 +37,7 @@ export const PriceChart = memo(function PriceChart({
   stats = [],
   snapshot,
   cadence,
+  staticDemo = false,
 }: {
   samples: readonly PriceSample[];
   range: RangeId;
@@ -44,6 +45,7 @@ export const PriceChart = memo(function PriceChart({
   stats?: readonly ChartStat[];
   snapshot?: MarketSnapshot;
   cadence?: Cadence;
+  staticDemo?: boolean;
 }) {
   const [cursor, setCursor] = useState<number>();
   const window = RANGES.find((r) => r.id === range)!.seconds;
@@ -114,9 +116,11 @@ export const PriceChart = memo(function PriceChart({
         <div>
           <h2>Price history</h2>
           <p className="chart-source">
-            {plot
-              ? `${plot.drawn.length} candles from ${formatCount(BigInt(scoped.length))} clearings`
-              : 'Server price feed'}
+            {staticDemo
+              ? 'Illustrative static prices and volume'
+              : plot
+                ? `${plot.drawn.length} candles from ${formatCount(BigInt(scoped.length))} clearings`
+                : 'Server price feed'}
           </p>
         </div>
         <div className="range" role="group" aria-label="Chart range">
@@ -128,7 +132,7 @@ export const PriceChart = memo(function PriceChart({
               aria-pressed={option.id === range}
               onClick={() => onRange(option.id)}
             >
-              {option.label}
+              {staticDemo && option.id === 'live' ? '30s' : option.label}
             </button>
           ))}
         </div>
@@ -254,7 +258,11 @@ export const PriceChart = memo(function PriceChart({
       )}
       <div className="chart-foot">
         <MarketClock snapshot={snapshot} cadence={cadence} />
-        {plot && <span>Per-second figures observed by this browser</span>}
+        {staticDemo ? (
+          <span>Example clock · no live measurements</span>
+        ) : plot && stats.length > 0 ? (
+          <span>Per-second figures observed by this browser</span>
+        ) : null}
       </div>
     </section>
   );

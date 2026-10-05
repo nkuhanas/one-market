@@ -53,15 +53,19 @@ function Row({ entry }: { entry: ActivityEntry }) {
 
 export const ActivityFeed = memo(function ActivityFeed({
   activity,
+  staticDemo = false,
 }: {
   activity: readonly ActivityEntry[];
+  staticDemo?: boolean;
 }) {
   return (
     <section className="panel" id="activity">
       <div className="panel-head">
-        <h2>Live activity</h2>
+        <h2>{staticDemo ? 'Example activity' : 'Live activity'}</h2>
         <span className="panel-note">
-          Sampled feed, not a throughput measure
+          {staticDemo
+            ? 'Static illustrative events'
+            : 'Sampled feed, not a throughput measure'}
         </span>
       </div>
       {activity.length === 0 ? (

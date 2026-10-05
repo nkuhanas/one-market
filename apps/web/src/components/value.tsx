@@ -13,7 +13,9 @@ export function Metric({
   tone = 'neutral',
 }: {
   label: string;
-  value: Pending<ReactNode>;
+  value:
+    | Pending<ReactNode>
+    | { readonly state: 'sample'; readonly value: ReactNode };
   hint?: string;
   tone?: 'neutral' | 'accent' | 'up' | 'down';
 }) {

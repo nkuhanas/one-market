@@ -17,8 +17,17 @@ import { live, pending } from './market/contract';
 import { useScrollReveal } from './lib/use-reveal';
 import { useRates } from './market/use-rates';
 import { useOneMarket } from './market/use-one-market';
+import { StaticMarketDemo } from './components/static-market-demo';
 
 export function App() {
+  // Choose components before hooks: static mode never opens a database socket.
+  const mode = import.meta.env.VITE_MARKET_MODE;
+  const staticDemo =
+    mode === 'static' || (import.meta.env.PROD && mode !== 'live');
+  return staticDemo ? <StaticMarketDemo /> : <LiveMarket />;
+}
+
+function LiveMarket() {
   const market = useOneMarket();
   useScrollReveal();
   const [range, setRange] = useState<RangeId>('live');

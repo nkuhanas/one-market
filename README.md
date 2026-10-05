@@ -4,11 +4,16 @@ A globally shared synthetic market for humans and persistent autonomous policy
 actors. The experiment asks how many actors SpacetimeDB can sustain at a selected
 simulation cadence (20 Hz by default). All money is synthetic.
 
+The hosted site is a **read-only static demo**. The live production market is
+down due to compute costs. Its illustrative prices, actors, and events are not
+live data or benchmark results. Run the real market locally with the quick start
+below; fresh local startup defaults to **200 actors**, not one million.
+
 [SPEC.md](SPEC.md) describes the product and intended architecture. The v0.2
 backend implements persistent actors, uniform-price clearing, human orders,
-lifecycle accounting, CHAOS, and a Rust qualification harness. The frontend is
-still Kaleb's minimal shared-clock observer; the new typed contracts are ready
-for its market controls and visualization.
+lifecycle accounting, CHAOS, and a Rust qualification harness. The frontend
+includes price/volume candles, agent and lifecycle feeds, human trading, and
+runtime diagnostics for local use, plus the hosted static demo.
 
 ## Quick start
 
@@ -24,6 +29,17 @@ cd one-market
 
 Open <http://localhost:5173>. Open a second browser window to observe the same
 advancing tick. **Ping runtime** confirms a public reducer call.
+
+The 200-actor default is a lightweight starting workload for laptops; Docker's
+toolchain downloads/builds still need disk space and memory. Startup preserves
+existing worlds rather than resizing them. Use a fresh local database name if
+you previously initialized a large world and want the small default.
+
+Production builds use static demo mode by default and open no database
+connection. Local `npm run dev` / `scripts/local-up` remain live. Set the public
+`VITE_MARKET_MODE=static` before starting Vite to preview the demo locally, or
+`VITE_MARKET_MODE=live` when deliberately building a live frontend. This switch
+does not publish, reset, start, or stop any database.
 
 ```sh
 ./scripts/local-down       # stop services; retain data and publishing identity
