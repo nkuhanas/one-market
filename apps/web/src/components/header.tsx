@@ -16,10 +16,12 @@ export function Header({
   status,
   logicalTick,
   cadence,
+  staticDemo = false,
 }: {
   status: ConnectionStatus;
   logicalTick?: bigint;
   cadence?: Cadence;
+  staticDemo?: boolean;
 }) {
   const liveNow = status === 'Connected';
   return (
@@ -48,25 +50,31 @@ export function Header({
             live region. Connection state is the one status worth announcing,
             and it is announced once, atomically, with context. */}
         <span className="sr-only" aria-live="polite" aria-atomic="true">
-          {liveNow
-            ? 'Connected to the live market'
-            : status === 'Connecting'
-              ? 'Connecting to the market'
-              : 'Market connection lost'}
+          {staticDemo
+            ? 'Static demo. The hosted market is offline.'
+            : liveNow
+              ? 'Connected to the live market'
+              : status === 'Connecting'
+                ? 'Connecting to the market'
+                : 'Market connection lost'}
         </span>
         <span
           className={`live ${liveNow ? 'live-on' : ''}`}
           data-testid="connection-status"
         >
-          {status}
+          {staticDemo ? 'Static demo' : status}
         </span>
-        <span className="header-tick">
-          <span className="header-tick-label">Tick</span>
-          <span className="mono" data-testid="tick">
-            {logicalTick === undefined ? '—' : formatCount(logicalTick)}
-          </span>
-        </span>
-        <span className="header-hz">{cadenceLabel(cadence)}</span>
+        {!staticDemo && (
+          <>
+            <span className="header-tick">
+              <span className="header-tick-label">Tick</span>
+              <span className="mono" data-testid="tick">
+                {logicalTick === undefined ? '—' : formatCount(logicalTick)}
+              </span>
+            </span>
+            <span className="header-hz">{cadenceLabel(cadence)}</span>
+          </>
+        )}
       </div>
     </header>
   );

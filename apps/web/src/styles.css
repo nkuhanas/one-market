@@ -211,6 +211,75 @@ main {
 
 /* Header ------------------------------------------------------------------- */
 
+.demo-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.demo-notice h2 {
+  font-size: 20px;
+  margin: 8px 0;
+}
+
+.demo-notice p:not(.demo-label),
+.local-demo > p {
+  color: var(--text-2);
+  max-width: 72ch;
+}
+
+.demo-label {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.demo-notice .hero-cta {
+  flex-shrink: 0;
+}
+
+.local-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.local-demo pre {
+  margin: 0;
+  padding: 16px;
+  overflow-x: auto;
+  background: var(--bg);
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+
+.app-static .header-system {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .demo-notice {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-static .header {
+    gap: 12px;
+  }
+  .app-static .nav {
+    display: none;
+  }
+}
+
 .header {
   position: sticky;
   top: 0;

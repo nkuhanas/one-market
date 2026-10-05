@@ -1,7 +1,13 @@
 import { changeBps, formatSignedPercent, formatUsd } from '../lib/units';
 import type { MarketSnapshot } from '../market/contract';
 
-export function MarketHeader({ snapshot }: { snapshot?: MarketSnapshot }) {
+export function MarketHeader({
+  snapshot,
+  staticDemo = false,
+}: {
+  snapshot?: MarketSnapshot;
+  staticDemo?: boolean;
+}) {
   const moveBps =
     snapshot && snapshot.previousTradedPriceCents > 0n
       ? changeBps(snapshot.priceCents, snapshot.previousTradedPriceCents)
@@ -18,11 +24,17 @@ export function MarketHeader({ snapshot }: { snapshot?: MarketSnapshot }) {
           ONE
           <span className="market-kind">Synthetic market</span>
         </h2>
-        <p className="market-sub">All money is synthetic.</p>
+        <p className="market-sub">
+          {staticDemo
+            ? 'Static illustrative data. Trading is offline.'
+            : 'All money is synthetic.'}
+        </p>
       </div>
 
       <div className="market-price">
-        <span className="market-price-label">Last traded</span>
+        <span className="market-price-label">
+          {staticDemo ? 'Example price' : 'Last traded'}
+        </span>
         <strong className={`price tone-${tone || 'neutral'}`}>
           {snapshot ? formatUsd(snapshot.priceCents) : '—'}
         </strong>
@@ -31,7 +43,9 @@ export function MarketHeader({ snapshot }: { snapshot?: MarketSnapshot }) {
         <span className={`market-move chip-move tone-${tone || 'neutral'}`}>
           {moveBps === undefined ? '—' : formatSignedPercent(moveBps)}
         </span>
-        <span className="market-move">on the last clearing</span>
+        <span className="market-move">
+          {staticDemo ? 'example clearing change' : 'on the last clearing'}
+        </span>
       </div>
     </section>
   );

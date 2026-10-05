@@ -21,14 +21,20 @@ const LABEL: Record<Exclude<ActivityEntry['eventKind'], 'FILLED'>, string> = {
 
 export const KillFeed = memo(function KillFeed({
   kills,
+  staticDemo = false,
 }: {
   kills: readonly ActivityEntry[];
+  staticDemo?: boolean;
 }) {
   return (
     <section className="panel" id="kills">
       <div className="panel-head">
         <h2>Kill feed</h2>
-        <span className="panel-note">Watched live by this browser</span>
+        <span className="panel-note">
+          {staticDemo
+            ? 'Static lifecycle examples'
+            : 'Watched live by this browser'}
+        </span>
       </div>
 
       {kills.length === 0 ? (

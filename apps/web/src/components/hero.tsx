@@ -47,21 +47,19 @@ function backdrop(samples: readonly PriceSample[]) {
   });
 }
 
-/**
- * The opening view. It reads as a landing page but every figure in it is live,
- * because the product is public and already running: there is nothing to gate
- * and no reason to show a picture of a market instead of the market.
- */
+/** Shared opening view for the live local market and the labeled static demo. */
 export function Hero({
   snapshot,
   cadence,
   fillRate,
   samples,
+  staticDemo = false,
 }: {
   snapshot?: MarketSnapshot;
   cadence?: Cadence;
   fillRate?: number;
   samples: readonly PriceSample[];
+  staticDemo?: boolean;
 }) {
   const bg = useMemo(() => backdrop(samples), [samples]);
   return (
@@ -107,44 +105,49 @@ export function Hero({
         <h1>One Market</h1>
       </div>
 
-      {/* The population is stated from the live row rather than asserted, so
-          the line is exact in whatever world this page is pointed at. */}
+      {/* The population comes from the selected live world or labeled demo. */}
       <p className="hero-tagline">
         {snapshot && snapshot.actorCount > 0n
-          ? `${formatCount(snapshot.actorCount)} autonomous minds. One price.`
-          : 'Autonomous minds. One price.'}
+          ? `${formatCount(snapshot.actorCount)} autonomous agents. One price.`
+          : 'Autonomous agents. One price.'}
       </p>
 
       <p className="hero-lede">
-        A single synthetic market, shared by everyone who opens this page.
-        Autonomous policy agents share a clock ({cadenceLabel(cadence)}), and
-        you can trade against them with a synthetic bankroll. Open it on another
-        device and you are looking at the same world.
+        A high-volume synthetic market exploring how markets behave at scale.
+        Autonomous agents buy and sell shares as prices emerge from supply,
+        demand and competing market incentives.
+        {staticDemo
+          ? ' This static demo shows the interface; run it locally to trade alongside the agents.'
+          : ` Trade alongside them with a synthetic bankroll in one shared world (${cadenceLabel(cadence)}).`}
       </p>
 
       <dl className="hero-stats">
         <div>
-          <dt>Last traded</dt>
+          <dt>{staticDemo ? 'Example price' : 'Last traded'}</dt>
           <dd className="mono">
             {snapshot ? formatUsd(snapshot.priceCents) : '—'}
           </dd>
         </div>
         <div>
-          <dt>Autonomous agents</dt>
+          <dt>{staticDemo ? 'Example agents' : 'Autonomous agents'}</dt>
           <dd className="mono">
             {snapshot ? formatCount(snapshot.actorCount) : '—'}
           </dd>
         </div>
+        {!staticDemo && (
+          <div>
+            <dt>Fills per second</dt>
+            <dd className="mono">
+              {fillRate === undefined
+                ? '—'
+                : fillRate.toLocaleString('en-US', {
+                    maximumFractionDigits: 1,
+                  })}
+            </dd>
+          </div>
+        )}
         <div>
-          <dt>Fills per second</dt>
-          <dd className="mono">
-            {fillRate === undefined
-              ? '—'
-              : fillRate.toLocaleString('en-US', { maximumFractionDigits: 1 })}
-          </dd>
-        </div>
-        <div>
-          <dt>Simulation tick</dt>
+          <dt>{staticDemo ? 'Example tick' : 'Simulation tick'}</dt>
           <dd className="mono">
             {snapshot ? formatCount(snapshot.logicalTick) : '—'}
           </dd>
@@ -153,7 +156,7 @@ export function Hero({
 
       <div className="hero-actions">
         <a className="hero-cta" href="#market">
-          Open the market
+          {staticDemo ? 'Explore the demo' : 'Open the market'}
         </a>
       </div>
     </section>
