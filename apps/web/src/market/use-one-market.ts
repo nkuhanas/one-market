@@ -14,6 +14,7 @@ import type {
 import {
   ACTIVITY_FEED_LIMIT,
   ACTOR_SAMPLE_LIMIT,
+  activeShock,
   asActorStatus,
   asEventKind,
   asParticipant,
@@ -182,10 +183,6 @@ export function useOneMarket(): OneMarket {
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
   const connection = useRef<DbConnection | null>(null);
-  // Mirrors the current tick for the feed flush, which needs it to decide which
-  // news shock is in effect without re-subscribing on every tick.
-  const snapshotTick = useRef(0n);
-  snapshotTick.current = snapshot?.logicalTick ?? 0n;
 
   useEffect(() => {
     let disposed = false;
@@ -299,10 +296,9 @@ export function useOneMarket(): OneMarket {
           .sort((a, b) => (a.actorId < b.actorId ? -1 : 1))
           .slice(0, ACTOR_SAMPLE_LIMIT),
       );
-      const current = snapshotTick.current;
       const shocks = [...db.db.newsEvent.iter()].map(toShock);
       setShock(
-        shocks.find((n) => current >= n.startTick && current <= n.endTick),
+        activeShock(db.db.marketState.id.find(0)?.chaosActive ?? false, shocks),
       );
       const timing = db.db.cadenceState.id.find(0);
       const selected =

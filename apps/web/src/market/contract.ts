@@ -132,6 +132,18 @@ export interface NewsShock {
   readonly endTick: bigint;
 }
 
+/** Shock expiry is server wall-clock state, not a client tick estimate. */
+export function activeShock(
+  active: boolean,
+  shocks: readonly NewsShock[],
+): NewsShock | undefined {
+  if (!active) return undefined;
+  return shocks.reduce<NewsShock | undefined>(
+    (latest, shock) => (!latest || shock.id > latest.id ? shock : latest),
+    undefined,
+  );
+}
+
 export interface CapacityResult {
   readonly actorCount: bigint;
   readonly tickIntervalUs: bigint;

@@ -1,7 +1,30 @@
 import { expect, test, type Page, type WebSocketRoute } from '@playwright/test';
 import { gzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
-import { asEventKind } from '../apps/web/src/market/contract';
+import { activeShock, asEventKind } from '../apps/web/src/market/contract';
+
+test('CHAOS presentation follows server state, not estimated tick ranges', () => {
+  const older = {
+    id: 1n,
+    headline: 'Older',
+    bearish: true,
+    severityBps: 8000n,
+    confidenceBps: 10000n,
+    startTick: 0n,
+    endTick: 1200n,
+  };
+  const newer = {
+    ...older,
+    id: 2n,
+    headline: 'Current',
+    startTick: 5n,
+    endTick: 245n,
+  };
+  expect(activeShock(false, [older, newer])).toBeUndefined();
+  expect(activeShock(true, [older, newer])).toEqual(newer);
+  expect(activeShock(true, [newer, older])).toEqual(newer);
+  expect(activeShock(true, [])).toBeUndefined();
+});
 
 test('lifecycle activity is never classified as a filled trade', () => {
   expect(asEventKind('WIPED — DRAWDOWN LIMIT')).toBe('WIPED');

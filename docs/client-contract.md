@@ -102,6 +102,12 @@ not required. The world must be READY. Active-shock requests succeed idempotentl
 without extending the event or creating another. A new shock immediately updates
 public news and `market_state.chaos_active` and invalidates current qualification.
 It never starts ticks: on a paused world, actors wait for an explicit owner start.
+CHAOS expires 60 wall-clock seconds after activation, including while paused.
+Use `market_state.chaos_active` to show the latest news shock; `end_tick` is only
+an initial cadence-based estimate until replaced with the actual end tick.
+The private `chaos_expiry` schedule is not an observer subscription. Owner-only
+`clear_chaos()` clears the shock without resetting the world or pausing it;
+`expire_chaos` is scheduler-only.
 
 Only the initial publisher is an administrator. Anonymous clients cannot change
 population, initialize/reset, start/pause/recover/manual-step, adopt workload rules,

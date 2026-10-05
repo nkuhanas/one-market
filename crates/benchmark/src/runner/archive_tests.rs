@@ -118,9 +118,12 @@ fn qualification_archive_matches_raw_evidence() {
                 "ONE Industries admits its lunar revenue division does not actually exist."
             );
             assert_eq!(news[0]["start_tick"], c.chaos_slot - 1);
-            assert_eq!(
-                news[0]["end_tick"],
-                c.chaos_slot - 1 + c.chaos_duration_ticks
+            // Wall-clock expiry records the actual final logical tick; an
+            // exact logical span is not guaranteed by a 60-second deadline.
+            let end = news[0]["end_tick"].as_u64().unwrap();
+            assert!(end >= c.chaos_slot - 1);
+            assert!(
+                end <= c.chaos_slot + cadence.ticks_for_seconds(c.chaos_duration_seconds).unwrap()
             );
             assert_eq!(news[0]["severity_bps"], c.chaos_severity_bps);
             assert_eq!(news[0]["confidence_bps"], c.chaos_confidence_bps);

@@ -65,7 +65,7 @@ pub struct Config {
     pub viewers: u64,
     pub offered_orders_per_second: u64,
     pub chaos_slot: u64,
-    pub chaos_duration_ticks: u64,
+    pub chaos_duration_seconds: u64,
     pub chaos_severity_bps: u64,
     pub chaos_confidence_bps: u64,
     pub generator: String,

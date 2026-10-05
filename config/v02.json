@@ -1,5 +1,5 @@
 {
-  "version": "one-market-v02-actor-endowment-5k-1",
+  "version": "one-market-v02-chaos-wall-clock-1",
   "default_cadence": "20hz",
   "cadence_profiles": [
     { "id": "20hz", "tick_interval_us": 50000 },
@@ -65,7 +65,7 @@
   "viewers": 3,
   "offered_orders_per_second": 5,
   "chaos_slot": 1200,
-  "chaos_duration_ticks": 1200,
+  "chaos_duration_seconds": 60,
   "chaos_severity_bps": 8000,
   "chaos_confidence_bps": 10000,
   "generator": "splitmix64-finalizer-v1: weights derived from seed xor actor_id; bucket=mix(actor_id)%20",

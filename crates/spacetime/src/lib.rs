@@ -1,5 +1,6 @@
 mod access;
 mod actor_storage;
+mod chaos;
 mod humans;
 mod lifecycle;
 #[cfg(test)]
@@ -14,6 +15,7 @@ mod test_support;
 mod timed_run;
 mod timing;
 
+pub use chaos::expire_chaos;
 use one_market_core::{config::config, Result};
 pub use runtime::simulation_tick;
 use schema::*;

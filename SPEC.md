@@ -197,8 +197,9 @@ measured capacity. Verify actual bucket sizes and committed coverage.
 Faster cadence classes are a stretch goal. The published headline always uses a fixed, versioned scheduling profile.
 
 Economic durations remain logical-tick/epoch quantities across cadence profiles:
-private valuations, sentiment, cooldown, revival and CHAOS keep their configured
-step counts. Their wall-clock durations scale with cadence. Human rate limits,
+private valuations, sentiment, cooldown and revival keep their configured
+step counts. Their wall-clock durations scale with cadence. CHAOS instead lasts
+60 wall-clock seconds at every cadence, including while paused. Human rate limits,
 offered human load, presentation rate limits and benchmark warm-up/measurement
 windows stay wall-clock based. Chart minute ranges use recorded timestamps, so
 history spanning a profile switch is not relabeled by its current tick rate.
@@ -489,13 +490,24 @@ Lifetime P&L: -$381,291
 SDK identity may trigger the public demo shock; no admin permission or trader
 registration is required. The server requires a READY world and permits one
 active shock at a time. Repeated or concurrent clicks during that shock succeed
-idempotently: they neither create another event nor extend its logical end tick.
+idempotently: they neither create another event nor extend its wall-clock deadline.
 A new manual shock invalidates any current qualification segment.
 
 The public active flag and news event update immediately, including while paused.
 Triggering CHAOS never starts the scheduler, advances a tick or settles an order;
-actors respond only as logical ticks execute. A paused shock remains staged until
-an owner explicitly starts/resumes the simulation. Other administrative controls
+actors respond only as logical ticks execute. Every new shock expires 60 seconds
+after its server activation timestamp, including while paused. A durable private
+absolute-time schedule clears the public active flag and news signal; the tick
+path also expires overdue shocks before evaluating actor policies. Host stalls
+can delay observation of expiry, but do not authorize a new tick to apply an
+overdue shock. Pausing, resuming, cadence changes, reconnects and repeated clicks
+do not renew the deadline. Stale callbacks cannot clear a newer shock.
+
+Owner-only `clear_chaos()` ends the active shock without resetting actors, human
+accounts, price, logical ticks or simulation scheduling. Manual clear invalidates
+current qualification. World reset cancels shock timers. Ordinary publication
+preserves existing events: legacy pre-upgrade logical-tick shocks retain their
+old semantics until expiry or explicit owner clear. Other administrative controls
 and private-data permissions remain unchanged.
 
 A shock introduces an obviously fictional scandal, for example:
@@ -623,7 +635,7 @@ alongside the six existing configured subscriptions; operator
 health queries may inspect the additional bounded tables without subscribing
 to private actor records.
 
-`NewsEvent` carries an ID, headline, direction, `severity_bps`, `confidence_bps`, `start_tick`, and `end_tick`. A public actor sample may expose limited presentation fields for 64 actors without making the full `ActorState` table queryable.
+`NewsEvent` carries an ID, headline, direction, `severity_bps`, `confidence_bps`, `start_tick`, and `end_tick`. For new one-minute shocks, `end_tick` is initially a cadence-based estimate and is replaced with the actual final logical tick on expiry or clear. The public `MarketState.chaos_active` flag is authoritative for presentation; clients must not infer current activity from this estimated tick range. A private bounded `ChaosExpiry` schedule stores event identity, activation timestamp and deadline. A public actor sample may expose limited presentation fields for 64 actors without making the full `ActorState` table queryable.
 
 ### Retention limits
 
@@ -692,12 +704,14 @@ benchmark_step(...)          // optional; refuses while scheduled simulation is 
 set_cadence_profile(profile)  // paused/empty only; never starts the simulation
 adopt_workload_paused(expected_configuration_hash) // READY, paused, no schedules
 prune_run_evidence(run_id, confirmation) // explicit bounded completed-evidence pruning
+clear_chaos()               // end shock only; preserve world and ticking state
 ```
 
 Scheduler-only wrapper:
 
 ```text
 simulation_tick(scheduled_tick_record)
+expire_chaos(scheduled_expiry_record)
 ```
 
 Keep a scheduler-origin guard on the scheduled wrapper as defense in depth. Any manual benchmark-step wrapper must require admin authorization and refuse to operate while scheduled simulation is enabled. Normal viewers and human traders may trigger CHAOS but must not advance ticks, reset the world, change population/cadence, adopt workload changes, or publish benchmark results.
@@ -958,7 +972,7 @@ Use exact tested dependency versions and committed lockfiles. Record the local i
 
 Against the exact local and deployed stacks, establish that an ordinary anonymous client cannot:
 
-- Advance ticks through either scheduled or manual wrappers.
+- Advance ticks through either scheduled or manual wrappers, clear CHAOS, or invoke its scheduled expiry.
 - Reset the simulation or change population.
 - Publish benchmark results, select cadence, or adopt workload changes.
 - Read another human's private trader, pending order, or fill history, including through caller-scoped views.

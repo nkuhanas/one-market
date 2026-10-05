@@ -116,6 +116,7 @@ pub fn reset_market(ctx: &ReducerContext, confirmation: String) -> Result<()> {
         return Err("explicit RESET WORLD confirmation required".into());
     }
     crate::timed_run::clear(ctx);
+    crate::chaos::cancel_timers(ctx);
     let mut r = runtime(ctx)?;
     crate::runtime::fail_run(ctx, r.run_id, "world reset")?;
     r.enabled = false;
@@ -127,6 +128,7 @@ pub fn reset_market(ctx: &ReducerContext, confirmation: String) -> Result<()> {
     ctx.db.runtime_config().id().update(r);
     let mut m = market(ctx)?;
     m.phase = "RESETTING".into();
+    m.chaos_active = false;
     ctx.db.market_state().id().update(m);
     Ok(())
 }

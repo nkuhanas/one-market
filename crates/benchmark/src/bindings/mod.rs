@@ -32,6 +32,9 @@ pub mod bucket_manifest_table;
 pub mod bucket_manifest_type;
 pub mod cadence_state_table;
 pub mod cadence_state_type;
+pub mod chaos_expiry_table;
+pub mod chaos_expiry_type;
+pub mod clear_chaos_reducer;
 pub mod connected_reducer;
 pub mod connection_state_table;
 pub mod connection_state_type;
@@ -39,6 +42,7 @@ pub mod continue_timed_run_reducer;
 pub mod detailed_benchmark_receipts_table;
 pub mod disconnected_reducer;
 pub mod enter_market_reducer;
+pub mod expire_chaos_reducer;
 pub mod grant_accounting_table;
 pub mod grant_accounting_type;
 pub mod human_order_receipt_table;
@@ -121,6 +125,9 @@ pub use bucket_manifest_table::*;
 pub use bucket_manifest_type::BucketManifest;
 pub use cadence_state_table::*;
 pub use cadence_state_type::CadenceState;
+pub use chaos_expiry_table::*;
+pub use chaos_expiry_type::ChaosExpiry;
+pub use clear_chaos_reducer::clear_chaos;
 pub use connected_reducer::connected;
 pub use connection_state_table::*;
 pub use connection_state_type::ConnectionState;
@@ -128,6 +135,7 @@ pub use continue_timed_run_reducer::continue_timed_run;
 pub use detailed_benchmark_receipts_table::*;
 pub use disconnected_reducer::disconnected;
 pub use enter_market_reducer::enter_market;
+pub use expire_chaos_reducer::expire_chaos;
 pub use grant_accounting_table::*;
 pub use grant_accounting_type::GrantAccounting;
 pub use human_order_receipt_table::*;
@@ -199,6 +207,7 @@ pub enum Reducer {
         identity: __sdk::Identity,
     },
     BenchmarkStep,
+    ClearChaos,
     Connected,
     ContinueTimedRun {
         profile: String,
@@ -207,6 +216,9 @@ pub enum Reducer {
     },
     Disconnected,
     EnterMarket,
+    ExpireChaos {
+        scheduled: ChaosExpiry,
+    },
     InitializeBatch {
         count: u64,
     },
@@ -279,10 +291,12 @@ impl __sdk::Reducer for Reducer {
             Reducer::AdoptWorkloadPaused { .. } => "adopt_workload_paused",
             Reducer::AuthorizeReader { .. } => "authorize_reader",
             Reducer::BenchmarkStep => "benchmark_step",
+            Reducer::ClearChaos => "clear_chaos",
             Reducer::Connected => "connected",
             Reducer::ContinueTimedRun { .. } => "continue_timed_run",
             Reducer::Disconnected => "disconnected",
             Reducer::EnterMarket => "enter_market",
+            Reducer::ExpireChaos { .. } => "expire_chaos",
             Reducer::InitializeBatch { .. } => "initialize_batch",
             Reducer::MigrateActorStorageBatch { .. } => "migrate_actor_storage_batch",
             Reducer::PauseSimulation => "pause_simulation",
@@ -320,6 +334,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::BenchmarkStep => {
                 __sats::bsatn::to_vec(&benchmark_step_reducer::BenchmarkStepArgs {})
             }
+            Reducer::ClearChaos => __sats::bsatn::to_vec(&clear_chaos_reducer::ClearChaosArgs {}),
             Reducer::Connected => __sats::bsatn::to_vec(&connected_reducer::ConnectedArgs {}),
             Reducer::ContinueTimedRun {
                 profile,
@@ -335,6 +350,11 @@ impl __sdk::Reducer for Reducer {
             }
             Reducer::EnterMarket => {
                 __sats::bsatn::to_vec(&enter_market_reducer::EnterMarketArgs {})
+            }
+            Reducer::ExpireChaos { scheduled } => {
+                __sats::bsatn::to_vec(&expire_chaos_reducer::ExpireChaosArgs {
+                    scheduled: scheduled.clone(),
+                })
             }
             Reducer::InitializeBatch { count } => {
                 __sats::bsatn::to_vec(&initialize_batch_reducer::InitializeBatchArgs {
@@ -468,6 +488,7 @@ pub struct DbUpdate {
     bucket_health: __sdk::TableUpdate<BucketHealth>,
     bucket_manifest: __sdk::TableUpdate<BucketManifest>,
     cadence_state: __sdk::TableUpdate<CadenceState>,
+    chaos_expiry: __sdk::TableUpdate<ChaosExpiry>,
     connection_state: __sdk::TableUpdate<ConnectionState>,
     detailed_benchmark_receipts: __sdk::TableUpdate<TickReceipt>,
     grant_accounting: __sdk::TableUpdate<GrantAccounting>,
@@ -533,6 +554,9 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "cadence_state" => db_update
                     .cadence_state
                     .append(cadence_state_table::parse_table_update(table_update)?),
+                "chaos_expiry" => db_update
+                    .chaos_expiry
+                    .append(chaos_expiry_table::parse_table_update(table_update)?),
                 "connection_state" => db_update
                     .connection_state
                     .append(connection_state_table::parse_table_update(table_update)?),
@@ -655,6 +679,9 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.cadence_state = cache
             .apply_diff_to_table::<CadenceState>("cadence_state", &self.cadence_state)
             .with_updates_by_pk(|row| &row.id);
+        diff.chaos_expiry = cache
+            .apply_diff_to_table::<ChaosExpiry>("chaos_expiry", &self.chaos_expiry)
+            .with_updates_by_pk(|row| &row.scheduled_id);
         diff.connection_state = cache
             .apply_diff_to_table::<ConnectionState>("connection_state", &self.connection_state)
             .with_updates_by_pk(|row| &row.connection_id);
@@ -772,6 +799,9 @@ impl __sdk::DbUpdate for DbUpdate {
                 "cadence_state" => db_update
                     .cadence_state
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "chaos_expiry" => db_update
+                    .chaos_expiry
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "connection_state" => db_update
                     .connection_state
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
@@ -884,6 +914,9 @@ impl __sdk::DbUpdate for DbUpdate {
                 "cadence_state" => db_update
                     .cadence_state
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "chaos_expiry" => db_update
+                    .chaos_expiry
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "connection_state" => db_update
                     .connection_state
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
@@ -974,6 +1007,7 @@ pub struct AppliedDiff<'r> {
     bucket_health: __sdk::TableAppliedDiff<'r, BucketHealth>,
     bucket_manifest: __sdk::TableAppliedDiff<'r, BucketManifest>,
     cadence_state: __sdk::TableAppliedDiff<'r, CadenceState>,
+    chaos_expiry: __sdk::TableAppliedDiff<'r, ChaosExpiry>,
     connection_state: __sdk::TableAppliedDiff<'r, ConnectionState>,
     detailed_benchmark_receipts: __sdk::TableAppliedDiff<'r, TickReceipt>,
     grant_accounting: __sdk::TableAppliedDiff<'r, GrantAccounting>,
@@ -1062,6 +1096,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         callbacks.invoke_table_row_callbacks::<CadenceState>(
             "cadence_state",
             &self.cadence_state,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<ChaosExpiry>(
+            "chaos_expiry",
+            &self.chaos_expiry,
             event,
         );
         callbacks.invoke_table_row_callbacks::<ConnectionState>(
@@ -1821,6 +1860,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         bucket_health_table::register_table(client_cache);
         bucket_manifest_table::register_table(client_cache);
         cadence_state_table::register_table(client_cache);
+        chaos_expiry_table::register_table(client_cache);
         connection_state_table::register_table(client_cache);
         detailed_benchmark_receipts_table::register_table(client_cache);
         grant_accounting_table::register_table(client_cache);
@@ -1856,6 +1896,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "bucket_health",
         "bucket_manifest",
         "cadence_state",
+        "chaos_expiry",
         "connection_state",
         "detailed_benchmark_receipts",
         "grant_accounting",

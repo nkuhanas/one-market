@@ -1,5 +1,5 @@
 use crate::{
-    access::admin, lifecycle, market, now_us, revival, runtime, schema::*, timestamp, timing,
+    access::admin, chaos, lifecycle, market, now_us, revival, runtime, schema::*, timestamp, timing,
 };
 use one_market_core::{
     add,
@@ -310,52 +310,6 @@ pub fn simulation_tick(ctx: &ReducerContext, scheduled: TickSchedule) -> Result<
     execute_tick(ctx, r, true)
 }
 
-fn shock(ctx: &ReducerContext, r: &mut RuntimeConfig, tick: u64) -> Result<()> {
-    let c = config();
-    r.chaos_start = tick;
-    r.chaos_end = add(tick, c.chaos_duration_ticks)?;
-    r.chaos_signal_bps = -i64::try_from(
-        u128::from(c.chaos_severity_bps) * u128::from(c.chaos_confidence_bps) / 10_000,
-    )
-    .map_err(|_| "news overflow")?;
-    let id = r.next_news_id;
-    r.next_news_id = add(id, 1)?;
-    ctx.db.news_event().insert(NewsEvent {
-        id,
-        headline: "ONE Industries admits its lunar revenue division does not actually exist."
-            .into(),
-        direction: -1,
-        severity_bps: c.chaos_severity_bps,
-        confidence_bps: c.chaos_confidence_bps,
-        start_tick: tick,
-        end_tick: r.chaos_end,
-    });
-    if id > c.news_retention {
-        ctx.db.news_event().id().delete(id - c.news_retention);
-    }
-    Ok(())
-}
-
-#[reducer]
-pub fn trigger_chaos(ctx: &ReducerContext) -> Result<()> {
-    let mut r = runtime(ctx)?;
-    if r.phase != "READY" {
-        return Err("world is not ready".into());
-    }
-    let mut m = market(ctx)?;
-    // Public demo control. Serialized, idempotent activation prevents multiple
-    // identities from extending a shock or flooding retained news while paused.
-    if m.logical_tick < r.chaos_end {
-        return Ok(());
-    }
-    fail_run(ctx, r.run_id, "manual shock changed workload")?;
-    shock(ctx, &mut r, m.logical_tick)?;
-    m.chaos_active = true;
-    ctx.db.market_state().id().update(m);
-    ctx.db.runtime_config().id().update(r);
-    Ok(())
-}
-
 fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> Result<()> {
     let c = config();
     if r.phase != "READY" {
@@ -430,9 +384,9 @@ fn execute_tick(ctx: &ReducerContext, mut r: RuntimeConfig, scheduled: bool) -> 
         }
     }
     if run.profile == "CHAOS" && r.next_slot >= c.chaos_slot && r.chaos_end == 0 {
-        shock(ctx, &mut r, tick)?;
+        chaos::shock(ctx, &mut r, tick)?;
     }
-    m.chaos_active = tick >= r.chaos_start && tick < r.chaos_end;
+    chaos::refresh(ctx, &mut r, &mut m);
     let mut dynamics = ctx
         .db
         .market_dynamics()

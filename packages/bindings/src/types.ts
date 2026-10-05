@@ -147,6 +147,15 @@ export const CadenceState = __t.object("CadenceState", {
 });
 export type CadenceState = __Infer<typeof CadenceState>;
 
+export const ChaosExpiry = __t.object("ChaosExpiry", {
+  scheduledId: __t.u64(),
+  scheduledAt: __t.scheduleAt(),
+  newsId: __t.u64(),
+  startedAt: __t.timestamp(),
+  deadline: __t.timestamp(),
+});
+export type ChaosExpiry = __Infer<typeof ChaosExpiry>;
+
 export const ConnectionState = __t.object("ConnectionState", {
   connectionId: __t.connectionId(),
   identity: __t.identity(),
