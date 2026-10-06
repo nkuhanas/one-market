@@ -1,0 +1,47 @@
+{
+  "at": "2026-10-04T14:50:21.237Z",
+  "source_commit": "9d90267e794803bb9c5ee6d675019fce15fd30af",
+  "build_sha256": "9d7b545617c0e446c87a1c1d9dd12be170d9f5fe44b3779122dfde1842f3ae94",
+  "configuration_hash": "e7f48d1418c02264bf27047c6211c73ad79d99c68044e1ea36d53eccc1fd547f",
+  "all_actor_bucket_coverage_verified": true,
+  "all_cash_and_shares_conserved": true,
+  "actor_count": 1000000,
+  "total_cash_cents": "250000000000",
+  "total_shares": "25000000",
+  "actors_with_wipeouts": "0",
+  "observed_connected_identities_min": 3,
+  "observed_connected_identities_max": 3,
+  "final": {
+    "database": "one-market-100k-20261004-035212",
+    "database_identity": "c200e95eb69477bcf73f4c84aa7a9828dd8ccd623978bef401244483771e7739",
+    "host_type": {
+      "Wasm": []
+    },
+    "phase": "READY",
+    "initialized": "1000000",
+    "target_population": "1000000",
+    "seed": "20261003",
+    "enabled": false,
+    "scheduled_ticks": 0,
+    "logical_tick": "710",
+    "active_actors": "1000000",
+    "price_cents": "9548",
+    "matched_shares": "59331",
+    "run_id": "5",
+    "run_status": "FAILED",
+    "failure_reason": "missed application slots",
+    "skipped_slots": "9",
+    "qualification": false,
+    "build_hash": "9d7b545617c0e446c87a1c1d9dd12be170d9f5fe44b3779122dfde1842f3ae94",
+    "configuration_hash": "e7f48d1418c02264bf27047c6211c73ad79d99c68044e1ea36d53eccc1fd547f",
+    "run_configuration_hash": "b2629bd0d66debf8cb428a439ce7fe0a7c9fa651f1e70d6b5fcf8a3a290e8a5c"
+  },
+  "cadence": {
+    "id": "0",
+    "profile": "4hz",
+    "tick_interval_us": "250000",
+    "bucket_count": "20",
+    "requires_explicit_start": false
+  },
+  "scheduled_stops": 0
+}

@@ -1,0 +1,93 @@
+{
+  "at": "2026-10-04T14:47:25.038Z",
+  "target": {
+    "server": "https://maincloud.spacetimedb.com",
+    "database": "one-market-100k-20261004-035212",
+    "mode": "update"
+  },
+  "database_identity": "c200e95eb69477bcf73f4c84aa7a9828dd8ccd623978bef401244483771e7739",
+  "source_commit": "9d90267e794803bb9c5ee6d675019fce15fd30af",
+  "build_sha256": "9d7b545617c0e446c87a1c1d9dd12be170d9f5fe44b3779122dfde1842f3ae94",
+  "configuration_hash": "e7f48d1418c02264bf27047c6211c73ad79d99c68044e1ea36d53eccc1fd547f",
+  "duration_seconds": 180,
+  "cadence": {
+    "id": "0",
+    "profile": "4hz",
+    "tick_interval_us": "250000",
+    "bucket_count": "20",
+    "requires_explicit_start": false
+  },
+  "qualification_claim": false,
+  "synthetic_viewer_or_human_load": false,
+  "fallback_pause_used": false,
+  "stable_tick_verified": true,
+  "deadline_utc": "2026-10-04T14:47:19.945Z",
+  "final": {
+    "database": "one-market-100k-20261004-035212",
+    "database_identity": "c200e95eb69477bcf73f4c84aa7a9828dd8ccd623978bef401244483771e7739",
+    "host_type": {
+      "Wasm": []
+    },
+    "phase": "READY",
+    "initialized": "1000000",
+    "target_population": "1000000",
+    "seed": "20261003",
+    "enabled": false,
+    "scheduled_ticks": 0,
+    "logical_tick": "710",
+    "active_actors": "1000000",
+    "price_cents": "9548",
+    "matched_shares": "59331",
+    "run_id": "5",
+    "run_status": "FAILED",
+    "failure_reason": "missed application slots",
+    "skipped_slots": "9",
+    "qualification": false,
+    "build_hash": "9d7b545617c0e446c87a1c1d9dd12be170d9f5fe44b3779122dfde1842f3ae94",
+    "configuration_hash": "e7f48d1418c02264bf27047c6211c73ad79d99c68044e1ea36d53eccc1fd547f",
+    "run_configuration_hash": "b2629bd0d66debf8cb428a439ce7fe0a7c9fa651f1e70d6b5fcf8a3a290e8a5c"
+  },
+  "receipt_count": 710,
+  "effective_hz": 3.9444444444444446,
+  "ticks_started_at_or_after_deadline": 0,
+  "p99_start_lateness_us": 160010,
+  "p99_start_gap_us": 307554,
+  "max_start_gap_us": 920153,
+  "min_price_cents": "9527",
+  "max_price_cents": "10000",
+  "floor_ticks": 0,
+  "zero_volume_ticks": 0,
+  "actor_steps": "35499626",
+  "matched_shares": "50897392",
+  "min_observed_active_actors": "1000000",
+  "grant_accounting": [
+    {
+      "id": "0",
+      "actor_initial_cash_cents": "250000000000",
+      "human_entry_cash_cents": "0",
+      "recapitalization_cash_cents": "0",
+      "initial_share_supply": "25000000",
+      "human_entry_count": "0",
+      "recapitalization_count": "0"
+    }
+  ],
+  "dynamics": [
+    {
+      "id": "0",
+      "reference_price_cents": "9966",
+      "sentiment_bps": "-43",
+      "mode": "NORMAL",
+      "floor_streak": "0",
+      "illiquid_streak": "0",
+      "healthy_streak": "710",
+      "distressed_buckets": "0",
+      "episode": "0",
+      "episode_started_tick": "0",
+      "next_recovery_tick": "0",
+      "revived_actors": "0",
+      "episode_grants_cents": "0",
+      "total_grants_cents": "0",
+      "constrained_grants": "0"
+    }
+  ]
+}

@@ -68,6 +68,14 @@ build deployed. Future publication must retain support for compact actors;
 see [actor storage operations](actor-storage.md) before any rollback. The
 three-minute probe improved throughput but did not sustain the selected 5 Hz.
 
+The subsequent [4 Hz / $5k actor rollout](../artifacts/maincloud/20261004-5k-4hz/README.md)
+explicitly reset that world at the user's request and initialized 1M actors
+with $2,500 cash and 25 shares each. Human bankroll configuration remains $100k.
+The module publish itself remained non-destructive; the owner reset was separate.
+Initialization and its all-actor audit completed while paused. A later explicit
+user amendment authorized one server-timed 180-second observation at 4 Hz.
+Consult its evidence for final stop status; these are not capacity qualifications.
+
 ## Connect the frontend
 
 Set these public values in the ignored root `.env` for local Vite/Docker use,
